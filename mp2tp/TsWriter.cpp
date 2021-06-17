@@ -1,3 +1,6 @@
+#ifdef WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include "TsWriter.h"
 #include "libmp2t.h"
 #include <iostream>
@@ -21,108 +24,109 @@ namespace
 	// See ISO/IEC 13818-1 : 2013 (E), Table 2-45 - Program and program element descriptors, page 69
 	// Return type     : void 
 	// Argument        : unsigned int tag
-	// Argument        : char* text
-	// Argument        : unsigned int len
-	void getDescriptorText(unsigned int tag, char* text, unsigned int len)
+	std::string getDescriptorText(unsigned int tag)
 	{
+		std::string strTag;
 		if (tag == 2)
-			strcpy_s(text, len, "video_stream_descriptor");
+			strTag = "video_stream_descriptor";
 		else if (tag == 3)
-			strcpy_s(text, len, "audio_stream_descriptor");
+			strTag = "audio_stream_descriptor";
 		else if (tag == 4)
-			strcpy_s(text, len, "hierarchy_descriptor");
+			strTag = "hierarchy_descriptor";
 		else if (tag == 5)
-			strcpy_s(text, len, "registration_descriptor");
+			strTag = "registration_descriptor";
 		else if (tag == 6)
-			strcpy_s(text, len, "data_stream_alignment_descriptor");
+			strTag = "data_stream_alignment_descriptor";
 		else if (tag == 7)
-			strcpy_s(text, len, "target_background_grid_descriptor");
+			strTag = "target_background_grid_descriptor";
 		else if (tag == 8)
-			strcpy_s(text, len, "Video_window_descriptor");
+			strTag = "Video_window_descriptor";
 		else if (tag == 9)
-			strcpy_s(text, len, "CA_descriptor");
+			strTag = "CA_descriptor";
 		else if (tag == 10)
-			strcpy_s(text, len, "ISO_639_language_descriptor");
+			strTag = "ISO_639_language_descriptor";
 		else if (tag == 11)
-			strcpy_s(text, len, "System_clock_descriptor");
+			strTag = "System_clock_descriptor";
 		else if (tag == 12)
-			strcpy_s(text, len, "Multiplex_buffer_utilization_descriptor");
+			strTag = "Multiplex_buffer_utilization_descriptor";
 		else if (tag == 13)
-			strcpy_s(text, len, "Copyright_descriptor");
+			strTag = "Copyright_descriptor";
 		else if (tag == 14)
-			strcpy_s(text, len, "Maximum_bitrate_descriptor");
+			strTag = "Maximum_bitrate_descriptor";
 		else if (tag == 15)
-			strcpy_s(text, len, "Private_data_indicator_descriptor");
+			strTag = "Private_data_indicator_descriptor";
 		else if (tag == 16)
-			strcpy_s(text, len, "Smoothing_buffer_descriptor");
+			strTag = "Smoothing_buffer_descriptor";
 		else if (tag == 17)
-			strcpy_s(text, len, "STD_descriptor");
+			strTag = "STD_descriptor";
 		else if (tag == 18)
-			strcpy_s(text, len, "IBP_descriptor");
+			strTag = "IBP_descriptor";
 		else if (tag >= 19 && tag <= 26)
-			strcpy_s(text, len, "Defined in ISO/IEC 13818-6");
+			strTag = "Defined in ISO/IEC 13818-6";
 		else if (tag == 27)
-			strcpy_s(text, len, "MPEG-4_video_descriptor");
+			strTag = "MPEG-4_video_descriptor";
 		else if (tag == 28)
-			strcpy_s(text, len, "MPEG-4_audio_descriptor");
+			strTag = "MPEG-4_audio_descriptor";
 		else if (tag == 29)
-			strcpy_s(text, len, "IOD_descriptor");
+			strTag = "IOD_descriptor";
 		else if (tag == 30)
-			strcpy_s(text, len, "SL_descriptor");
+			strTag = "SL_descriptor";
 		else if (tag == 31)
-			strcpy_s(text, len, "FMC_descriptor");
+			strTag = "FMC_descriptor";
 		else if (tag == 32)
-			strcpy_s(text, len, "external_ES_ID_descriptor");
+			strTag = "external_ES_ID_descriptor";
 		else if (tag == 33)
-			strcpy_s(text, len, "MuxCode_descriptor");
+			strTag = "MuxCode_descriptor";
 		else if (tag == 34)
-			strcpy_s(text, len, "FmxBufferSize_descriptor");
+			strTag = "FmxBufferSize_descriptor";
 		else if (tag == 35)
-			strcpy_s(text, len, "multiplexBuffer_descriptor");
+			strTag = "multiplexBuffer_descriptor";
 		else if (tag == 36)
-			strcpy_s(text, len, "content_labeling_descriptor");
+			strTag = "content_labeling_descriptor";
 		else if (tag == 37)
-			strcpy_s(text, len, "metadata_pointer_descriptor");
+			strTag = "metadata_pointer_descriptor";
 		else if (tag == 38)
-			strcpy_s(text, len, "metadata_descriptor");
+			strTag = "metadata_descriptor";
 		else if (tag == 39)
-			strcpy_s(text, len, "metadata_STD_descriptor");
+			strTag = "metadata_STD_descriptor";
 		else if (tag == 40)
-			strcpy_s(text, len, "AVC video descriptor");
+			strTag = "AVC video descriptor";
 		else if (tag == 41)
-			strcpy_s(text, len, "IPMP_descriptor");
+			strTag = "IPMP_descriptor";
 		else if (tag == 42)
-			strcpy_s(text, len, "AVC timing and HRD descriptor");
+			strTag = "AVC timing and HRD descriptor";
 		else if (tag == 43)
-			strcpy_s(text, len, "MPEG-2_AAC_audio_descriptor");
+			strTag = "MPEG-2_AAC_audio_descriptor";
 		else if (tag == 44)
-			strcpy_s(text, len, "FlexMuxTiming_descriptor");
+			strTag = "FlexMuxTiming_descriptor";
 		else if (tag == 45)
-			strcpy_s(text, len, "MPEG-4_text_descriptor");
+			strTag = "MPEG-4_text_descriptor";
 		else if (tag == 46)
-			strcpy_s(text, len, "MPEG-4_audio_extension_descriptor");
+			strTag = "MPEG-4_audio_extension_descriptor";
 		else if (tag == 47)
-			strcpy_s(text, len, "auxiliary_video_stream_descriptor");
+			strTag = "auxiliary_video_stream_descriptor";
 		else if (tag == 48)
-			strcpy_s(text, len, "SVC extension descriptor");
+			strTag = "SVC extension descriptor";
 		else if (tag == 49)
-			strcpy_s(text, len, "MVC extension descriptor");
+			strTag = "MVC extension descriptor";
 		else if (tag == 50)
-			strcpy_s(text, len, "J2K video descriptor");
+			strTag = "J2K video descriptor";
 		else if (tag == 51)
-			strcpy_s(text, len, "MVC operation point descriptor");
+			strTag = "MVC operation point descriptor";
 		else if (tag == 52)
-			strcpy_s(text, len, "MPEG2_stereoscopic_video_format_descriptor");
+			strTag = "MPEG2_stereoscopic_video_format_descriptor";
 		else if (tag == 53)
-			strcpy_s(text, len, "Stereoscopic_program_info_descriptor");
+			strTag = "Stereoscopic_program_info_descriptor";
 		else if (tag == 54)
-			strcpy_s(text, len, "Stereoscopic_video_info_descriptor");
+			strTag = "Stereoscopic_video_info_descriptor";
 		else if (tag >= 55 && tag <= 63)
-			strcpy_s(text, len, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Reserved");
+			strTag = "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Reserved";
 		else if (tag == 64)
-			strcpy_s(text, len, "network_name_descriptor");
+			strTag = "network_name_descriptor";
 		else if (tag > 64 && tag <= 255)
-			strcpy_s(text, len, "User Private");
+			strTag = "User Private";
+
+		return strTag;
 	}
 
 	// Function name   : getStreamTypeDescription
@@ -130,154 +134,157 @@ namespace
 	// Ref: ISO/IEC 13818-1 : 2013 (E) Table 2-34 - Stream type assignment, pg 51 
 	// Return type     : void 
 	// Argument        : unsigned int type
-	// Argument        : char* descr
-	// Argument        : unsigned int descrLen
-	void getStreamTypeDescription(unsigned int type, char* descr, unsigned int descrLen)
+	std::string getStreamTypeDescription(unsigned int type)
 	{
+		string strType;
 		if (type == 0x00)
-			strcpy_s(descr, descrLen, "ITU-T | ISO/IEC Reserved");
+			strType = "ITU-T | ISO/IEC Reserved";
 		else if (type == 0x01)
-			strcpy_s(descr, descrLen, "ISO/IEC 11172 Video");
+			strType = "ISO/IEC 11172 Video";
 		else if (type == 0x02)
-			strcpy_s(descr, descrLen, "ITU-T Rec. H.262 | ISO/IEC 13818-2 Video or ISO/IEC 11172-2 constrained parameter video stream");
+			strType = "ITU-T Rec. H.262 | ISO/IEC 13818-2 Video or ISO/IEC 11172-2 constrained parameter video stream";
 		else if (type == 0x03)
-			strcpy_s(descr, descrLen, "ISO/IEC 11172 Audio");
+			strType = "ISO/IEC 11172 Audio";
 		else if (type == 0x04)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-3 Audio");
+			strType = "ISO/IEC 13818-3 Audio";
 		else if (type == 0x05)
-			strcpy_s(descr, descrLen, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 private_sections");
+			strType = "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 private_sections";
 		else if (type == 0x06)
-			strcpy_s(descr, descrLen, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 PES packets containing private data");
+			strType = "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 PES packets containing private data";
 		else if (type == 0x07)
-			strcpy_s(descr, descrLen, "ISO/IEC 13522 MHEG");
+			strType = "ISO/IEC 13522 MHEG";
 		else if (type == 0x08)
-			strcpy_s(descr, descrLen, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Annex A DSM-CC");
+			strType = "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Annex A DSM-CC";
 		else if (type == 0x09)
-			strcpy_s(descr, descrLen, "Rec. ITU-T H.222.1");
+			strType = "Rec. ITU-T H.222.1";
 		else if (type == 0x0A)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-6 type A");
+			strType = "ISO/IEC 13818-6 type A";
 		else if (type == 0x0B)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-6 type B");
+			strType = "ISO/IEC 13818-6 type B";
 		else if (type == 0x0C)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-6 type C");
+			strType = "ISO/IEC 13818-6 type C";
 		else if (type == 0x0D)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-6 type D");
+			strType = "ISO/IEC 13818-6 type D";
 		else if (type == 0x0E)
-			strcpy_s(descr, descrLen, "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 auxiliary");
+			strType = "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 auxiliary";
 		else if (type == 0x0F)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-7 Audio with ADTS transport syntax");
+			strType = "ISO/IEC 13818-7 Audio with ADTS transport syntax";
 		else if (type == 0x10)
-			strcpy_s(descr, descrLen, "ISO/IEC 14496-2 Visual");
+			strType = "ISO/IEC 14496-2 Visual";
 		else if (type == 0x11)
-			strcpy_s(descr, descrLen, "ISO/IEC 14496-3 Audio with the LATM transport syntax as defined in ISO/IEC 14496-3 / AMD 1");
+			strType = "ISO/IEC 14496-3 Audio with the LATM transport syntax as defined in ISO/IEC 14496-3 / AMD 1";
 		else if (type == 0x12)
-			strcpy_s(descr, descrLen, "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in PES packets");
+			strType = "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in PES packets";
 		else if (type == 0x13)
-			strcpy_s(descr, descrLen, "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in ISO/IEC14496_sections");
+			strType = "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in ISO/IEC14496_sections";
 		else if (type == 0x14)
-			strcpy_s(descr, descrLen, "ISO/IEC 13818-6 Synchronized Download Protocol");
+			strType = "ISO/IEC 13818-6 Synchronized Download Protocol";
 		else if (type == 0x15)
-			strcpy_s(descr, descrLen, "Metadata carried in PES packets");
+			strType = "Metadata carried in PES packets";
 		else if (type == 0x16)
-			strcpy_s(descr, descrLen, "Metadata carried in metadata sections");
+			strType = "Metadata carried in metadata sections";
 		else if (type == 0x17)
-			strcpy_s(descr, descrLen, "Metadata carried in ISO/IEC 13818-6 Data Carousel");
+			strType = "Metadata carried in ISO/IEC 13818-6 Data Carousel";
 		else if (type == 0x18)
-			strcpy_s(descr, descrLen, "Metadata carried in ISO/IEC 13818-6 Object Carousel");
+			strType = "Metadata carried in ISO/IEC 13818-6 Object Carousel";
 		else if (type == 0x19)
-			strcpy_s(descr, descrLen, "Metadata carried in ISO/IEC 13818-6 Synchronized Download Protocol");
+			strType = "Metadata carried in ISO/IEC 13818-6 Synchronized Download Protocol";
 		else if (type == 0x1A)
-			strcpy_s(descr, descrLen, "IPMP stream (defined in ISO/IEC 13818-11, MPEG-2 IPMP");
+			strType = "IPMP stream (defined in ISO/IEC 13818-11, MPEG-2 IPMP";
 		else if (type == 0x1B)
-			strcpy_s(descr, descrLen, "AVC video stream conforming to one or more profiles defined in Annex A of Rec. ITU-T H.264|ISO/IEC 14496-10 or AVC video sub-bitstream of SVC as defined in 2.1.78 or MVC base view sub-bitstream, as defined in 2.1.85, or AVC video sub-bitstream of MVC, as defined in 2.1.88");
+			strType = "AVC video stream conforming to one or more profiles defined in Annex A of Rec. ITU-T H.264|ISO/IEC 14496-10 or AVC video sub-bitstream of SVC as defined in 2.1.78 or MVC base view sub-bitstream, as defined in 2.1.85, or AVC video sub-bitstream of MVC, as defined in 2.1.88";
 		else if (type == 0x1C)
-			strcpy_s(descr, descrLen, "ISO/IEC 14496-3 Audio, without using any additional transport syntax, such as DST, ALS and SLS");
+			strType = "ISO/IEC 14496-3 Audio, without using any additional transport syntax, such as DST, ALS and SLS";
 		else if (type == 0x1D)
-			strcpy_s(descr, descrLen, "ISO/IEC 14496-17 Text");
+			strType = "ISO/IEC 14496-17 Text";
 		else if (type == 0x1E)
-			strcpy_s(descr, descrLen, "Auxiliary video stream as defined in ISO/IEC 23002-3");
+			strType = "Auxiliary video stream as defined in ISO/IEC 23002-3";
 		else if (type == 0x1F)
-			strcpy_s(descr, descrLen, "SVC video sub-bitstream of an AVC video stream conforming to one or more profiles defined in Annex G of Rec. ITU-T H.264|ISO/IEC 14496-10");
+			strType = "SVC video sub-bitstream of an AVC video stream conforming to one or more profiles defined in Annex G of Rec. ITU-T H.264|ISO/IEC 14496-10";
 		else if (type == 0x20)
-			strcpy_s(descr, descrLen, "MVC video sub-bitstream of an AVC video stream conforming to one or more profiles defined in Annex H of Rec. ITU-T H.264|ISO/IEC 14496-10");
+			strType = "MVC video sub-bitstream of an AVC video stream conforming to one or more profiles defined in Annex H of Rec. ITU-T H.264|ISO/IEC 14496-10";
 		else if (type == 0x21)
-			strcpy_s(descr, descrLen, "Video stream conforming to one or more profiles as defined in Rec. ITU-T T.800|ISO/IEC 15444-1");
+			strType = "Video stream conforming to one or more profiles as defined in Rec. ITU-T T.800|ISO/IEC 15444-1";
 		else if (type == 0x22)
-			strcpy_s(descr, descrLen, "Additional view Rec. ITU-T H.262|ISO/IEC 13818-2 video stream for service-compatible stereoscopic 3D services");
+			strType = "Additional view Rec. ITU-T H.262|ISO/IEC 13818-2 video stream for service-compatible stereoscopic 3D services";
 		else if (type == 0x23)
-			strcpy_s(descr, descrLen, "Additional view Rec. ITU-T H.264|ISO/IEC 14496-10 video stream conforming to one or more profiles defined in Annex A for service-compatible stereoscopic 3D services");
+			strType = "Additional view Rec. ITU-T H.264|ISO/IEC 14496-10 video stream conforming to one or more profiles defined in Annex A for service-compatible stereoscopic 3D services";
 		else if (type >= 0x24 || type <= 0x7e)
-			strcpy_s(descr, descrLen, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Reserved");
+			strType = "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Reserved";
 		else if (type == 0x7f)
-			strcpy_s(descr, descrLen, "IPMP");
+			strType = "IPMP";
 		else if (type >= 0x80 || type <= 0xFF)
-			strcpy_s(descr, descrLen, "User Private");
+			strType = "User Private";
+
+		return strType;
 	}
 
 	// Function name   : getStreamIdDescription
 	// Description     : ISO/IEC 13818-1 : 2013 (E) Table 2-22 Stream_id assignments, pg 36
 	// Return type     : void 
 	// Argument        : BYTE streamId
-	// Argument        : char* type
-	// Argument        : UINT32 sz
-	void getStreamIdDescription(BYTE streamId, char* type, UINT32 sz)
+	std::string getStreamIdDescription(BYTE streamId)
 	{
+		string strStreamId;
 		if (streamId == 188)
-			strcpy_s(type, sz, "program_stream_map");
+			strStreamId = "program_stream_map";
 		else if (streamId == 189)
-			strcpy_s(type, sz, "private_stream_1");
+			strStreamId = "private_stream_1";
 		else if (streamId == 190)
-			strcpy_s(type, sz, "padding_stream");
+			strStreamId = "padding_stream";
 		else if (streamId == 191)
-			strcpy_s(type, sz, "private_stream_2");
+			strStreamId = "private_stream_2";
 		else if (streamId >= 192 && streamId <= 223)
-			strcpy_s(type, sz, "ISO/IEC 13818-3 or ISO/IEC 11172-3 or ISO/IEC 13818-7 or ISO/IEC 14496-3 audio stream number x xxxx");
+			strStreamId = "ISO/IEC 13818-3 or ISO/IEC 11172-3 or ISO/IEC 13818-7 or ISO/IEC 14496-3 audio stream number x xxxx";
 		else if (streamId >= 224 && streamId <= 239)
-			strcpy_s(type, sz, "ITU-T Rec. H.262 | ISO/IEC 13818-2, ISO/IEC 11172-2, ISO/IEC 14496-2 or Rec. ITU-T H.264 | ISO/IEC 14496-10 video stream number xxxx");
+			strStreamId = "ITU-T Rec. H.262 | ISO/IEC 13818-2, ISO/IEC 11172-2, ISO/IEC 14496-2 or Rec. ITU-T H.264 | ISO/IEC 14496-10 video stream number xxxx";
 		else if (streamId == 240)
-			strcpy_s(type, sz, "ECM_stream");
+			strStreamId = "ECM_stream";
 		else if (streamId == 241)
-			strcpy_s(type, sz, "EMM_stream");
+			strStreamId = "EMM_stream";
 		else if (streamId == 242)
-			strcpy_s(type, sz, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Annex A or ISO/IEC 13818-6_DSMCC_stream");
+			strStreamId = "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Annex A or ISO/IEC 13818-6_DSMCC_stream";
 		else if (streamId == 243)
-			strcpy_s(type, sz, "ISO/IEC_13522_stream");
+			strStreamId = "ISO/IEC_13522_stream";
 		else if (streamId == 244)
-			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type A");
+			strStreamId = "Rec. ITU-T H.222.1 type A";
 		else if (streamId == 245)
-			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type B");
+			strStreamId = "Rec. ITU-T H.222.1 type B";
 		else if (streamId == 246)
-			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type C");
+			strStreamId = "Rec. ITU-T H.222.1 type C";
 		else if (streamId == 247)
-			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type D");
+			strStreamId = "Rec. ITU-T H.222.1 type D";
 		else if (streamId == 248)
-			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type E");
+			strStreamId = "Rec. ITU-T H.222.1 type E";
 		else if (streamId == 249)
-			strcpy_s(type, sz, "ancillary_stream");
+			strStreamId = "ancillary_stream";
 		else if (streamId == 250)
-			strcpy_s(type, sz, "ISO/IEC14496-1_SL-packetized_stream");
+			strStreamId = "ISO/IEC14496-1_SL-packetized_stream";
 		else if (streamId == 251)
-			strcpy_s(type, sz, "ISO/IEC14496-1_FlexMux_stream");
+			strStreamId = "ISO/IEC14496-1_FlexMux_stream";
 		else if (streamId == 252)
-			strcpy_s(type, sz, "(0xFC) metadata stream");
+			strStreamId = "(0xFC) metadata stream";
 		else if (streamId == 253)
-			strcpy_s(type, sz, "extended_stream_id");
+			strStreamId = "extended_stream_id";
 		else if (streamId == 254)
-			strcpy_s(type, sz, "reserved data stream");
+			strStreamId = "reserved data stream";
 		else if (streamId == 255)
-			strcpy_s(type, sz, "program_stream_directory");
+			strStreamId = "program_stream_directory";
 		else
-			strcpy_s(type, sz, "ERROR UNKNOWN STREAM ID");
+			strStreamId = "ERROR UNKNOWN STREAM ID";
+
+		return strStreamId;
 	}
 
 
 	void printRegistrationDescriptor(const lcss::Descriptor& desc, int depth)
 	{
-		char text[BUFSIZ];
+		string text;
 		std::stringstream tag;
 		std::stringstream info;
 		size_t cur = 0;
 
+		char buf[BUFSIZ];
 		BYTE val[BUFSIZ];
 		desc.value(val);
 
@@ -287,8 +294,7 @@ namespace
 			indent += "\t";
 		}
 
-		memset(text, 0, BUFSIZ);
-		getDescriptorText(desc.tag(), text, BUFSIZ);
+		text = getDescriptorText(desc.tag());
 
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag();
 		cout << indent << "tag: " << tag.str() << " (" << text << ")" << endl;
@@ -298,9 +304,9 @@ namespace
 		{
 			if (cur == 0) // format_identifier
 			{
-				sprintf_s(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
+				sprintf(buf, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
 				cur += 4;
-				cout << indent << "format_identifier: " << text << endl;
+				cout << indent << "format_identifier: " << buf << endl;
 			}
 			else
 			{
@@ -319,6 +325,7 @@ namespace
 	void printMetadataPointerDescriptor(const lcss::Descriptor& desc)
 	{
 		char text[BUFSIZ];
+		memset(text, 0, BUFSIZ);
 		size_t cur = 0;
 		BYTE metadata_format = 0;
 		BYTE MPEG_carriage_flag = 0;
@@ -328,9 +335,7 @@ namespace
 		BYTE val[BUFSIZ];
 		desc.value(val);
 
-		memset(text, 0, BUFSIZ);
-		getDescriptorText(desc.tag(), text, BUFSIZ);
-		cout << "\t\t\t" << text << "() {" << endl;
+		cout << "\t\t\t" << getDescriptorText(desc.tag()) << "() {" << endl;
 
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag();
 		cout << indent << "tag: " << tag.str() << endl;
@@ -345,17 +350,17 @@ namespace
 				metadata_application_format = ntohs(metadata_application_format);
 
 				if (metadata_application_format >= 0 && metadata_application_format <= 0x000F)
-					sprintf_s(text, "Reserved 0x%2.2x 0x%2.2x", val[0], val[1]);
+					sprintf(text, "Reserved 0x%2.2x 0x%2.2x", val[0], val[1]);
 				else if (metadata_application_format == 0x0010)
-					strcpy_s(text, "ISO 15706 (ISAN) encoded in its binary form 0x00 0x10");
+					strcpy(text, "ISO 15706 (ISAN) encoded in its binary form 0x00 0x10");
 				else if (metadata_application_format == 0x0011)
-					strcpy_s(text, "ISO 15706-2 (V-ISAN) encoded in its binary form 0x00 0x11");
+					strcpy(text, "ISO 15706-2 (V-ISAN) encoded in its binary form 0x00 0x11");
 				else if (metadata_application_format >= 0x0012 && metadata_application_format <= 0x00FF)
-					sprintf_s(text, "Reserved 0x%2.2x 0x%2.2x", val[0], val[1]);
+					sprintf(text, "Reserved 0x%2.2x 0x%2.2x", val[0], val[1]);
 				else if (metadata_application_format >= 0x0100 && metadata_application_format <= 0xFFFE)
-					sprintf_s(text, "User defined 0x%2.2x 0x%2.2x", val[0], val[1]);
+					sprintf(text, "User defined 0x%2.2x 0x%2.2x", val[0], val[1]);
 				else if (metadata_application_format == 0xFFFF)
-					sprintf_s(text, "Defined by the metadata_application_format_identifier field %#4.2x %#4.2x", val[0], val[1]);
+					sprintf(text, "Defined by the metadata_application_format_identifier field %#4.2x %#4.2x", val[0], val[1]);
 				cur += 2;
 				cout << indent << "metadata_application_format: " << text << endl;
 			}
@@ -364,19 +369,19 @@ namespace
 				metadata_format = val[2];
 
 				if (metadata_format >= 0 && metadata_format <= 0x0F)
-					sprintf_s(text, "Reserved %#4.2x", metadata_format);
+					sprintf(text, "Reserved %#4.2x", metadata_format);
 				else if (metadata_format == 0x10)
-					sprintf_s(text, "ISO/IEC 15938-1 TeM %#4.2x", metadata_format);
+					sprintf(text, "ISO/IEC 15938-1 TeM %#4.2x", metadata_format);
 				else if (metadata_format == 0x11)
-					sprintf_s(text, "ISO/IEC 15938-1 BiM %#4.2x", metadata_format);
+					sprintf(text, "ISO/IEC 15938-1 BiM %#4.2x", metadata_format);
 				else if (metadata_format >= 0x12 && metadata_format <= 0x3E)
-					sprintf_s(text, "Reserved %#4.2x", metadata_format);
+					sprintf(text, "Reserved %#4.2x", metadata_format);
 				else if (metadata_format == 0x3F)
-					strcpy_s(text, "Defined by metadata application format 0x3F");
+					strcpy(text, "Defined by metadata application format 0x3F");
 				else if (metadata_format >= 0x40 && metadata_format <= 0xFE)
-					sprintf_s(text, "Private use %#4.2x", metadata_format);
+					sprintf(text, "Private use %#4.2x", metadata_format);
 				else if (metadata_format == 0xFF)
-					strcpy_s(text, "Defined by metadata_format_identifer field 0xFF");
+					strcpy(text, "Defined by metadata_format_identifer field 0xFF");
 
 				cur++;
 				cout << indent << "metadata_format: " << text << endl;
@@ -385,7 +390,7 @@ namespace
 			{
 				if (metadata_format == 0xFF)
 				{
-					sprintf_s(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
+					sprintf(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
 					cur += 4;
 					cout << indent << "metadata_format_identifier: " << text << endl;
 				}
@@ -400,7 +405,7 @@ namespace
 			{
 				BYTE flag = val[cur++];
 				char name[BUFSIZ];
-				sprintf_s(name, "%#4.2x", flag);
+				sprintf(name, "%#4.2x", flag);
 				cout << indent << "metadata_locator_record_flag: " << (flag & 0x80 ? "true" : "false") << endl;
 
 				BYTE mask = 0x60;
@@ -424,7 +429,7 @@ namespace
 					unsigned short program_number;
 					memcpy(&program_number, val + cur, 2);
 					program_number = ntohs(program_number);
-					sprintf_s(text, "%d (0x%2.2x 0x%2.2x)", program_number, val[cur], val[cur + 1]);
+					sprintf(text, "%d (0x%2.2x 0x%2.2x)", program_number, val[cur], val[cur + 1]);
 					cout << indent << "program_number: " << text << endl;
 				}
 				cur += 2;
@@ -438,10 +443,10 @@ namespace
 					memcpy(&transport_stream_location, val + cur, 2);
 					memcpy(&transport_stream_id, val + (cur + 2), 2);
 
-					sprintf_s(text, "\"%d %#4.2x %#4.2x\",", transport_stream_location, val[cur], val[cur + 1]);
+					sprintf(text, "\"%d %#4.2x %#4.2x\",", transport_stream_location, val[cur], val[cur + 1]);
 					cout << indent << "transport_stream_location: " << text << endl;
 
-					sprintf_s(text, "\"%d %#4.2x %#4.2x\"", transport_stream_id, val[cur + 2], val[cur + 3]);
+					sprintf(text, "\"%d %#4.2x %#4.2x\"", transport_stream_id, val[cur + 2], val[cur + 3]);
 					cout << indent << "transport_stream_id: " << text << endl;
 					cur += 4;
 				}
@@ -455,12 +460,12 @@ namespace
 					char hexc[32];
 					if (c != 0) {
 						if (isalnum(c))
-							sprintf_s(hexc, "%#4.2x (%c) ", c, c);
+							sprintf(hexc, "%#4.2x (%c) ", c, c);
 						else
-							sprintf_s(hexc, "%#4.2x ", c);
+							sprintf(hexc, "%#4.2x ", c);
 					}
 					else
-						sprintf_s(hexc, "0x00 ");
+						sprintf(hexc, "0x00 ");
 					tag << hexc;
 				}
 				cout << indent << "private_data: " << tag.str() << endl;
@@ -485,8 +490,7 @@ namespace
 		desc.value(val);
 		char text[BUFSIZ];
 
-		getDescriptorText(desc.tag(), text, BUFSIZ);
-		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << text << ")";
+		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << getDescriptorText(desc.tag()) << ")";
 		cout << indent << "tag: " << tag.str() << endl;
 		cout << indent << "length: " << (unsigned int)desc.length() << endl;
 
@@ -499,25 +503,25 @@ namespace
 				metadata_application_format = ntohs(metadata_application_format);
 
 				if (metadata_application_format >= 0 && metadata_application_format <= 0x000F)
-					sprintf_s(text, "Reserved %#4.2x %#4.2x", val[0], val[1]);
+					sprintf(text, "Reserved %#4.2x %#4.2x", val[0], val[1]);
 				else if (metadata_application_format == 0x0010)
-					strcpy_s(text, "ISO 15706 (ISAN) encoded in its binary form 0x00 0x10");
+					strcpy(text, "ISO 15706 (ISAN) encoded in its binary form 0x00 0x10");
 				else if (metadata_application_format == 0x0011)
-					strcpy_s(text, "ISO 15706-2 (V-ISAN) encoded in its binary form 0x00 0x11");
+					strcpy(text, "ISO 15706-2 (V-ISAN) encoded in its binary form 0x00 0x11");
 				else if (metadata_application_format >= 0x0012 && metadata_application_format <= 0x00FF)
-					sprintf_s(text, "Reserved %#4.2x %#4.2x", val[0], val[1]);
+					sprintf(text, "Reserved %#4.2x %#4.2x", val[0], val[1]);
 				else if (metadata_application_format == 0x0100)
-					sprintf_s(text, "MISB ST 1402 Table 4, General, 0x0100 (default)");
+					sprintf(text, "MISB ST 1402 Table 4, General, 0x0100 (default)");
 				else if (metadata_application_format == 0x0101)
-					sprintf_s(text, "MISB ST 1402 Table 4, Geographic Metadata, 0x0101");
+					sprintf(text, "MISB ST 1402 Table 4, Geographic Metadata, 0x0101");
 				else if (metadata_application_format == 0x0102)
-					sprintf_s(text, "MISB ST 1402 Table 4, Annotation Metadata, 0x0102");
+					sprintf(text, "MISB ST 1402 Table 4, Annotation Metadata, 0x0102");
 				else if (metadata_application_format == 0x0103)
-					sprintf_s(text, "MISB ST 1402 Table 4, Still Image on Demand, 0x0103");
+					sprintf(text, "MISB ST 1402 Table 4, Still Image on Demand, 0x0103");
 				else if (metadata_application_format > 0x0103 && metadata_application_format <= 0xFFFE)
-					sprintf_s(text, "User defined %#4.2x %#4.2x", val[0], val[1]);
+					sprintf(text, "User defined %#4.2x %#4.2x", val[0], val[1]);
 				else if (metadata_application_format == 0xFFFF)
-					sprintf_s(text, "Defined by the metadata_application_format_identifier field %#4.2x %#4.2x", val[0], val[1]);
+					sprintf(text, "Defined by the metadata_application_format_identifier field %#4.2x %#4.2x", val[0], val[1]);
 
 				cur += 2;
 
@@ -528,19 +532,19 @@ namespace
 				metadata_format = val[2];
 
 				if (metadata_format >= 0 && metadata_format <= 0x0F)
-					sprintf_s(text, "\"Reserved %#4.2x\"", metadata_format);
+					sprintf(text, "\"Reserved %#4.2x\"", metadata_format);
 				else if (metadata_format == 0x10)
-					sprintf_s(text, "\"ISO/IEC 15938-1 TeM %#4.2x\"", metadata_format);
+					sprintf(text, "\"ISO/IEC 15938-1 TeM %#4.2x\"", metadata_format);
 				else if (metadata_format == 0x11)
-					sprintf_s(text, "\"ISO/IEC 15938-1 BiM %#4.2x\"", metadata_format);
+					sprintf(text, "\"ISO/IEC 15938-1 BiM %#4.2x\"", metadata_format);
 				else if (metadata_format >= 0x12 && metadata_format <= 0x3E)
-					sprintf_s(text, "\"Reserved %#4.2x\"", metadata_format);
+					sprintf(text, "\"Reserved %#4.2x\"", metadata_format);
 				else if (metadata_format == 0x3F)
-					strcpy_s(text, "Defined by metadata application format 0x3F");
+					strcpy(text, "Defined by metadata application format 0x3F");
 				else if (metadata_format >= 0x40 && metadata_format <= 0xFE)
-					sprintf_s(text, "\"Private use %#4.2x\"", metadata_format);
+					sprintf(text, "\"Private use %#4.2x\"", metadata_format);
 				else if (metadata_format == 0xFF) {
-					strcpy_s(text, "Defined by metadata_format_identifer field 0xFF");
+					strcpy(text, "Defined by metadata_format_identifer field 0xFF");
 				}
 				cur++;
 
@@ -550,7 +554,7 @@ namespace
 			{
 				if (metadata_format == 0xFF)
 				{
-					sprintf_s(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
+					sprintf(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
 					cur += 4;
 					cout << indent << "metadata_format_identifier: " << text << endl;
 				}
@@ -566,7 +570,7 @@ namespace
 				tag = std::stringstream();
 				char name[BUFSIZ];
 				BYTE flag = val[cur++];
-				sprintf_s(name, "%#4.2x", flag);
+				sprintf(name, "%#4.2x", flag);
 				BYTE mask = 0xE0;
 				BYTE decoder_config_flags = flag & mask;
 
@@ -595,12 +599,12 @@ namespace
 						char hexc[32];
 						if (c != 0) {
 							if (isprint(c))
-								sprintf_s(hexc, "%c", c);
+								sprintf(hexc, "%c", c);
 							else
-								sprintf_s(hexc, "(%#4.2x)", c);
+								sprintf(hexc, "(%#4.2x)", c);
 						}
 						else
-							sprintf_s(hexc, "(0x00)");
+							sprintf(hexc, "(0x00)");
 						str << hexc;
 					}
 					cout << indent << "decoder_config_byte: " << str.str() << endl;
@@ -627,15 +631,14 @@ namespace
 		std::stringstream tag;
 		BYTE val[BUFSIZ];
 		desc.value(val);
-		char text[BUFSIZ];
+		string text;
 		string indent;
 		for (int i = 0; i < depth; i++)
 		{
 			indent += "\t";
 		}
 
-
-		getDescriptorText(desc.tag(), text, BUFSIZ);
+		text = getDescriptorText(desc.tag());
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << text << ")";
 		cout << indent << "tag: " << tag.str() << endl;
 		cout << indent << "length: " << (unsigned int)desc.length() << endl;
@@ -706,8 +709,7 @@ namespace
 			break;
 		default:
 		{
-			char text[BUFSIZ];
-			getDescriptorText(desc.tag(), text, BUFSIZ);
+			string text = getDescriptorText(desc.tag());
 			tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << text << ")";
 			cout << indent << "tag: " << tag.str() << endl;
 			cout << indent << "length: " << (unsigned int)desc.length() << endl;
@@ -717,12 +719,12 @@ namespace
 				char hexc[32];
 				if (c != 0) {
 					if (isprint(c))
-						sprintf_s(hexc, "%c", c);
+						sprintf(hexc, "%c", c);
 					else
-						sprintf_s(hexc, "(%#4.2x)", c);
+						sprintf(hexc, "(%#4.2x)", c);
 				}
 				else
-					sprintf_s(hexc, "(0x00)");
+					sprintf(hexc, "(0x00)");
 				str << hexc;
 			}
 			cout << indent << "value: " << str.str() << endl;
@@ -887,8 +889,7 @@ void TsWriter::printPMT(const lcss::ProgramMapTable& pmt)
 	{
 		string indent("\t\t\t\t\t");
 		cout << "\t\t\t\t{" << endl;
-		char descr[BUFSIZ];
-		getStreamTypeDescription(pe.stream_type(), descr, BUFSIZ);
+		string descr = getStreamTypeDescription(pe.stream_type());
 
 		std::stringstream tag;
 		tag << "0x" << setfill('0') << setw(2) << hex << (int)pe.stream_type() << " (" << descr << ")";
@@ -915,8 +916,7 @@ void TsWriter::printPMT(const lcss::ProgramMapTable& pmt)
 
 void TsWriter::printPES(const lcss::PESPacket& pes)
 {
-	char buf[BUFSIZ];
-	getStreamIdDescription(pes.stream_id_, buf, BUFSIZ);
+	string text = getStreamIdDescription(pes.stream_id_);
 	UINT16 pts_dts_flag = (pes.flags2_ & PTS_DTS_MASK);
 	std::stringstream val;
 	std::stringstream ptsflag;
@@ -925,7 +925,7 @@ void TsWriter::printPES(const lcss::PESPacket& pes)
 	cout << "\t\tPES_packet() {" << endl;
 
 	cout << indent << "packet_start_code_prefix: " << "0x000001" << endl;
-	val << "0x" << hex << uppercase << (int)pes.stream_id_ << " (" << buf << ")";
+	val << "0x" << hex << uppercase << (int)pes.stream_id_ << " (" << text << ")";
 	cout << indent << "stream_id: " << val.str() << endl;
 	cout << indent << "PES_packet_length: " << pes.PES_packet_length_ << endl;
 	cout << indent << "PES_scrambling_control: " << (pes.flags1_ & 0x30 ? "true" : "false") << endl;
