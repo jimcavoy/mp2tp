@@ -58,7 +58,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 			int bytesParsed = pes.parse(data);
 			if (bytesParsed > 0)
 			{
-				cout << "\t\tPES_packet() { }" << endl;
+				TsWriter::printPES(pes);
 			}
 		}
 	}

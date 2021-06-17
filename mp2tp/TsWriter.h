@@ -23,4 +23,5 @@ public:
 	static std::string printPCR(const lcss::AdaptationField& adf);
 	static void printPAT(const lcss::ProgramAssociationTable& pat);
 	static void printPMT(const lcss::ProgramMapTable& pmt);
+	static void printPES(const lcss::PESPacket& pes);
 };

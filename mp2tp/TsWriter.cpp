@@ -14,6 +14,8 @@ using namespace std;
 
 namespace
 {
+	const BYTE PTS_DTS_MASK = 0xC0;
+
 	// Function name   : getDescriptorText
 	// Description     : Returns a string associated with a tag number.
 	// See ISO/IEC 13818-1 : 2013 (E), Table 2-45 - Program and program element descriptors, page 69
@@ -211,6 +213,63 @@ namespace
 		else if (type >= 0x80 || type <= 0xFF)
 			strcpy_s(descr, descrLen, "User Private");
 	}
+
+	// Function name   : getStreamIdDescription
+	// Description     : ISO/IEC 13818-1 : 2013 (E) Table 2-22 Stream_id assignments, pg 36
+	// Return type     : void 
+	// Argument        : BYTE streamId
+	// Argument        : char* type
+	// Argument        : UINT32 sz
+	void getStreamIdDescription(BYTE streamId, char* type, UINT32 sz)
+	{
+		if (streamId == 188)
+			strcpy_s(type, sz, "program_stream_map");
+		else if (streamId == 189)
+			strcpy_s(type, sz, "private_stream_1");
+		else if (streamId == 190)
+			strcpy_s(type, sz, "padding_stream");
+		else if (streamId == 191)
+			strcpy_s(type, sz, "private_stream_2");
+		else if (streamId >= 192 && streamId <= 223)
+			strcpy_s(type, sz, "ISO/IEC 13818-3 or ISO/IEC 11172-3 or ISO/IEC 13818-7 or ISO/IEC 14496-3 audio stream number x xxxx");
+		else if (streamId >= 224 && streamId <= 239)
+			strcpy_s(type, sz, "ITU-T Rec. H.262 | ISO/IEC 13818-2, ISO/IEC 11172-2, ISO/IEC 14496-2 or Rec. ITU-T H.264 | ISO/IEC 14496-10 video stream number xxxx");
+		else if (streamId == 240)
+			strcpy_s(type, sz, "ECM_stream");
+		else if (streamId == 241)
+			strcpy_s(type, sz, "EMM_stream");
+		else if (streamId == 242)
+			strcpy_s(type, sz, "Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Annex A or ISO/IEC 13818-6_DSMCC_stream");
+		else if (streamId == 243)
+			strcpy_s(type, sz, "ISO/IEC_13522_stream");
+		else if (streamId == 244)
+			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type A");
+		else if (streamId == 245)
+			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type B");
+		else if (streamId == 246)
+			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type C");
+		else if (streamId == 247)
+			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type D");
+		else if (streamId == 248)
+			strcpy_s(type, sz, "Rec. ITU-T H.222.1 type E");
+		else if (streamId == 249)
+			strcpy_s(type, sz, "ancillary_stream");
+		else if (streamId == 250)
+			strcpy_s(type, sz, "ISO/IEC14496-1_SL-packetized_stream");
+		else if (streamId == 251)
+			strcpy_s(type, sz, "ISO/IEC14496-1_FlexMux_stream");
+		else if (streamId == 252)
+			strcpy_s(type, sz, "(0xFC) metadata stream");
+		else if (streamId == 253)
+			strcpy_s(type, sz, "extended_stream_id");
+		else if (streamId == 254)
+			strcpy_s(type, sz, "reserved data stream");
+		else if (streamId == 255)
+			strcpy_s(type, sz, "program_stream_directory");
+		else
+			strcpy_s(type, sz, "ERROR UNKNOWN STREAM ID");
+	}
+
 
 	void printRegistrationDescriptor(const lcss::Descriptor& desc, int depth)
 	{
@@ -516,7 +575,7 @@ namespace
 					tag << "No decoder configuration is needed. 000" << endl;
 					cout << indent << "decoder_config_flags: " << tag.str();
 					BYTE DSM_CC_flag = flag & 0x10;
-					cout << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false" ) << endl;
+					cout << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
 					cout << indent << "reserved: " << "1111" << endl;
 				}
 				else if (decoder_config_flags == 0x20)
@@ -766,14 +825,14 @@ void TsWriter::printPAT(const lcss::ProgramAssociationTable& pat)
 	std::stringstream val;
 
 	cout << "\t\tprogram_association_section() {" << endl;
-	cout << "\t\t\tpointer_field: " << (int) pat.pointer_field() << endl;
+	cout << "\t\t\tpointer_field: " << (int)pat.pointer_field() << endl;
 	cout << "\t\t\ttable_id: 0 (Program Association Section)" << endl;
-	cout << "\t\t\tsection_length: " <<  pat.section_length() << endl;
+	cout << "\t\t\tsection_length: " << pat.section_length() << endl;
 	cout << "\t\t\ttransport_stream_id: " << pat.transport_stream_id() << endl;
-	cout << "\t\t\tversion_number: " << (int) pat.version_number() << endl;
+	cout << "\t\t\tversion_number: " << (int)pat.version_number() << endl;
 	cout << "\t\t\tcurrent_next_indicator: " << pat.current_next_indicator() << endl;
-	cout << "\t\t\tsection_number: " << (int) pat.section_number() << endl;
-	cout << "\t\t\tlast_section_number: " << (int) pat.last_section_number() << endl;
+	cout << "\t\t\tsection_number: " << (int)pat.section_number() << endl;
+	cout << "\t\t\tlast_section_number: " << (int)pat.last_section_number() << endl;
 
 	// print out the sections
 	lcss::ProgramAssociationTable::const_iterator it;
@@ -851,5 +910,63 @@ void TsWriter::printPMT(const lcss::ProgramMapTable& pmt)
 	stringstream crc;
 	crc << "0x" << hex << pmt.CRC_32();
 	cout << "\t\t\tCRC_32: " << crc.str() << endl;
+	cout << "\t\t}" << endl;
+}
+
+void TsWriter::printPES(const lcss::PESPacket& pes)
+{
+	char buf[BUFSIZ];
+	getStreamIdDescription(pes.stream_id_, buf, BUFSIZ);
+	UINT16 pts_dts_flag = (pes.flags2_ & PTS_DTS_MASK);
+	std::stringstream val;
+	std::stringstream ptsflag;
+	string indent("\t\t\t");
+
+	cout << "\t\tPES_packet() {" << endl;
+
+	cout << indent << "packet_start_code_prefix: " << "0x000001" << endl;
+	val << "0x" << hex << uppercase << (int)pes.stream_id_ << " (" << buf << ")";
+	cout << indent << "stream_id: " << val.str() << endl;
+	cout << indent << "PES_packet_length: " << pes.PES_packet_length_ << endl;
+	cout << indent << "PES_scrambling_control: " << (pes.flags1_ & 0x30 ? "true" : "false") << endl;
+	cout << indent << "PES_priority: " << (pes.flags1_ & 0x08 ? "true" : "false") << endl;
+	cout << indent << "data_alignment_indicator: " << (pes.flags1_ & 0x04 ? "true" : "false") << endl;
+	cout << indent << "copyright: " << (pes.flags1_ & 0x02 ? "true" : "false") << endl;
+	cout << indent << "original_or_copy: " << (pes.flags1_ & 0x01 ? "true" : "false") << endl;
+	ptsflag << "0x" << hex << pts_dts_flag;
+	cout << indent << "PTS_DTS_flags: " << ptsflag.str() << endl;
+	cout << indent << "ESCR_flag: " << (pes.flags2_ & 0x20 ? "true" : "false") << endl;
+	cout << indent << "ES_rate_flag: " << (pes.flags2_ & 0x10 ? "true" : "false") << endl;
+	cout << indent << "DSM_trick_mode_flag: " << (pes.flags2_ & 0x08 ? "true" : "false") << endl;
+	cout << indent << "additional_copy_info_flag: " << (pes.flags2_ & 0x04 ? "true" : "false") << endl;
+	cout << indent << "PES_CRC_flag: " << (pes.flags2_ & 0x02 ? "true" : "false") << endl;
+	cout << indent << "PES_extension_flag: " << (pes.flags2_ & 0x01 ? "true" : "false") << endl;
+	cout << indent << "PES_header_data_length: " << (unsigned)pes.PES_header_data_length_ << endl;
+
+	if (pts_dts_flag > 0)
+	{
+		if (pts_dts_flag == 0xC0)
+		{
+			cout.precision(12);
+			std::stringstream pts;
+			std::stringstream dts;
+			pts.precision(12);
+			dts.precision(12);
+
+			pts << pes.pts() << "/90-kHz = " << pes.ptsInSeconds() << " seconds";
+			dts << pes.dts() << "/90-kHz = " << pes.dtsInSeconds() << " seconds";
+			cout << indent << "PTS: " << pts.str() << endl;
+			cout << indent << "DTS: " << dts.str() << endl;
+		}
+		else if (pts_dts_flag == 0x80)
+		{
+			cout.precision(12);
+			std::stringstream pts;
+			pts.precision(12);
+
+			pts << pes.pts() << "/90-kHz = " << pes.ptsInSeconds() << " seconds";
+			cout << indent << "PTS: " << pts.str() << endl;
+		}
+	}
 	cout << "\t\t}" << endl;
 }
