@@ -92,3 +92,33 @@ std::string TsWriter::printPCR(const lcss::AdaptationField& adf)
 	}
 	return prc;
 }
+
+void TsWriter::printPAT(const lcss::ProgramAssociationTable& pat)
+{
+	std::stringstream val;
+
+	cout << "\t\tprogram_association_section() {" << endl;
+	cout << "\t\t\tpointer_field: " << (int) pat.pointer_field() << endl;
+	cout << "\t\t\ttable_id: 0 (Program Association Section)" << endl;
+	cout << "\t\t\tsection_length: " <<  pat.section_length() << endl;
+	cout << "\t\t\ttransport_stream_id: " << pat.transport_stream_id() << endl;
+	cout << "\t\t\tversion_number: " << (int) pat.version_number() << endl;
+	cout << "\t\t\tcurrent_next_indicator: " << pat.current_next_indicator() << endl;
+	cout << "\t\t\tsection_number: " << (int) pat.section_number() << endl;
+	cout << "\t\t\tlast_section_number: " << (int) pat.last_section_number() << endl;
+
+	// print out the sections
+	lcss::ProgramAssociationTable::const_iterator it;
+	size_t sz = pat.size();
+	size_t i = 1;
+	cout << "\t\t\tprograms() {" << endl;
+	for (it = pat.begin(); it != pat.end(); ++it, ++i)
+	{
+		cout << "\t\t\t\tprogram_number: " << it->second << endl;
+		cout << "\t\t\t\tPID: " << it->first << endl;
+	}
+	cout << "\t\t}" << endl;
+
+	val << "0x" << hex << pat.CRC_32();
+	cout << "\t\tCRC_32: " << val.str() << endl;
+}

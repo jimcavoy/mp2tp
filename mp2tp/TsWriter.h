@@ -21,4 +21,5 @@ public:
 	static void printHeader(const lcss::TransportPacket& pckt);
 	static void printAdaptationField(const lcss::AdaptationField& adf);
 	static std::string printPCR(const lcss::AdaptationField& adf);
+	static void printPAT(const lcss::ProgramAssociationTable& pat);
 };

@@ -29,7 +29,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 		if (pckt.PID() == 0)
 		{
 			_pat.parse(data);
-			cout << "\t\tprogram_association_section() { }" << endl;
+			TsWriter::printPAT(_pat);
 		}
 		else if (_pat.find(pckt.PID()) != _pat.end())
 		{
