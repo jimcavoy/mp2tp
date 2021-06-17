@@ -8,7 +8,7 @@ if (WIN32)
 endif()
 
 # Add source to this project's executable.
-add_executable (mp2tp "mp2tp.cpp" "TsDecoder.cpp")
+add_executable (mp2tp "mp2tp.cpp" "TsDecoder.h" "TsDecoder.cpp" "TsWriter.h" "TsWriter.cpp")
 
 list(APPEND EXTRA_LIBS libmp2t)
 

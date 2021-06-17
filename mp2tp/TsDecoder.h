@@ -12,10 +12,6 @@ public:
 	virtual void onPacket(lcss::TransportPacket& pckt);
 
 private:
-	void printHeader(const lcss::TransportPacket& pckt);
-	void printAdaptationField(const lcss::AdaptationField& adf);
-
-private:
 	lcss::ProgramAssociationTable	_pat;
 	lcss::ProgramMapTable			_pmt;
 };
