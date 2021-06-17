@@ -48,7 +48,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 #endif
 				if (_pmt.parse())
 				{
-					cout << "\t\tTS_program_map_section() { }" << endl;
+					TsWriter::printPMT(_pmt);
 				}
 			}
 		}
@@ -75,7 +75,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 #endif
 			if (_pmt.parse())
 			{
-				cout << "\t\tTS_program_map_section() { }" << endl;
+				TsWriter::printPMT(_pmt);
 			}
 		}
 	}
