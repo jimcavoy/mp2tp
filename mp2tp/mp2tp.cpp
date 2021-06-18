@@ -38,5 +38,7 @@ int main(int argc, char* argv[])
 		if (num_of_packets > 10000)
 			break;
 	}
+
+	cerr << "TS Packets Read: " << num_of_packets << endl;
 	return 0;
 }
