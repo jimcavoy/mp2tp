@@ -14,3 +14,8 @@ endif()
 target_include_directories(libmp2t
           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
           )
+
+file(GLOB LIB_INCLUDE_FILES "./*.h")
+
+install(TARGETS libmp2t DESTINATION lib)
+install(FILES ${LIB_INCLUDE_FILES} DESTINATION include)
