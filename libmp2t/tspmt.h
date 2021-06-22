@@ -8,8 +8,6 @@
 #ifndef WIN32
 #include <memory.h>
 #include <arpa/inet.h>
-#else
-#include <gsl/gsl>
 #endif
 
 /// <summary>
@@ -103,11 +101,7 @@ namespace lcss
 		ProgramMapTable& operator=(const ProgramMapTable& rhs);
 
 		// Methods
-#ifdef WIN32
-		void add(const gsl::span<const BYTE> buffer);
-#else
 		void add(const BYTE* buffer, int len);
-#endif
 		bool canParse() const;
 		bool parse();
 		void clear();

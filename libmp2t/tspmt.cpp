@@ -131,17 +131,10 @@ lcss::ProgramMapTable& lcss::ProgramMapTable::operator=(const ProgramMapTable& r
 	return *this;
 }
 
-#ifdef WIN32
-void lcss::ProgramMapTable::add(const gsl::span<const BYTE> buffer)
-{
-	std::copy(std::begin(buffer), std::end(buffer), std::back_inserter(buffer_));
-}
-#else
 void lcss::ProgramMapTable::add(const BYTE* buffer, int len)
 {
 	std::copy(buffer, buffer + (len - 1), std::back_inserter(buffer_));
 }
-#endif
 
 bool lcss::ProgramMapTable::canParse() const
 {

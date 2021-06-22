@@ -1,8 +1,5 @@
 #include "TsDecoder.h"
 
-#ifdef WIN32
-#include <gsl/gsl>
-#endif
 #include "TsWriter.h"
 #include <iostream>
 #include <sstream>
@@ -41,11 +38,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 			else
 			{
 				_pmt.clear();
-#ifdef WIN32
-				_pmt.add({ data, pckt.data_byte() });
-#else
 				_pmt.add(data, pckt.data_byte());
-#endif
 				if (_pmt.parse())
 				{
 					TsWriter::printPMT(_pmt);
@@ -55,8 +48,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 		else
 		{
 			lcss::PESPacket pes;
-			int bytesParsed = pes.parse(data);
-			if (bytesParsed > 0)
+			if (pes.parse(data) > 0)
 			{
 				TsWriter::printPES(pes);
 			}
@@ -68,11 +60,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 		auto it = _pat.find(pckt.PID());
 		if (it != _pat.end() && it->second != 0)
 		{
-#ifdef WIN32
-			_pmt.add({ data, pckt.data_byte() });
-#else
 			_pmt.add(data, pckt.data_byte());
-#endif
 			if (_pmt.parse())
 			{
 				TsWriter::printPMT(_pmt);
