@@ -14,6 +14,10 @@ add_library(libmp2t STATIC ${SRC_LIST})
 
 if(WIN32)
     target_link_libraries(libmp2t wsock32 ws2_32)
+else()
+    set_target_properties(libmp2t 
+        PROPERTIES
+        OUTPUT_NAME mp2t)
 endif()
 
 target_include_directories(libmp2t
