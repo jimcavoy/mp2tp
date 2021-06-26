@@ -28,3 +28,10 @@ add_test(NAME NoFile
 set_tests_properties(NoFile
 	PROPERTIES PASS_REGULAR_EXPRESSION "Error: Fail to open input file, foo.ts"
 	)
+
+set(argsAll -i${PROJECT_SOURCE_DIR}/sample/foreman_cif_klv.ts -n0 -olabels.txt)
+add_test(NAME ReadAll 
+	COMMAND mp2tp ${argsAll} )
+set_tests_properties(ReadAll
+	PROPERTIES PASS_REGULAR_EXPRESSION "TS Packets Read: 4234"
+	)
