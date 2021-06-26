@@ -8,16 +8,19 @@
 
 #include "TsDecoder.h"
 
-const int N = 188 * 49;
+const int N = lcss::TransportPacket::TS_SIZE * 49;
+const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>";
+const char* opts = "  -i\tInput MPEG transport stream file path.\n  -n\tThe minimum number of TS packets to read from the input file before exiting.\n    \tSet to zero to read all. (default: 1000).\n  -o\tOptional output file name (default: console).\n  -?\tPrint this message.";
 
 std::unique_ptr<TsDecoder> createDecoder(std::string outputFilename, std::ofstream& oStream);
+bool canStop(int num, int limit);
 
 int main(int argc, char* argv[])
 {
 	using namespace std;
 	std::string ifile;
 	std::string ofile;
-	int limit = 10000;
+	int limit = 1000;
 	char c;
 
 	while (--argc > 0 && (*++argv)[0] == '-')
@@ -34,15 +37,21 @@ int main(int argc, char* argv[])
 		case 'n':
 			limit = std::stoi(*argv + 1);
 			break;
+		case '?':
+			cout << usage << endl;
+			cout << endl << "Options: " << endl;
+			cout << opts << endl;
+			return 0;
+			break;
 		default:
-			printf("mp2tp: illegal option %c\n", c);
-			argc = 0;
+			cout << "mp2tp: illegal option " << c << endl;
 			return -1;
 		}
 	}
-	if (argc != 0)
+
+	if (argc == 0 && ifile.empty())
 	{
-		printf("Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>\n");
+		cout << usage << endl;
 		return -1;
 	}
 
@@ -50,30 +59,25 @@ int main(int argc, char* argv[])
 	tsfile.open(ifile, std::ios::binary);
 	if (!tsfile.is_open())
 	{
-		cerr << "Error: Fail to open file " << ifile;
+		cout << "Error: Fail to open input file, " << ifile.c_str() << endl;
 		return -1;
 	}
 
 	ofstream oStream;
 	std::unique_ptr<TsDecoder> decoder = createDecoder(ofile, oStream);
+
 	BYTE memblock[N];
 	int num_of_packets = 0;
-
 	while (tsfile.good())
 	{
-		if (num_of_packets < limit)
-		{
-			tsfile.read((char*)memblock, N);
-			decoder->parse(memblock, (unsigned)tsfile.gcount());
-			num_of_packets += (int)tsfile.gcount() / 188;
-		}
-		else
-		{
+		tsfile.read((char*)memblock, N);
+		decoder->parse(memblock, (unsigned)tsfile.gcount());
+		num_of_packets += (int)tsfile.gcount() / lcss::TransportPacket::TS_SIZE;
+		if (canStop(num_of_packets, limit))
 			break;
-		}
 	}
 
-	cerr << "TS Packets Read: " << num_of_packets << endl;
+	cout << "TS Packets Read: " << num_of_packets << endl;
 	return 0;
 }
 
@@ -98,4 +102,11 @@ std::unique_ptr<TsDecoder> createDecoder(std::string ofile, std::ofstream& oStre
 		}
 	}
 	return decoder;
+}
+
+bool canStop(int num, int limit)
+{
+	if (limit == 0)
+		return false;
+	return num > limit ? true : false;
 }
