@@ -277,7 +277,7 @@ namespace
 	}
 
 
-	void printRegistrationDescriptor(const lcss::Descriptor& desc, int depth)
+	void printRegistrationDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		string text;
 		std::stringstream tag;
@@ -297,8 +297,8 @@ namespace
 		text = getDescriptorText(desc.tag());
 
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag();
-		cout << indent << "tag: " << tag.str() << " (" << text << ")" << endl;
-		cout << indent << "length: " << (unsigned int)desc.length() << endl;
+		ostrm << indent << "tag: " << tag.str() << " (" << text << ")" << endl;
+		ostrm << indent << "length: " << (unsigned int)desc.length() << endl;
 
 		while (cur < desc.length())
 		{
@@ -306,7 +306,7 @@ namespace
 			{
 				sprintf(buf, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
 				cur += 4;
-				cout << indent << "format_identifier: " << buf << endl;
+				ostrm << indent << "format_identifier: " << buf << endl;
 			}
 			else
 			{
@@ -317,12 +317,12 @@ namespace
 
 		if (info.str().length() > 0)
 		{
-			cout << indent << "additional_identification_info: " << info.str() << endl;
+			ostrm << indent << "additional_identification_info: " << info.str() << endl;
 		}
 	}
 
 	// ISO/IEC 13818-1 : 2013 (E), Table 2-83 - Metadata pointer descriptor, page 91
-	void printMetadataPointerDescriptor(const lcss::Descriptor& desc)
+	void printMetadataPointerDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc)
 	{
 		char text[BUFSIZ];
 		memset(text, 0, BUFSIZ);
@@ -335,11 +335,11 @@ namespace
 		BYTE val[BUFSIZ];
 		desc.value(val);
 
-		cout << "\t\t\t" << getDescriptorText(desc.tag()) << "() {" << endl;
+		ostrm << "\t\t\t" << getDescriptorText(desc.tag()) << "() {" << endl;
 
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag();
-		cout << indent << "tag: " << tag.str() << endl;
-		cout << indent << "length: " << (unsigned int)desc.length() << endl;
+		ostrm << indent << "tag: " << tag.str() << endl;
+		ostrm << indent << "length: " << (unsigned int)desc.length() << endl;
 
 		while (cur < desc.length())
 		{
@@ -362,7 +362,7 @@ namespace
 				else if (metadata_application_format == 0xFFFF)
 					sprintf(text, "Defined by the metadata_application_format_identifier field %#4.2x %#4.2x", val[0], val[1]);
 				cur += 2;
-				cout << indent << "metadata_application_format: " << text << endl;
+				ostrm << indent << "metadata_application_format: " << text << endl;
 			}
 			else if (cur == 2)
 			{
@@ -384,7 +384,7 @@ namespace
 					strcpy(text, "Defined by metadata_format_identifer field 0xFF");
 
 				cur++;
-				cout << indent << "metadata_format: " << text << endl;
+				ostrm << indent << "metadata_format: " << text << endl;
 			}
 			else if (cur == 3)
 			{
@@ -392,21 +392,21 @@ namespace
 				{
 					sprintf(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
 					cur += 4;
-					cout << indent << "metadata_format_identifier: " << text << endl;
+					ostrm << indent << "metadata_format_identifier: " << text << endl;
 				}
 				else
 					cur++;
 			}
 			else if ((cur == 4 && metadata_format != 0xFF) || cur == 7)
 			{
-				cout << indent << "metadata_service_id: " << (unsigned int)val[cur++] << endl;
+				ostrm << indent << "metadata_service_id: " << (unsigned int)val[cur++] << endl;
 			}
 			else if ((cur == 5 && metadata_format != 0xFF) || cur == 8)
 			{
 				BYTE flag = val[cur++];
 				char name[BUFSIZ];
 				sprintf(name, "%#4.2x", flag);
-				cout << indent << "metadata_locator_record_flag: " << (flag & 0x80 ? "true" : "false") << endl;
+				ostrm << indent << "metadata_locator_record_flag: " << (flag & 0x80 ? "true" : "false") << endl;
 
 				BYTE mask = 0x60;
 				MPEG_carriage_flag = flag & mask;
@@ -419,8 +419,8 @@ namespace
 				else if (MPEG_carriage_flag == 0x40)
 					tag << "\"Carriage in a program stream.  This may or may not be the same program stream in which this metadata pointer descriptor is carried. 2";
 
-				cout << indent << "MPEG_carriage_flags: " << tag.str() << endl;
-				cout << indent << "reserved: " << "11111" << endl;
+				ostrm << indent << "MPEG_carriage_flags: " << tag.str() << endl;
+				ostrm << indent << "reserved: " << "11111" << endl;
 			}
 			else if ((cur == 6 && metadata_format != 0xFF) || cur == 9)
 			{
@@ -430,7 +430,7 @@ namespace
 					memcpy(&program_number, val + cur, 2);
 					program_number = ntohs(program_number);
 					sprintf(text, "%d (0x%2.2x 0x%2.2x)", program_number, val[cur], val[cur + 1]);
-					cout << indent << "program_number: " << text << endl;
+					ostrm << indent << "program_number: " << text << endl;
 				}
 				cur += 2;
 			}
@@ -444,10 +444,10 @@ namespace
 					memcpy(&transport_stream_id, val + (cur + 2), 2);
 
 					sprintf(text, "\"%d %#4.2x %#4.2x\",", transport_stream_location, val[cur], val[cur + 1]);
-					cout << indent << "transport_stream_location: " << text << endl;
+					ostrm << indent << "transport_stream_location: " << text << endl;
 
 					sprintf(text, "\"%d %#4.2x %#4.2x\"", transport_stream_id, val[cur + 2], val[cur + 3]);
-					cout << indent << "transport_stream_id: " << text << endl;
+					ostrm << indent << "transport_stream_id: " << text << endl;
 					cur += 4;
 				}
 			}
@@ -468,14 +468,14 @@ namespace
 						sprintf(hexc, "0x00 ");
 					tag << hexc;
 				}
-				cout << indent << "private_data: " << tag.str() << endl;
+				ostrm << indent << "private_data: " << tag.str() << endl;
 			}
 		}
-		cout << "\t\t\t}" << endl;
+		ostrm << "\t\t\t}" << endl;
 	}
 
 	// ISO/IEC 13818-1 : 2013 (E), Table 2-86 - Metadata descriptor, page 94
-	void printMetadataDescriptor(const lcss::Descriptor& desc, int depth)
+	void printMetadataDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		size_t cur = 0;
 		BYTE metadata_format = 0;
@@ -491,8 +491,8 @@ namespace
 		char text[BUFSIZ];
 
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << getDescriptorText(desc.tag()) << ")";
-		cout << indent << "tag: " << tag.str() << endl;
-		cout << indent << "length: " << (unsigned int)desc.length() << endl;
+		ostrm << indent << "tag: " << tag.str() << endl;
+		ostrm << indent << "length: " << (unsigned int)desc.length() << endl;
 
 		while (cur < desc.length())
 		{
@@ -525,7 +525,7 @@ namespace
 
 				cur += 2;
 
-				cout << indent << "metadata_application_format: " << text << endl;
+				ostrm << indent << "metadata_application_format: " << text << endl;
 			}
 			else if (cur == 2)
 			{
@@ -548,7 +548,7 @@ namespace
 				}
 				cur++;
 
-				cout << indent << "metadata_format: " << text << endl;
+				ostrm << indent << "metadata_format: " << text << endl;
 			}
 			else if (cur == 3)
 			{
@@ -556,14 +556,14 @@ namespace
 				{
 					sprintf(text, "%c%c%c%c (%#4.2x %#4.2x %#4.2x %#4.2x)", val[cur], val[cur + 1], val[cur + 2], val[cur + 3], val[cur], val[cur + 1], val[cur + 2], val[cur + 3]);
 					cur += 4;
-					cout << indent << "metadata_format_identifier: " << text << endl;
+					ostrm << indent << "metadata_format_identifier: " << text << endl;
 				}
 				else
 					cur++;
 			}
 			else if ((cur == 4 && metadata_format != 0xFF) || cur == 7)
 			{
-				cout << indent << "metadata_service_id: " << (unsigned int)val[cur++] << endl;
+				ostrm << indent << "metadata_service_id: " << (unsigned int)val[cur++] << endl;
 			}
 			else if ((cur == 5 && metadata_format != 0xFF) || cur == 8)
 			{
@@ -577,21 +577,21 @@ namespace
 				if (decoder_config_flags == 0x00)
 				{
 					tag << "No decoder configuration is needed. 000" << endl;
-					cout << indent << "decoder_config_flags: " << tag.str();
+					ostrm << indent << "decoder_config_flags: " << tag.str();
 					BYTE DSM_CC_flag = flag & 0x10;
-					cout << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
-					cout << indent << "reserved: " << "1111" << endl;
+					ostrm << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
+					ostrm << indent << "reserved: " << "1111" << endl;
 				}
 				else if (decoder_config_flags == 0x20)
 				{
 					tag << "The decoder configuration is carried in this descriptor in the decoder_config_byte field. 001";
-					cout << indent << "decoder_config_flags" << tag.str() << endl;
+					ostrm << indent << "decoder_config_flags" << tag.str() << endl;
 					BYTE DSM_CC_flag = flag & 0x10;
-					cout << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
-					cout << indent << "reserved: " << "1111" << endl;
+					ostrm << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
+					ostrm << indent << "reserved: " << "1111" << endl;
 
 					BYTE decoder_config_length = val[cur++];
-					cout << indent << "decoder_config_length: " << (unsigned int)decoder_config_length << endl;
+					ostrm << indent << "decoder_config_length: " << (unsigned int)decoder_config_length << endl;
 					std::stringstream str;
 					for (int i = 0; i < decoder_config_length; i++)
 					{
@@ -607,7 +607,7 @@ namespace
 							sprintf(hexc, "(0x00)");
 						str << hexc;
 					}
-					cout << indent << "decoder_config_byte: " << str.str() << endl;
+					ostrm << indent << "decoder_config_byte: " << str.str() << endl;
 				}
 				else if (decoder_config_flags == 0x40)
 					tag << "The decoder configuration is carried in the same metadata service as to which this metadata descriptor applies. 010";
@@ -626,7 +626,7 @@ namespace
 	}
 
 	// ISO/IEC 13818-1 : 2013 (E), Table 2-88 - Metadata STD descriptor, page 96
-	void printMetadataSTDDescriptor(const lcss::Descriptor& desc, int depth)
+	void printMetadataSTDDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		std::stringstream tag;
 		BYTE val[BUFSIZ];
@@ -640,8 +640,8 @@ namespace
 
 		text = getDescriptorText(desc.tag());
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << text << ")";
-		cout << indent << "tag: " << tag.str() << endl;
-		cout << indent << "length: " << (unsigned int)desc.length() << endl;
+		ostrm << indent << "tag: " << tag.str() << endl;
+		ostrm << indent << "length: " << (unsigned int)desc.length() << endl;
 
 		size_t cur = 0;
 		BYTE mask = 0xC0;
@@ -656,7 +656,7 @@ namespace
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
-				cout << indent << "metadata_input_leak_rate: " << n << endl;
+				ostrm << indent << "metadata_input_leak_rate: " << n << endl;
 			}
 			else if (cur == 3) // metadata_buffer_size
 			{
@@ -666,7 +666,7 @@ namespace
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
-				cout << indent << "metadata_buffer_size: " << n << endl;
+				ostrm << indent << "metadata_buffer_size: " << n << endl;
 			}
 			else if (cur == 6) // metadata_output_leak_rate
 			{
@@ -676,12 +676,12 @@ namespace
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
-				cout << indent << "metadata_output_leak_rate: " << n << endl;
+				ostrm << indent << "metadata_output_leak_rate: " << n << endl;
 			}
 		}
 	}
 
-	void printDescriptorValue(const lcss::Descriptor& desc, int depth)
+	void printDescriptorValue(ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		BYTE val[BUFSIZ];
 		desc.value(val);
@@ -696,23 +696,23 @@ namespace
 		switch (desc.tag())
 		{
 		case 0x05: // registration_descriptor
-			printRegistrationDescriptor(desc, depth);
+			printRegistrationDescriptor(ostrm, desc, depth);
 			break;
 		case 0x25: // metadata_pointer_descriptor
-			printMetadataPointerDescriptor(desc);
+			printMetadataPointerDescriptor(ostrm, desc);
 			break;
 		case 0x26: // metadata_descriptor
-			printMetadataDescriptor(desc, depth);
+			printMetadataDescriptor(ostrm, desc, depth);
 			break;
 		case 0x27: // metadata STD descriptor
-			printMetadataSTDDescriptor(desc, depth);
+			printMetadataSTDDescriptor(ostrm, desc, depth);
 			break;
 		default:
 		{
 			string text = getDescriptorText(desc.tag());
 			tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << text << ")";
-			cout << indent << "tag: " << tag.str() << endl;
-			cout << indent << "length: " << (unsigned int)desc.length() << endl;
+			ostrm << indent << "tag: " << tag.str() << endl;
+			ostrm << indent << "length: " << (unsigned int)desc.length() << endl;
 			for (int n = 0; n < desc.length(); n++)
 			{
 				int c = (int)val[n];
@@ -727,23 +727,23 @@ namespace
 					sprintf(hexc, "(0x00)");
 				str << hexc;
 			}
-			cout << indent << "value: " << str.str() << endl;
+			ostrm << indent << "value: " << str.str() << endl;
 		}
 		}
 	}
 
 }
 
-void TsWriter::printHeader(const lcss::TransportPacket& pckt)
+void TsWriter::printHeader(std::ostream& ostrm, const lcss::TransportPacket& pckt)
 {
 	bool isAdaptationField = false;
-	cout << "\ttransport_packet() {" << endl;
-	cout << "\t\tsync_byte: 0x47" << endl;
-	cout << "\t\ttransport_error_indicator: " << pckt.TEI() << endl;
-	cout << "\t\tpayload_unit_start_indicator: " << pckt.payloadUnitStart() << endl;
-	cout << "\t\ttransport_priority: " << pckt.transportPriority() << endl;
-	cout << "\t\tPID: " << pckt.PID() << endl;
-	cout << "\t\ttransport_scrambling_control: " << (int)pckt.scramblingControl() << endl;
+	ostrm << "\ttransport_packet() {" << endl;
+	ostrm << "\t\tsync_byte: 0x47" << endl;
+	ostrm << "\t\ttransport_error_indicator: " << pckt.TEI() << endl;
+	ostrm << "\t\tpayload_unit_start_indicator: " << pckt.payloadUnitStart() << endl;
+	ostrm << "\t\ttransport_priority: " << pckt.transportPriority() << endl;
+	ostrm << "\t\tPID: " << pckt.PID() << endl;
+	ostrm << "\t\ttransport_scrambling_control: " << (int)pckt.scramblingControl() << endl;
 
 	std::string strAfe;
 	char afe = pckt.adaptationFieldExist();
@@ -759,43 +759,43 @@ void TsWriter::printHeader(const lcss::TransportPacket& pckt)
 		break;
 	default: strAfe = "Unknown value";
 	}
-	cout << "\t\tadaptation_field_control: " << strAfe << endl;
-	cout << "\t\tcontinuity_counter: " << (int)pckt.cc() << endl;
+	ostrm << "\t\tadaptation_field_control: " << strAfe << endl;
+	ostrm << "\t\tcontinuity_counter: " << (int)pckt.cc() << endl;
 
 	if (isAdaptationField)
 	{
 		const lcss::AdaptationField* adf = pckt.getAdaptationField();
-		TsWriter::printAdaptationField(*adf);
+		TsWriter::printAdaptationField(ostrm, *adf);
 	}
 
 	unsigned char data_byte = pckt.data_byte();
 	if (data_byte != 0)
 	{
-		cout << "\t\tdata_byte: " << (int)data_byte << endl;
+		ostrm << "\t\tdata_byte: " << (int)data_byte << endl;
 	}
 }
 
-void TsWriter::printAdaptationField(const lcss::AdaptationField& adf)
+void TsWriter::printAdaptationField(std::ostream& ostrm, const lcss::AdaptationField& adf)
 {
-	cout << "\t\tadaptation_field() {" << endl;
-	cout << "\t\t\tadaptation_field_length: " << adf.length() << endl;
-	cout << "\t\t\tdiscontinuity_indicator: " << adf.discontinuity_indicator() << endl;
-	cout << "\t\t\trandom_access_indicator: " << adf.random_access_indicator() << endl;
-	cout << "\t\t\telementary_stream_priority_indicator: " << adf.elementary_stream_priority_indicator() << endl;
-	cout << "\t\t\tPCR_flag: " << adf.PCR_flag() << endl;
-	cout << "\t\t\tOPCR_flag: " << adf.OPCR_flag() << endl;
-	cout << "\t\t\tsplicing_point_flag: " << adf.splicing_point_flag() << endl;
-	cout << "\t\t\ttransport_private_data_flag: " << adf.transport_private_data_flag() << endl;
-	cout << "\t\t\tadaptation_field_extension_flag: " << adf.adaptation_field_extension_flag() << endl;
+	ostrm << "\t\tadaptation_field() {" << endl;
+	ostrm << "\t\t\tadaptation_field_length: " << adf.length() << endl;
+	ostrm << "\t\t\tdiscontinuity_indicator: " << adf.discontinuity_indicator() << endl;
+	ostrm << "\t\t\trandom_access_indicator: " << adf.random_access_indicator() << endl;
+	ostrm << "\t\t\telementary_stream_priority_indicator: " << adf.elementary_stream_priority_indicator() << endl;
+	ostrm << "\t\t\tPCR_flag: " << adf.PCR_flag() << endl;
+	ostrm << "\t\t\tOPCR_flag: " << adf.OPCR_flag() << endl;
+	ostrm << "\t\t\tsplicing_point_flag: " << adf.splicing_point_flag() << endl;
+	ostrm << "\t\t\ttransport_private_data_flag: " << adf.transport_private_data_flag() << endl;
+	ostrm << "\t\t\tadaptation_field_extension_flag: " << adf.adaptation_field_extension_flag() << endl;
 
 	if (adf.PCR_flag() && adf.length() > 0)
 	{
-		cout << "\t\t\tPCR: " << TsWriter::printPCR(adf) << endl;
+		ostrm << "\t\t\tPCR: " << TsWriter::printPCR(ostrm, adf) << endl;
 	}
-	cout << "\t\t}" << endl;
+	ostrm << "\t\t}" << endl;
 }
 
-std::string TsWriter::printPCR(const lcss::AdaptationField& adf)
+std::string TsWriter::printPCR(std::ostream& ostrm, const lcss::AdaptationField& adf)
 {
 	string prc;
 	if (adf.PCR_flag() && adf.length() > 0)
@@ -812,7 +812,7 @@ std::string TsWriter::printPCR(const lcss::AdaptationField& adf)
 			unsigned short pcr_ext = pcr[4] & 0x01 << 9;
 			pcr_ext = pcr_ext | pcr[5];
 			double dpcr = (double)pcr_base * 300 + pcr_ext;
-			cout.precision(12);
+			ostrm.precision(12);
 			std::stringstream pcr_stream;
 			pcr_stream.precision(12);
 			pcr_stream << "base(" << pcr_base << ") * 300 + ext(" << pcr_ext << ") = " << dpcr << ", pcr/27-MHz = " << (dpcr / 27000000) << " seconds";
@@ -822,53 +822,53 @@ std::string TsWriter::printPCR(const lcss::AdaptationField& adf)
 	return prc;
 }
 
-void TsWriter::printPAT(const lcss::ProgramAssociationTable& pat)
+void TsWriter::printPAT(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
 {
 	std::stringstream val;
 
-	cout << "\t\tprogram_association_section() {" << endl;
-	cout << "\t\t\tpointer_field: " << (int)pat.pointer_field() << endl;
-	cout << "\t\t\ttable_id: 0 (Program Association Section)" << endl;
-	cout << "\t\t\tsection_length: " << pat.section_length() << endl;
-	cout << "\t\t\ttransport_stream_id: " << pat.transport_stream_id() << endl;
-	cout << "\t\t\tversion_number: " << (int)pat.version_number() << endl;
-	cout << "\t\t\tcurrent_next_indicator: " << pat.current_next_indicator() << endl;
-	cout << "\t\t\tsection_number: " << (int)pat.section_number() << endl;
-	cout << "\t\t\tlast_section_number: " << (int)pat.last_section_number() << endl;
+	ostrm << "\t\tprogram_association_section() {" << endl;
+	ostrm << "\t\t\tpointer_field: " << (int)pat.pointer_field() << endl;
+	ostrm << "\t\t\ttable_id: 0 (Program Association Section)" << endl;
+	ostrm << "\t\t\tsection_length: " << pat.section_length() << endl;
+	ostrm << "\t\t\ttransport_stream_id: " << pat.transport_stream_id() << endl;
+	ostrm << "\t\t\tversion_number: " << (int)pat.version_number() << endl;
+	ostrm << "\t\t\tcurrent_next_indicator: " << pat.current_next_indicator() << endl;
+	ostrm << "\t\t\tsection_number: " << (int)pat.section_number() << endl;
+	ostrm << "\t\t\tlast_section_number: " << (int)pat.last_section_number() << endl;
 
 	// print out the sections
 	lcss::ProgramAssociationTable::const_iterator it;
 	size_t sz = pat.size();
 	size_t i = 1;
-	cout << "\t\t\tprograms() {" << endl;
+	ostrm << "\t\t\tprograms() {" << endl;
 	for (it = pat.begin(); it != pat.end(); ++it, ++i)
 	{
-		cout << "\t\t\t\tprogram_number: " << it->second << endl;
-		cout << "\t\t\t\tPID: " << it->first << endl;
+		ostrm << "\t\t\t\tprogram_number: " << it->second << endl;
+		ostrm << "\t\t\t\tPID: " << it->first << endl;
 	}
-	cout << "\t\t\t}" << endl;
+	ostrm << "\t\t\t}" << endl;
 
 	val << "0x" << hex << pat.CRC_32();
-	cout << "\t\t\tCRC_32: " << val.str() << endl;
-	cout << "\t\t}" << endl;
+	ostrm << "\t\t\tCRC_32: " << val.str() << endl;
+	ostrm << "\t\t}" << endl;
 }
 
-void TsWriter::printPMT(const lcss::ProgramMapTable& pmt)
+void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 {
-	cout << "\t\tTS_program_map_section() {" << endl;
+	ostrm << "\t\tTS_program_map_section() {" << endl;
 
-	cout << "\t\t\tpointer_field: " << (unsigned int)pmt.pointer_field() << endl;
-	cout << "\t\t\ttable_id: " << (unsigned int)pmt.table_id() << endl;
-	cout << "\t\t\tsection_syntax_indicator: " << pmt.section_syntax_indicator() << endl;
-	cout << "\t\t\tsection_length: " << pmt.section_length() << endl;
-	cout << "\t\t\tprogram_number: " << pmt.program_number() << endl;
-	cout << "\t\t\tversion_number: " << (unsigned int)pmt.version_number() << endl;
-	cout << "\t\t\tcurrent_next_indicator: " << pmt.current_next_indicator() << endl;
-	cout << "\t\t\tsection_number: " << (unsigned int)pmt.section_number() << endl;
-	cout << "\t\t\tlast_section_number: " << (unsigned int)pmt.last_section_number() << endl;
-	cout << "\t\t\tPCR_PID: " << pmt.PCR_PID() << endl;
-	cout << "\t\t\tprogram_info_length: " << pmt.program_info_length() << endl;
-	cout << "\t\t\tprogram_info() {" << endl;
+	ostrm << "\t\t\tpointer_field: " << (unsigned int)pmt.pointer_field() << endl;
+	ostrm << "\t\t\ttable_id: " << (unsigned int)pmt.table_id() << endl;
+	ostrm << "\t\t\tsection_syntax_indicator: " << pmt.section_syntax_indicator() << endl;
+	ostrm << "\t\t\tsection_length: " << pmt.section_length() << endl;
+	ostrm << "\t\t\tprogram_number: " << pmt.program_number() << endl;
+	ostrm << "\t\t\tversion_number: " << (unsigned int)pmt.version_number() << endl;
+	ostrm << "\t\t\tcurrent_next_indicator: " << pmt.current_next_indicator() << endl;
+	ostrm << "\t\t\tsection_number: " << (unsigned int)pmt.section_number() << endl;
+	ostrm << "\t\t\tlast_section_number: " << (unsigned int)pmt.last_section_number() << endl;
+	ostrm << "\t\t\tPCR_PID: " << pmt.PCR_PID() << endl;
+	ostrm << "\t\t\tprogram_info_length: " << pmt.program_info_length() << endl;
+	ostrm << "\t\t\tprogram_info() {" << endl;
 
 	if (pmt.program_info_length() > 0)
 	{
@@ -876,45 +876,45 @@ void TsWriter::printPMT(const lcss::ProgramMapTable& pmt)
 		pmt.program_infos(std::back_inserter(program_info));
 		for (size_t i = 0; i < program_info.size(); ++i)
 		{
-			cout << "\t\t\t\tdescriptor() {" << endl;
-			printDescriptorValue(program_info[i], 5);
-			cout << "\t\t\t\t}" << endl;
+			ostrm << "\t\t\t\tdescriptor() {" << endl;
+			printDescriptorValue(ostrm, program_info[i], 5);
+			ostrm << "\t\t\t\t}" << endl;
 		}
 	}
-	cout << "\t\t\t}" << endl;
+	ostrm << "\t\t\t}" << endl;
 
-	cout << "\t\t\tprogram_elements() {" << endl;
+	ostrm << "\t\t\tprogram_elements() {" << endl;
 	// Iterate over all the Program Elements
 	for (auto pe : pmt)
 	{
 		string indent("\t\t\t\t\t");
-		cout << "\t\t\t\t{" << endl;
+		ostrm << "\t\t\t\t{" << endl;
 		string descr = getStreamTypeDescription(pe.stream_type());
 
 		std::stringstream tag;
 		tag << "0x" << setfill('0') << setw(2) << hex << (int)pe.stream_type() << " (" << descr << ")";
-		cout << indent << "stream_type: " << tag.str() << endl;
-		cout << indent << "telementary_PID: " << pe.pid() << endl;
-		cout << indent << "ES_info_length: " << pe.ES_info_length() << endl;
+		ostrm << indent << "stream_type: " << tag.str() << endl;
+		ostrm << indent << "telementary_PID: " << pe.pid() << endl;
+		ostrm << indent << "ES_info_length: " << pe.ES_info_length() << endl;
 
 		// Iterate over all the Descriptors in a Program Element
 		for (auto desc : pe)
 		{
-			cout << "\t\t\t\t\tdescriptor() {" << endl;
-			printDescriptorValue(desc, 6);
-			cout << "\t\t\t\t\t}" << endl;
+			ostrm << "\t\t\t\t\tdescriptor() {" << endl;
+			printDescriptorValue(ostrm, desc, 6);
+			ostrm << "\t\t\t\t\t}" << endl;
 		}
-		cout << "\t\t\t\t}" << endl;
+		ostrm << "\t\t\t\t}" << endl;
 	}
-	cout << "\t\t\t}" << endl;
+	ostrm << "\t\t\t}" << endl;
 
 	stringstream crc;
 	crc << "0x" << hex << pmt.CRC_32();
-	cout << "\t\t\tCRC_32: " << crc.str() << endl;
-	cout << "\t\t}" << endl;
+	ostrm << "\t\t\tCRC_32: " << crc.str() << endl;
+	ostrm << "\t\t}" << endl;
 }
 
-void TsWriter::printPES(const lcss::PESPacket& pes)
+void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 {
 	string text = getStreamIdDescription(pes.stream_id_);
 	UINT16 pts_dts_flag = (pes.flags2_ & PTS_DTS_MASK);
@@ -922,32 +922,32 @@ void TsWriter::printPES(const lcss::PESPacket& pes)
 	std::stringstream ptsflag;
 	string indent("\t\t\t");
 
-	cout << "\t\tPES_packet() {" << endl;
+	ostrm << "\t\tPES_packet() {" << endl;
 
-	cout << indent << "packet_start_code_prefix: " << "0x000001" << endl;
+	ostrm << indent << "packet_start_code_prefix: " << "0x000001" << endl;
 	val << "0x" << hex << uppercase << (int)pes.stream_id_ << " (" << text << ")";
-	cout << indent << "stream_id: " << val.str() << endl;
-	cout << indent << "PES_packet_length: " << pes.PES_packet_length_ << endl;
-	cout << indent << "PES_scrambling_control: " << (pes.flags1_ & 0x30 ? "true" : "false") << endl;
-	cout << indent << "PES_priority: " << (pes.flags1_ & 0x08 ? "true" : "false") << endl;
-	cout << indent << "data_alignment_indicator: " << (pes.flags1_ & 0x04 ? "true" : "false") << endl;
-	cout << indent << "copyright: " << (pes.flags1_ & 0x02 ? "true" : "false") << endl;
-	cout << indent << "original_or_copy: " << (pes.flags1_ & 0x01 ? "true" : "false") << endl;
+	ostrm << indent << "stream_id: " << val.str() << endl;
+	ostrm << indent << "PES_packet_length: " << pes.PES_packet_length_ << endl;
+	ostrm << indent << "PES_scrambling_control: " << (pes.flags1_ & 0x30 ? "true" : "false") << endl;
+	ostrm << indent << "PES_priority: " << (pes.flags1_ & 0x08 ? "true" : "false") << endl;
+	ostrm << indent << "data_alignment_indicator: " << (pes.flags1_ & 0x04 ? "true" : "false") << endl;
+	ostrm << indent << "copyright: " << (pes.flags1_ & 0x02 ? "true" : "false") << endl;
+	ostrm << indent << "original_or_copy: " << (pes.flags1_ & 0x01 ? "true" : "false") << endl;
 	ptsflag << "0x" << hex << pts_dts_flag;
-	cout << indent << "PTS_DTS_flags: " << ptsflag.str() << endl;
-	cout << indent << "ESCR_flag: " << (pes.flags2_ & 0x20 ? "true" : "false") << endl;
-	cout << indent << "ES_rate_flag: " << (pes.flags2_ & 0x10 ? "true" : "false") << endl;
-	cout << indent << "DSM_trick_mode_flag: " << (pes.flags2_ & 0x08 ? "true" : "false") << endl;
-	cout << indent << "additional_copy_info_flag: " << (pes.flags2_ & 0x04 ? "true" : "false") << endl;
-	cout << indent << "PES_CRC_flag: " << (pes.flags2_ & 0x02 ? "true" : "false") << endl;
-	cout << indent << "PES_extension_flag: " << (pes.flags2_ & 0x01 ? "true" : "false") << endl;
-	cout << indent << "PES_header_data_length: " << (unsigned)pes.PES_header_data_length_ << endl;
+	ostrm << indent << "PTS_DTS_flags: " << ptsflag.str() << endl;
+	ostrm << indent << "ESCR_flag: " << (pes.flags2_ & 0x20 ? "true" : "false") << endl;
+	ostrm << indent << "ES_rate_flag: " << (pes.flags2_ & 0x10 ? "true" : "false") << endl;
+	ostrm << indent << "DSM_trick_mode_flag: " << (pes.flags2_ & 0x08 ? "true" : "false") << endl;
+	ostrm << indent << "additional_copy_info_flag: " << (pes.flags2_ & 0x04 ? "true" : "false") << endl;
+	ostrm << indent << "PES_CRC_flag: " << (pes.flags2_ & 0x02 ? "true" : "false") << endl;
+	ostrm << indent << "PES_extension_flag: " << (pes.flags2_ & 0x01 ? "true" : "false") << endl;
+	ostrm << indent << "PES_header_data_length: " << (unsigned)pes.PES_header_data_length_ << endl;
 
 	if (pts_dts_flag > 0)
 	{
 		if (pts_dts_flag == 0xC0)
 		{
-			cout.precision(12);
+			ostrm.precision(12);
 			std::stringstream pts;
 			std::stringstream dts;
 			pts.precision(12);
@@ -955,18 +955,43 @@ void TsWriter::printPES(const lcss::PESPacket& pes)
 
 			pts << pes.pts() << "/90-kHz = " << pes.ptsInSeconds() << " seconds";
 			dts << pes.dts() << "/90-kHz = " << pes.dtsInSeconds() << " seconds";
-			cout << indent << "PTS: " << pts.str() << endl;
-			cout << indent << "DTS: " << dts.str() << endl;
+			ostrm << indent << "PTS: " << pts.str() << endl;
+			ostrm << indent << "DTS: " << dts.str() << endl;
 		}
 		else if (pts_dts_flag == 0x80)
 		{
-			cout.precision(12);
+			ostrm.precision(12);
 			std::stringstream pts;
 			pts.precision(12);
 
 			pts << pes.pts() << "/90-kHz = " << pes.ptsInSeconds() << " seconds";
-			cout << indent << "PTS: " << pts.str() << endl;
+			ostrm << indent << "PTS: " << pts.str() << endl;
 		}
 	}
-	cout << "\t\t}" << endl;
+	ostrm << "\t\t}" << endl;
+}
+
+
+std::ostream& operator<<(std::ostream& ostrm, const lcss::TransportPacket& pctk)
+{
+	TsWriter::printHeader(ostrm, pctk);
+	return ostrm;
+}
+
+std::ostream& operator<<(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
+{
+	TsWriter::printPAT(ostrm, pat);
+	return ostrm;
+}
+
+std::ostream& operator<<(std::ostream& ostrm, const lcss::ProgramMapTable& pat)
+{
+	TsWriter::printPMT(ostrm, pat);
+	return ostrm;
+}
+
+std::ostream& operator<<(std::ostream& ostrm, const lcss::PESPacket& pctk)
+{
+	TsWriter::printPES(ostrm, pctk);
+	return ostrm;
 }

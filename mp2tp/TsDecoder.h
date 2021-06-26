@@ -1,12 +1,14 @@
 #pragma once
 
 #include "libmp2t.h"
+#include <iostream>
+#include <sstream>
 
 class TsDecoder :
 	public lcss::TSParser
 {
 public:
-	TsDecoder();
+	TsDecoder(std::ostream& ostrm);
 	virtual ~TsDecoder();
 
 	virtual void onPacket(lcss::TransportPacket& pckt);
@@ -14,4 +16,6 @@ public:
 private:
 	lcss::ProgramAssociationTable	_pat;
 	lcss::ProgramMapTable			_pmt;
+	std::ostream&					_ostrm;
 };
+

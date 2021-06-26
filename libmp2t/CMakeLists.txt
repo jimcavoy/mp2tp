@@ -11,6 +11,7 @@ endif()
 
 aux_source_directory(. SRC_LIST)
 add_library(libmp2t STATIC ${SRC_LIST})
+set_property(TARGET libmp2t PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if(WIN32)
     target_link_libraries(libmp2t wsock32 ws2_32)

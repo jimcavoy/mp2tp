@@ -6,19 +6,21 @@
 
 using namespace std;
 
-TsDecoder::TsDecoder()
+TsDecoder::TsDecoder(std::ostream& ostrm)
+	:_ostrm(ostrm)
 {
-	cout << "MPEG_transport_stream() {" << endl;
+	_ostrm << "MPEG_transport_stream() {" << endl;
 }
 
 TsDecoder::~TsDecoder()
 {
-	cout << "}" << endl;
+	_ostrm << "}" << endl;
 }
+
 
 void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 {
-	TsWriter::printHeader(pckt);
+	_ostrm << pckt;
 
 	const BYTE* data = pckt.getData();
 	if (pckt.payloadUnitStart())
@@ -26,14 +28,14 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 		if (pckt.PID() == 0)
 		{
 			_pat.parse(data);
-			TsWriter::printPAT(_pat);
+			_ostrm << _pat;
 		}
 		else if (_pat.find(pckt.PID()) != _pat.end())
 		{
 			auto it = _pat.find(pckt.PID());
 			if (it->second == 0)
 			{
-				cout << "\t\tNetwork_information_table() { }" << endl;
+				_ostrm << "\t\tNetwork_information_table() { }" << endl;
 			}
 			else
 			{
@@ -41,7 +43,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 				_pmt.add(data, pckt.data_byte());
 				if (_pmt.parse())
 				{
-					TsWriter::printPMT(_pmt);
+					_ostrm << _pmt;
 				}
 			}
 		}
@@ -50,7 +52,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 			lcss::PESPacket pes;
 			if (pes.parse(data) > 0)
 			{
-				TsWriter::printPES(pes);
+				_ostrm << pes;
 			}
 		}
 	}
@@ -63,10 +65,10 @@ void TsDecoder::onPacket(lcss::TransportPacket& pckt)
 			_pmt.add(data, pckt.data_byte());
 			if (_pmt.parse())
 			{
-				TsWriter::printPMT(_pmt);
+				_ostrm << _pmt;
 			}
 		}
 	}
 
-	cout << "\t}" << endl;
+	_ostrm << "\t}" << endl;
 }
