@@ -24,7 +24,7 @@ set_tests_properties(Read
 	)
 
 add_test(NAME NoFile 
-	COMMAND mp2tp -ifoo.ts)
+	COMMAND mp2tp -iC:/users/joe/samples/foo.ts)
 set_tests_properties(NoFile
 	PROPERTIES PASS_REGULAR_EXPRESSION "Error: Fail to open input file, foo.ts"
 	)

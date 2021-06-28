@@ -12,8 +12,10 @@ const int N = lcss::TransportPacket::TS_SIZE * 49;
 const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>";
 const char* opts = "  -i\tInput MPEG transport stream file path.\n  -n\tThe minimum number of TS packets to read from the input file before exiting.\n    \tSet to zero to read all. (default: 1000).\n  -o\tOptional output file name (default: console).\n  -?\tPrint this message.";
 
+// Forward declarations
 std::unique_ptr<TsDecoder> createDecoder(std::string outputFilename, std::ofstream& oStream);
 bool canStop(int num, int limit);
+std::string getFilename(std::string& path);
 
 int main(int argc, char* argv[])
 {
@@ -59,7 +61,7 @@ int main(int argc, char* argv[])
 	tsfile.open(ifile, std::ios::binary);
 	if (!tsfile.is_open())
 	{
-		cout << "Error: Fail to open input file, " << ifile.c_str() << endl;
+		cout << "Error: Fail to open input file, " << getFilename(ifile) << endl;
 		return -1;
 	}
 
@@ -109,4 +111,18 @@ bool canStop(int num, int limit)
 	if (limit == 0)
 		return false;
 	return num > limit ? true : false;
+}
+
+std::string getFilename(std::string& path)
+{
+	std::string fname;
+	std::string::const_reverse_iterator it;
+	for (it = path.rbegin(); it != path.rend(); ++it)
+	{
+		if (*it == '\\' || *it == '/')
+			break;
+		fname.push_back(*it);
+	}
+	std::reverse(fname.begin(), fname.end());
+	return fname;
 }
