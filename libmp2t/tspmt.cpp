@@ -133,7 +133,7 @@ lcss::ProgramMapTable& lcss::ProgramMapTable::operator=(const ProgramMapTable& r
 
 void lcss::ProgramMapTable::add(const BYTE* buffer, int len)
 {
-	std::copy(buffer, buffer + (len - 1), std::back_inserter(buffer_));
+	std::copy(buffer, buffer + len, std::back_inserter(buffer_));
 }
 
 bool lcss::ProgramMapTable::canParse() const
