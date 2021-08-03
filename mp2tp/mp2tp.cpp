@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
+#include <algorithm>
 
 #include "TsDecoder.h"
 
