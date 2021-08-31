@@ -11,11 +11,6 @@ add_subdirectory ("libmp2t")
 # Test cases
 enable_testing()
 
-add_test(NAME Usage COMMAND mp2tp)
-set_tests_properties(Usage
-	PROPERTIES PASS_REGULAR_EXPRESSION "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>"
-	)
-
 set(args -i${PROJECT_SOURCE_DIR}/sample/foreman_cif_klv.ts -n100 -olabels.txt)
 add_test(NAME Read 
 	COMMAND mp2tp ${args} )

@@ -6,12 +6,18 @@
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <io.h>
+#include <fcntl.h>
 
 #include "TsDecoder.h"
 
 const int N = lcss::TransportPacket::TS_SIZE * 49;
 const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>";
-const char* opts = "  -i\tInput MPEG transport stream file path.\n  -n\tThe minimum number of TS packets to read from the input file before exiting.\n    \tSet to zero to read all. (default: 1000).\n  -o\tOptional output file name (default: console).\n  -?\tPrint this message.";
+const char* opts = "  -i\tInput MPEG transport stream file path.\n \
+ -n\tThe minimum number of TS packets to read from the input file before exiting.\n \
+   \tSet to zero to read all. (default: 1000).\n \
+ -o\tOptional output file name (default: console).\n \
+ -?\tPrint this message.";
 
 // Forward declarations
 std::unique_ptr<TsDecoder> createDecoder(std::string outputFilename, std::ofstream& oStream);
@@ -52,18 +58,22 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (argc == 0 && ifile.empty())
+	shared_ptr<istream> input;
+	// read file from stdin
+	if (ifile.empty())
 	{
-		cout << usage << endl;
-		return -1;
+		_setmode(_fileno(stdin), _O_BINARY);
+		input.reset(&cin, [](...) {});
 	}
-
-	ifstream tsfile;
-	tsfile.open(ifile, std::ios::binary);
-	if (!tsfile.is_open())
+	else // read the file
 	{
-		cout << "Error: Fail to open input file, " << getFilename(ifile) << endl;
-		return -1;
+		ifstream* tsfile = new ifstream(ifile, std::ios::binary);
+		if (!tsfile->is_open())
+		{
+			cout << "Error: Fail to open input file, " << getFilename(ifile) << endl;
+			return -1;
+		}
+		input.reset(tsfile);
 	}
 
 	ofstream oStream;
@@ -71,11 +81,11 @@ int main(int argc, char* argv[])
 
 	BYTE memblock[N];
 	int num_of_packets = 0;
-	while (tsfile.good())
+	while (input->good())
 	{
-		tsfile.read((char*)memblock, N);
-		decoder->parse(memblock, (unsigned)tsfile.gcount());
-		num_of_packets += (int)tsfile.gcount() / lcss::TransportPacket::TS_SIZE;
+		input->read((char*)memblock, N);
+		decoder->parse(memblock, (unsigned)input->gcount());
+		num_of_packets += (int)input->gcount() / lcss::TransportPacket::TS_SIZE;
 		if (canStop(num_of_packets, limit))
 			break;
 	}
