@@ -62,7 +62,7 @@ public:
 	}
 private:
 	std::vector<BYTE> nit_;
-	UINT32 CRC_32_;
+	UINT32 CRC_32_{};
 	DescriptorArray network_descriptors_;
 	StreamArray streams_;
 };

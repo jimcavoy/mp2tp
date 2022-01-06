@@ -6,8 +6,10 @@
 #include <string>
 #include <memory>
 #include <algorithm>
-#include <io.h>
 #include <fcntl.h>
+#ifdef WIN32
+#include <io.h>
+#endif
 
 #include "TsDecoder.h"
 
@@ -62,7 +64,14 @@ int main(int argc, char* argv[])
 	// read file from stdin
 	if (ifile.empty())
 	{
-		_setmode(_fileno(stdin), _O_BINARY);
+#ifdef WIN32
+		int result = _setmode(_fileno(stdin), _O_BINARY);
+		if (result < 0)
+		{
+			cout << "Error: Fail to open input stream in binary mode" << endl;
+			return 1;
+		}
+#endif
 		input.reset(&cin, [](...) {});
 	}
 	else // read the file

@@ -15,7 +15,7 @@ const UINT16 PAT_ENTRY_PID = 0x1FFF;
 
 
 lcss::ProgramAssociationTable::ProgramAssociationTable()
-	:reserved_(0xff)
+	:reserved_(3)
 {
 
 }

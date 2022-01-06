@@ -25,14 +25,14 @@ public:
 	UINT16 parsePTS(const BYTE* stream);
 
 public:
-	BYTE packet_start_code_prefix_[3];
-	BYTE stream_id_;
-	UINT16 PES_packet_length_;
-	BYTE flags1_;
-	BYTE flags2_;
-	BYTE PES_header_data_length_;
-	BYTE PTS_[5];
-	BYTE DTS_[5];
+	BYTE packet_start_code_prefix_[3]{};
+	BYTE stream_id_{};
+	UINT16 PES_packet_length_{};
+	BYTE flags1_{};
+	BYTE flags2_{};
+	BYTE PES_header_data_length_{};
+	BYTE PTS_[5]{};
+	BYTE DTS_[5]{};
 };
 
 }

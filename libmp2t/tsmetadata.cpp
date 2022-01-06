@@ -43,7 +43,7 @@ size_t MetadataAUCell::parse(BYTE* sodb, size_t len)
 	{
 		memcpy(&au_cell_data_len,sodb+3,2);
 		au_cell_data_len = ntohs(au_cell_data_len);
-		nRet = au_cell_data_len + 5;
+		nRet = (size_t)au_cell_data_len + 5;
 		if(nRet <= len)
 		{
 			std::copy(sodb, sodb+nRet, std::back_inserter(sodb_));
