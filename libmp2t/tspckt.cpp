@@ -99,7 +99,7 @@ bool lcss::TransportPacket::transportPriority() const
 
 UINT16 lcss::TransportPacket::PID() const
 {
-	char pid[2];
+	char pid[2]{};
 	pid[0] = _data[2];
 	pid[1] = _data[1];
 	UINT16 npid;

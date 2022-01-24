@@ -42,7 +42,7 @@ void lcss::ProgramAssociationTable::parse(const BYTE* table)
 	table_id_ = *(table+cur);
 	cur += 1;
 
-	UINT16 value;
+	UINT16 value{};
 	memcpy(&value,table+cur,2);
 	section_length_ = (ntohs(value) & PAT_SECTION_LEN);
 	cur += 2;
@@ -82,7 +82,7 @@ void lcss::ProgramAssociationTable::parse(const BYTE* table)
 	}
 
 	// Get CRC
-	UINT32 crc;
+	UINT32 crc{};
 	memcpy(&crc,table+cur,4);
 	CRC_32_ = ntohl(crc);
 

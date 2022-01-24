@@ -51,7 +51,7 @@ bool lcss::NetworkInformationTable::parse(const BYTE* table)
 	nit_.push_back(table[cur++]); //section_syntax_indicator, reserved_future_use, reserved, section_length
 	nit_.push_back(table[cur++]);
 	UINT16 crcPos = cur + section_length - 4;
-	UINT32 crc;
+	UINT32 crc{};
 	memcpy(&crc,table+crcPos,4);
 	CRC_32_ = ntohl(crc);
 
@@ -73,7 +73,7 @@ bool lcss::NetworkInformationTable::parse(const BYTE* table)
 
 	while(cur < end)
 	{
-		BYTE bValue;
+		BYTE bValue{};
 		memcpy(&bValue,table+cur,1);
 		Descriptor desc(bValue);
 		cur++;
@@ -160,7 +160,7 @@ UINT16 lcss::NetworkInformationTable::network_id() const
 {
 	UINT16 cur = nit_[0] == 0 ? 0 : nit_[0];
 	cur += 4;
-	BYTE chVal[2];
+	BYTE chVal[2]{};
 	UINT16 value;
 	chVal[0] = nit_[cur++];
 	chVal[1] = nit_[cur];

@@ -180,7 +180,7 @@ bool lcss::ProgramMapTable::parse()
 	pmt_.push_back(buffer_[cur++]); // section_syntax_indicator, reserved, section_length
 	pmt_.push_back(buffer_[cur++]);
 	UINT16 crcPos = cur + section_length - 4;
-	UINT32 crc;
+	UINT32 crc{};
 	memcpy(&crc, buffer_.data() + crcPos, 4);
 	CRC_32_ = ntohl(crc);
 
@@ -341,7 +341,7 @@ UINT16 lcss::ProgramMapTable::section_length() const
 	{
 		UINT16 cur = buffer_[0] == 0 ? 0 : buffer_[0];
 		cur += 2;
-		BYTE chVal[2];
+		BYTE chVal[2]{};
 		UINT16 value;
 		chVal[0] = buffer_[cur++];
 		chVal[1] = buffer_[cur];
@@ -352,7 +352,7 @@ UINT16 lcss::ProgramMapTable::section_length() const
 	{
 		UINT16 cur = pmt_[0] == 0 ? 0 : pmt_[0];
 		cur += 2;
-		BYTE chVal[2];
+		BYTE chVal[2]{};
 		UINT16 value;
 		chVal[0] = pmt_[cur++];
 		chVal[1] = pmt_[cur];
@@ -377,7 +377,7 @@ UINT16 lcss::ProgramMapTable::program_number() const
 {
 	UINT16 cur = pmt_[0] == 0 ? 0 : pmt_[0];
 	cur += 4;
-	BYTE chVal[2];
+	BYTE chVal[2]{};
 	UINT16 value;
 	chVal[0] = pmt_[cur++];
 	chVal[1] = pmt_[cur];
@@ -417,7 +417,7 @@ UINT16 lcss::ProgramMapTable::PCR_PID() const
 {
 	UINT16 cur = pmt_[0] == 0 ? 0 : pmt_[0];
 	cur += 9;
-	BYTE chVal[2];
+	BYTE chVal[2]{};
 	UINT16 value;
 	chVal[0] = pmt_[cur++];
 	chVal[1] = pmt_[cur];
@@ -430,7 +430,7 @@ UINT16 lcss::ProgramMapTable::program_info_length() const
 {
 	UINT16 cur = pmt_[0] == 0 ? 0 : pmt_[0];
 	cur += 11;
-	BYTE chVal[2];
+	BYTE chVal[2]{};
 	UINT16 value;
 	chVal[0] = pmt_[cur++];
 	chVal[1] = pmt_[cur];
@@ -657,7 +657,7 @@ UINT16 lcss::ProgramElement::pid() const
 UINT16 lcss::ProgramElement::ES_info_length() const
 {
 	UINT16 len = 0;
-	for (auto d : descriptors_)
+	for (auto& d : descriptors_)
 	{
 		len += 2;
 		len += d.length();
