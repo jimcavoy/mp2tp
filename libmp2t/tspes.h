@@ -21,6 +21,7 @@ public:
 	double dtsInSeconds() const;
 
 	UINT64 pts() const;
+	const BYTE* PTS() const;
 	UINT64 dts() const;
 
 	UINT16 parsePTS(const BYTE* stream);

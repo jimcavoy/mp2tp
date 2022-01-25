@@ -196,6 +196,11 @@ UINT64 lcss::PESPacket::pts() const
 	return PTS;
 }
 
+const BYTE* lcss::PESPacket::PTS() const
+{
+	return _pimpl->PTS_;
+}
+
 /// <summary>
 /// Decoding Time Stamp (DTS) in units of 90 kHz.
 /// </summary>
