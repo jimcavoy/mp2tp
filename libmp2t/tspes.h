@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tstype.h"
+#include <memory>
 
 namespace lcss
 {
@@ -24,15 +25,15 @@ public:
 
 	UINT16 parsePTS(const BYTE* stream);
 
-public:
-	BYTE packet_start_code_prefix_[3]{};
-	BYTE stream_id_{};
-	UINT16 PES_packet_length_{};
-	BYTE flags1_{};
-	BYTE flags2_{};
-	BYTE PES_header_data_length_{};
-	BYTE PTS_[5]{};
-	BYTE DTS_[5]{};
+	BYTE streamId() const;
+	UINT16 packetLength() const;
+	BYTE flags1() const;
+	BYTE flags2() const;
+	BYTE headerDataLength() const;
+
+private:
+	class Impl;
+	std::unique_ptr<Impl> _pimpl;
 };
 
 }

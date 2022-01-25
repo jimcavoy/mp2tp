@@ -16,11 +16,30 @@ namespace
 	const BYTE PTS_DTS_MASK = 0xC0;
 };
 
+namespace lcss
+{
+	class PESPacket::Impl
+	{
+	public:
+		Impl() {};
+
+	public:
+		BYTE packet_start_code_prefix_[3]{};
+		BYTE stream_id_{};
+		UINT16 PES_packet_length_{};
+		BYTE flags1_{};
+		BYTE flags2_{};
+		BYTE PES_header_data_length_{};
+		BYTE PTS_[5]{};
+		BYTE DTS_[5]{};
+	};
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 lcss::PESPacket::PESPacket()
 {
-
+	_pimpl = std::make_unique<lcss::PESPacket::Impl>();
 }
 
 lcss::PESPacket::~PESPacket()
@@ -31,43 +50,43 @@ lcss::PESPacket::~PESPacket()
 UINT16 lcss::PESPacket::parse(const BYTE* stream)
 {
 	UINT16 cur = 0;
-	if (stream_id_ == 0)
+	if (_pimpl->stream_id_ == 0)
 	{
-		memcpy(packet_start_code_prefix_, stream, 3);
+		memcpy(_pimpl->packet_start_code_prefix_, stream, 3);
 		cur += 3; // skip the PES start markers which is 3 bytes;
 
 		if (!hasPacketStartCodePrefix())
 			return 0;
 
-		memcpy(&stream_id_, stream + cur, 1);
+		memcpy(&(_pimpl->stream_id_), stream + cur, 1);
 		cur++;
 
 		UINT16 iValue{};
 		memcpy(&iValue, stream + cur, 2);
-		PES_packet_length_ = ntohs(iValue);
+		_pimpl->PES_packet_length_ = ntohs(iValue);
 		cur += 2;
 
-		if (stream_id_ != 188		// program stream map
-			&& stream_id_ != 190	// padding stream
-			&& stream_id_ != 191	// private stream 2
-			&& stream_id_ != 240	// ECM
-			&& stream_id_ != 241	// EMM
-			&& stream_id_ != 255	// program stream directory
-			&& stream_id_ != 242	// DSMCC stream
-			&& stream_id_ != 248	// ITU-T Rec. H.222.1 type E stream
+		if (_pimpl->stream_id_ != 188		// program stream map
+			&& _pimpl->stream_id_ != 190	// padding stream
+			&& _pimpl->stream_id_ != 191	// private stream 2
+			&& _pimpl->stream_id_ != 240	// ECM
+			&& _pimpl->stream_id_ != 241	// EMM
+			&& _pimpl->stream_id_ != 255	// program stream directory
+			&& _pimpl->stream_id_ != 242	// DSMCC stream
+			&& _pimpl->stream_id_ != 248	// ITU-T Rec. H.222.1 type E stream
 			)
 		{
-			memcpy(&flags1_, stream + cur, 1);
+			memcpy(&(_pimpl->flags1_), stream + cur, 1);
 			cur++;
 
-			memcpy(&flags2_, stream + cur, 1);
+			memcpy(&(_pimpl->flags2_), stream + cur, 1);
 			cur++;
 
-			memcpy(&PES_header_data_length_, stream + cur, 1);
+			memcpy(&(_pimpl->PES_header_data_length_), stream + cur, 1);
 			cur++;
-			int curPlusHeaderLen = cur + PES_header_data_length_;
+			int curPlusHeaderLen = cur + _pimpl->PES_header_data_length_;
 
-			UINT16 ptsflag = (flags2_ & PTS_DTS_MASK);
+			UINT16 ptsflag = (_pimpl->flags2_ & PTS_DTS_MASK);
 			if (ptsflag > 0)
 			{
 				cur += parsePTS(stream + cur);
@@ -82,35 +101,35 @@ UINT16 lcss::PESPacket::parse(const BYTE* stream)
 
 bool lcss::PESPacket::hasPacketStartCodePrefix() const
 {
-	if (packet_start_code_prefix_[0] == 0
-		&& packet_start_code_prefix_[1] == 0
-		&& packet_start_code_prefix_[2] == 1)
+	if (_pimpl->packet_start_code_prefix_[0] == 0
+		&& _pimpl->packet_start_code_prefix_[1] == 0
+		&& _pimpl->packet_start_code_prefix_[2] == 1)
 		return true;
 	return false;
 }
 
 void lcss::PESPacket::reset()
 {
-	stream_id_ = 0;
+	_pimpl->stream_id_ = 0;
 }
 
 UINT16 lcss::PESPacket::parsePTS(const BYTE* stream)
 {
 	UINT16 cur = 0;
-	UINT16 value = (flags2_ & PTS_DTS_MASK);
+	UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
 	if (value > 0)
 	{
 		if (value == 0xC0)
 		{
-			memcpy(PTS_, stream, 5);
+			memcpy(_pimpl->PTS_, stream, 5);
 			cur += 5;
 
-			memcpy(DTS_, stream + cur, 5);
+			memcpy(_pimpl->DTS_, stream + cur, 5);
 			cur += 5;
 		}
 		else if (value == 0x80)
 		{
-			memcpy(PTS_, stream, 5);
+			memcpy(_pimpl->PTS_, stream, 5);
 			cur += 5;
 		}
 	}
@@ -123,9 +142,9 @@ UINT16 lcss::PESPacket::parsePTS(const BYTE* stream)
 /// <returns></returns>
 double lcss::PESPacket::ptsInSeconds() const
 {
-	double t = 0.0;
+	double t{0.0};
 
-	UINT16 value = (flags2_ & PTS_DTS_MASK);
+	UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
 	if (value == 0xC0 || value == 0x80)
 	{
 		t = pts() / 90000.0;
@@ -139,9 +158,9 @@ double lcss::PESPacket::ptsInSeconds() const
 /// <returns></returns>
 double lcss::PESPacket::dtsInSeconds() const
 {
-	double t = 0.0;
+	double t{0.0};
 
-	UINT16 value = (flags2_ & PTS_DTS_MASK);
+	UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
 	if (value == 0xC0)
 	{
 		t = dts() / 90000.0;
@@ -157,15 +176,15 @@ UINT64 lcss::PESPacket::pts() const
 {
 	UINT64 PTS = 0;
 
-	UINT16 value = (flags2_ & PTS_DTS_MASK);
+	UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
 	if (value == 0xC0 || value == 0x80)
 	{
-		BYTE PTS1 = (PTS_[0] & 0x0e);
-		UINT16 PTS2;
-		memcpy(&PTS2, PTS_ + 1, 2);
+		BYTE PTS1 = (_pimpl->PTS_[0] & 0x0e);
+		UINT16 PTS2{};
+		memcpy(&PTS2, _pimpl->PTS_ + 1, 2);
 		PTS2 = ntohs(PTS2);
-		UINT16 PTS3;
-		memcpy(&PTS3, PTS_ + 3, 2);
+		UINT16 PTS3{};
+		memcpy(&PTS3, _pimpl->PTS_ + 3, 2);
 		PTS3 = ntohs(PTS3);
 
 		PTS = PTS1 << 29 |
@@ -185,15 +204,15 @@ UINT64 lcss::PESPacket::dts() const
 {
 	UINT64 DTS = 0;
 
-	UINT16 value = (flags2_ & PTS_DTS_MASK);
+	UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
 	if (value == 0xC0)
 	{
-		BYTE DTS1 = (DTS_[0] & 0x0e);
-		UINT16 DTS2;
-		memcpy(&DTS2, DTS_ + 1, 2);
+		BYTE DTS1 = (_pimpl->DTS_[0] & 0x0e);
+		UINT16 DTS2{};
+		memcpy(&DTS2, _pimpl->DTS_ + 1, 2);
 		DTS2 = ntohs(DTS2);
-		UINT16 DTS3;
-		memcpy(&DTS3, DTS_ + 3, 2);
+		UINT16 DTS3{};
+		memcpy(&DTS3, _pimpl->DTS_ + 3, 2);
 		DTS3 = ntohs(DTS3);
 
 		DTS = DTS1 << 29 |
@@ -203,4 +222,29 @@ UINT64 lcss::PESPacket::dts() const
 		DTS = DTS & 0x1FFFFFFFF;
 	}
 	return DTS;
+}
+
+BYTE lcss::PESPacket::streamId() const
+{
+	return _pimpl->stream_id_;
+}
+
+UINT16 lcss::PESPacket::packetLength() const
+{
+	return _pimpl->PES_packet_length_;
+}
+
+BYTE lcss::PESPacket::flags1() const
+{
+	return _pimpl->flags1_;
+}
+
+BYTE lcss::PESPacket::flags2() const
+{
+	return _pimpl->flags2_;
+}
+
+BYTE lcss::PESPacket::headerDataLength() const
+{
+	return _pimpl->PES_header_data_length_;
 }

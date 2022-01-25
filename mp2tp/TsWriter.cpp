@@ -916,8 +916,8 @@ void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 
 void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 {
-	string text = getStreamIdDescription(pes.stream_id_);
-	UINT16 pts_dts_flag = (pes.flags2_ & PTS_DTS_MASK);
+	string text = getStreamIdDescription(pes.streamId());
+	UINT16 pts_dts_flag = (pes.flags2() & PTS_DTS_MASK);
 	std::stringstream val;
 	std::stringstream ptsflag;
 	string indent("\t\t\t");
@@ -925,23 +925,23 @@ void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 	ostrm << "\t\tPES_packet() {" << endl;
 
 	ostrm << indent << "packet_start_code_prefix: " << "0x000001" << endl;
-	val << "0x" << hex << uppercase << (int)pes.stream_id_ << " (" << text << ")";
+	val << "0x" << hex << uppercase << (int)pes.streamId() << " (" << text << ")";
 	ostrm << indent << "stream_id: " << val.str() << endl;
-	ostrm << indent << "PES_packet_length: " << pes.PES_packet_length_ << endl;
-	ostrm << indent << "PES_scrambling_control: " << (pes.flags1_ & 0x30 ? "true" : "false") << endl;
-	ostrm << indent << "PES_priority: " << (pes.flags1_ & 0x08 ? "true" : "false") << endl;
-	ostrm << indent << "data_alignment_indicator: " << (pes.flags1_ & 0x04 ? "true" : "false") << endl;
-	ostrm << indent << "copyright: " << (pes.flags1_ & 0x02 ? "true" : "false") << endl;
-	ostrm << indent << "original_or_copy: " << (pes.flags1_ & 0x01 ? "true" : "false") << endl;
+	ostrm << indent << "PES_packet_length: " << pes.packetLength() << endl;
+	ostrm << indent << "PES_scrambling_control: " << (pes.flags1() & 0x30 ? "true" : "false") << endl;
+	ostrm << indent << "PES_priority: " << (pes.flags1() & 0x08 ? "true" : "false") << endl;
+	ostrm << indent << "data_alignment_indicator: " << (pes.flags1() & 0x04 ? "true" : "false") << endl;
+	ostrm << indent << "copyright: " << (pes.flags1() & 0x02 ? "true" : "false") << endl;
+	ostrm << indent << "original_or_copy: " << (pes.flags1() & 0x01 ? "true" : "false") << endl;
 	ptsflag << "0x" << hex << pts_dts_flag;
 	ostrm << indent << "PTS_DTS_flags: " << ptsflag.str() << endl;
-	ostrm << indent << "ESCR_flag: " << (pes.flags2_ & 0x20 ? "true" : "false") << endl;
-	ostrm << indent << "ES_rate_flag: " << (pes.flags2_ & 0x10 ? "true" : "false") << endl;
-	ostrm << indent << "DSM_trick_mode_flag: " << (pes.flags2_ & 0x08 ? "true" : "false") << endl;
-	ostrm << indent << "additional_copy_info_flag: " << (pes.flags2_ & 0x04 ? "true" : "false") << endl;
-	ostrm << indent << "PES_CRC_flag: " << (pes.flags2_ & 0x02 ? "true" : "false") << endl;
-	ostrm << indent << "PES_extension_flag: " << (pes.flags2_ & 0x01 ? "true" : "false") << endl;
-	ostrm << indent << "PES_header_data_length: " << (unsigned)pes.PES_header_data_length_ << endl;
+	ostrm << indent << "ESCR_flag: " << (pes.flags2() & 0x20 ? "true" : "false") << endl;
+	ostrm << indent << "ES_rate_flag: " << (pes.flags2() & 0x10 ? "true" : "false") << endl;
+	ostrm << indent << "DSM_trick_mode_flag: " << (pes.flags2() & 0x08 ? "true" : "false") << endl;
+	ostrm << indent << "additional_copy_info_flag: " << (pes.flags2() & 0x04 ? "true" : "false") << endl;
+	ostrm << indent << "PES_CRC_flag: " << (pes.flags2() & 0x02 ? "true" : "false") << endl;
+	ostrm << indent << "PES_extension_flag: " << (pes.flags2() & 0x01 ? "true" : "false") << endl;
+	ostrm << indent << "PES_header_data_length: " << (unsigned)pes.headerDataLength() << endl;
 
 	if (pts_dts_flag > 0)
 	{
