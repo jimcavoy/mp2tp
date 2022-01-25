@@ -25,10 +25,8 @@ public:
 	void setPacketSize(UINT32 sz);
 
 private:
-	std::unique_ptr<TransportPacket> tspckt_;
-	UINT16	cursor_;
-	UINT64	count_;
-	UINT32	packetSize_;
+	class TSParserImpl;
+	std::unique_ptr<lcss::TSParser::TSParserImpl> _pimpl;
 };
 
 }
