@@ -23,6 +23,29 @@ namespace lcss
 	public:
 		Impl() {};
 
+		UINT16 parsePTS(const BYTE* stream)
+		{
+			UINT16 cur = 0;
+			UINT16 value = (flags2_ & PTS_DTS_MASK);
+			if (value > 0)
+			{
+				if (value == 0xC0)
+				{
+					memcpy(PTS_, stream, 5);
+					cur += 5;
+
+					memcpy(DTS_, stream + cur, 5);
+					cur += 5;
+				}
+				else if (value == 0x80)
+				{
+					memcpy(PTS_, stream, 5);
+					cur += 5;
+				}
+			}
+			return cur;
+		}
+
 	public:
 		BYTE packet_start_code_prefix_[3]{};
 		BYTE stream_id_{};
@@ -89,7 +112,7 @@ UINT16 lcss::PESPacket::parse(const BYTE* stream)
 			UINT16 ptsflag = (_pimpl->flags2_ & PTS_DTS_MASK);
 			if (ptsflag > 0)
 			{
-				cur += parsePTS(stream + cur);
+				cur += _pimpl->parsePTS(stream + cur);
 			}
 
 			// Check for stuffing bytes and skip over them
@@ -111,29 +134,6 @@ bool lcss::PESPacket::hasPacketStartCodePrefix() const
 void lcss::PESPacket::reset()
 {
 	_pimpl->stream_id_ = 0;
-}
-
-UINT16 lcss::PESPacket::parsePTS(const BYTE* stream)
-{
-	UINT16 cur = 0;
-	UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
-	if (value > 0)
-	{
-		if (value == 0xC0)
-		{
-			memcpy(_pimpl->PTS_, stream, 5);
-			cur += 5;
-
-			memcpy(_pimpl->DTS_, stream + cur, 5);
-			cur += 5;
-		}
-		else if (value == 0x80)
-		{
-			memcpy(_pimpl->PTS_, stream, 5);
-			cur += 5;
-		}
-	}
-	return cur;
 }
 
 /// <summary>
@@ -229,12 +229,17 @@ UINT64 lcss::PESPacket::dts() const
 	return DTS;
 }
 
-BYTE lcss::PESPacket::streamId() const
+const BYTE* lcss::PESPacket::DTS() const
+{
+	return _pimpl->DTS_;
+}
+
+BYTE lcss::PESPacket::stream_id() const
 {
 	return _pimpl->stream_id_;
 }
 
-UINT16 lcss::PESPacket::packetLength() const
+UINT16 lcss::PESPacket::packet_length() const
 {
 	return _pimpl->PES_packet_length_;
 }
@@ -249,7 +254,7 @@ BYTE lcss::PESPacket::flags2() const
 	return _pimpl->flags2_;
 }
 
-BYTE lcss::PESPacket::headerDataLength() const
+BYTE lcss::PESPacket::header_data_length() const
 {
 	return _pimpl->PES_header_data_length_;
 }

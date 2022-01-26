@@ -2,6 +2,7 @@
 
 #include "tstype.h"
 #include <map>
+#include <memory>
 
 namespace lcss
 {
@@ -40,18 +41,8 @@ public:
 	UINT32	CRC_32()					const;
 
 private:
-	BYTE pointer_field_{};
-	BYTE table_id_{};
-	UINT16 section_length_{};
-	UINT16 transport_stream_id_{};
-	BYTE reserved_:					2;
-	BYTE version_number_:			5;
-	BYTE current_next_indicator_:	1;
-	BYTE section_number_{};
-	BYTE last_section_number_{};
-	UINT32 CRC_32_{};
-private:
-	MapType pid_to_program_;
+	class Impl;
+	std::unique_ptr<Impl> _pimpl;
 };
 
 }

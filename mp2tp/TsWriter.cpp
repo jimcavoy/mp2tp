@@ -916,7 +916,7 @@ void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 
 void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 {
-	string text = getStreamIdDescription(pes.streamId());
+	string text = getStreamIdDescription(pes.stream_id());
 	UINT16 pts_dts_flag = (pes.flags2() & PTS_DTS_MASK);
 	std::stringstream val;
 	std::stringstream ptsflag;
@@ -925,9 +925,9 @@ void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 	ostrm << "\t\tPES_packet() {" << endl;
 
 	ostrm << indent << "packet_start_code_prefix: " << "0x000001" << endl;
-	val << "0x" << hex << uppercase << (int)pes.streamId() << " (" << text << ")";
+	val << "0x" << hex << uppercase << (int)pes.stream_id() << " (" << text << ")";
 	ostrm << indent << "stream_id: " << val.str() << endl;
-	ostrm << indent << "PES_packet_length: " << pes.packetLength() << endl;
+	ostrm << indent << "PES_packet_length: " << pes.packet_length() << endl;
 	ostrm << indent << "PES_scrambling_control: " << (pes.flags1() & 0x30 ? "true" : "false") << endl;
 	ostrm << indent << "PES_priority: " << (pes.flags1() & 0x08 ? "true" : "false") << endl;
 	ostrm << indent << "data_alignment_indicator: " << (pes.flags1() & 0x04 ? "true" : "false") << endl;
@@ -941,7 +941,7 @@ void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 	ostrm << indent << "additional_copy_info_flag: " << (pes.flags2() & 0x04 ? "true" : "false") << endl;
 	ostrm << indent << "PES_CRC_flag: " << (pes.flags2() & 0x02 ? "true" : "false") << endl;
 	ostrm << indent << "PES_extension_flag: " << (pes.flags2() & 0x01 ? "true" : "false") << endl;
-	ostrm << indent << "PES_header_data_length: " << (unsigned)pes.headerDataLength() << endl;
+	ostrm << indent << "PES_header_data_length: " << (unsigned)pes.header_data_length() << endl;
 
 	if (pts_dts_flag > 0)
 	{

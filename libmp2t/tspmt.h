@@ -4,6 +4,7 @@
 
 #include <map>
 #include <vector>
+#include <memory>
 
 #ifndef WIN32
 #include <memory.h>
@@ -22,7 +23,7 @@ namespace lcss
 	class Descriptor
 	{
 	public:
-		Descriptor(BYTE tag);
+		Descriptor(BYTE tag = 0);
 		~Descriptor();
 
 		Descriptor(const Descriptor& orig);
@@ -97,8 +98,8 @@ namespace lcss
 	public:
 		ProgramMapTable();
 		~ProgramMapTable();
-		ProgramMapTable(const ProgramMapTable& orig);
-		ProgramMapTable& operator=(const ProgramMapTable& rhs);
+		ProgramMapTable(const ProgramMapTable& orig) = delete;
+		ProgramMapTable& operator=(const ProgramMapTable& rhs) = delete;
 
 		// Methods
 		void add(const BYTE* buffer, int len);
@@ -125,13 +126,8 @@ namespace lcss
 		UINT16	program_info_length()		const;
 		UINT32	CRC_32()					const;
 
-		template<class BackInsertIter>
-		void program_infos(BackInsertIter backit) const
-		{
-			std::copy(program_info_.begin(),
-				program_info_.end(),
-				backit);
-		}
+		template<typename BackInsertIter>
+		void program_infos(BackInsertIter backit) const;
 
 		// Iterators to traverse a ProgramElements in the ProgramMapTable
 		MapType::iterator begin();
@@ -140,80 +136,17 @@ namespace lcss
 		MapType::const_iterator begin() const;
 		MapType::const_iterator end() const;
 
-		template<class BackInsertIter>
+		template<typename BackInsertIter>
 		void serialize(BackInsertIter backit) const;
 
-	public:
-		void swap(ProgramMapTable& src);
-
 	private:
-		void calcCRC();
-		void calcLen();
-		void set_section_length(UINT16 len);
-
-	private:
-		std::vector<BYTE> pmt_;
-		std::vector<BYTE> buffer_;
-		UINT32 CRC_32_;
-		DescriptorArray program_info_;
-		MapType program_elmts_;
+		class Impl;
+		std::unique_ptr<Impl> _pimpl;
 	};
 
-
 	/////////////////////////////////////////////////////////////////////////////
-	// ProgramMapTable::serialize
-	template<class BackInsertIter>
-	void ProgramMapTable::serialize(BackInsertIter backit) const
-	{
-		std::copy(pmt_.begin(), pmt_.end(), backit);
-		if (program_info_length() > 0)
-		{
-			BYTE val[BUFSIZ];
-			for (const lcss::Descriptor& descr : program_info_)
-			{
-				*++backit = descr.tag();
-				*++backit = descr.length();
-				descr.value(val);
-				for (UINT32 i = 0; i < descr.length(); i++)
-					*++backit = val[i];
-			}
-		}
-
-		for (const lcss::ProgramElement& pe : program_elmts_)
-		{
-			BYTE bValue[2];
-			*++backit = pe.stream_type();
-			UINT16 value = htons(pe.pid());
-			memcpy(bValue, &value, 2);
-			BYTE b = bValue[0] | 0xE0;
-			*++backit = b;
-			*++backit = bValue[1];
-			value = htons(pe.raw_ES_info_length());
-			memcpy(bValue, &value, 2);
-			*++backit = bValue[0];
-			*++backit = bValue[1];
-			if (pe.ES_info_length() > 0)
-			{
-				for (const lcss::Descriptor& d : pe)
-				{
-					BYTE val[BUFSIZ];
-					*++backit = d.tag();
-					*++backit = d.length();
-					d.value(val);
-					for (UINT32 i = 0; i < d.length(); i++)
-					{
-						*++backit = val[i];
-					}
-				}
-			}
-		}
-
-		*++backit = (CRC_32_ >> 24) & 0xff;
-		*++backit = (CRC_32_ >> 16) & 0xff;
-		*++backit = (CRC_32_ >> 8) & 0xff;
-		*++backit = (CRC_32_) & 0xff;
-	}
-
+	// eqDescriptor
+	// Predicate Functor
 	class eqDescriptor
 	{
 	public:

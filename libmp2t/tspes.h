@@ -6,36 +6,37 @@
 namespace lcss
 {
 
-class PESPacket
-{
-public:
-	PESPacket();
-	~PESPacket();
+	class PESPacket
+	{
+	public:
+		PESPacket();
+		~PESPacket();
 
-	UINT16 parse(const BYTE* stream);
-	
-	bool hasPacketStartCodePrefix() const;
-	void reset();
+		UINT16 parse(const BYTE* stream);
 
-	double ptsInSeconds() const;
-	double dtsInSeconds() const;
+		// PES packet fields
+		BYTE stream_id() const;
+		UINT16 packet_length() const;
+		BYTE flags1() const;
+		BYTE flags2() const;
+		BYTE header_data_length() const;
+		const BYTE* PTS() const;
+		const BYTE* DTS() const;
 
-	UINT64 pts() const;
-	const BYTE* PTS() const;
-	UINT64 dts() const;
+		// Methods
+		bool hasPacketStartCodePrefix() const;
+		void reset();
 
-	UINT16 parsePTS(const BYTE* stream);
+		double ptsInSeconds() const;
+		double dtsInSeconds() const;
 
-	BYTE streamId() const;
-	UINT16 packetLength() const;
-	BYTE flags1() const;
-	BYTE flags2() const;
-	BYTE headerDataLength() const;
+		UINT64 pts() const;
+		UINT64 dts() const;
 
-private:
-	class Impl;
-	std::unique_ptr<Impl> _pimpl;
-};
+	private:
+		class Impl;
+		std::unique_ptr<Impl> _pimpl;
+	};
 
 }
 
