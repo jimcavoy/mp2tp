@@ -1,1 +1,0 @@
-!INCLUDE <..\Test\Build\sloc.pre.mak>

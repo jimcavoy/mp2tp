@@ -225,7 +225,8 @@ namespace
 	// Argument        : BYTE streamId
 	std::string getStreamIdDescription(BYTE streamId)
 	{
-		string strStreamId;
+		string strStreamId("ERROR UNKNOWN STREAM ID");
+
 		if (streamId == 188)
 			strStreamId = "program_stream_map";
 		else if (streamId == 189)
@@ -270,8 +271,6 @@ namespace
 			strStreamId = "reserved data stream";
 		else if (streamId == 255)
 			strStreamId = "program_stream_directory";
-		else
-			strStreamId = "ERROR UNKNOWN STREAM ID";
 
 		return strStreamId;
 	}
@@ -284,8 +283,8 @@ namespace
 		std::stringstream info;
 		size_t cur = 0;
 
-		char buf[BUFSIZ];
-		BYTE val[BUFSIZ];
+		char buf[BUFSIZ]{};
+		BYTE val[BUFSIZ]{};
 		desc.value(val);
 
 		string indent;
@@ -324,15 +323,14 @@ namespace
 	// ISO/IEC 13818-1 : 2013 (E), Table 2-83 - Metadata pointer descriptor, page 91
 	void printMetadataPointerDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc)
 	{
-		char text[BUFSIZ];
-		memset(text, 0, BUFSIZ);
+		char text[BUFSIZ]{};
 		size_t cur = 0;
 		BYTE metadata_format = 0;
 		BYTE MPEG_carriage_flag = 0;
 		string indent("\t\t\t\t");
 		std::stringstream tag;
 
-		BYTE val[BUFSIZ];
+		BYTE val[BUFSIZ]{};
 		desc.value(val);
 
 		ostrm << "\t\t\t" << getDescriptorText(desc.tag()) << "() {" << endl;
@@ -404,7 +402,7 @@ namespace
 			else if ((cur == 5 && metadata_format != 0xFF) || cur == 8)
 			{
 				BYTE flag = val[cur++];
-				char name[BUFSIZ];
+				char name[BUFSIZ]{};
 				sprintf(name, "%#4.2x", flag);
 				ostrm << indent << "metadata_locator_record_flag: " << (flag & 0x80 ? "true" : "false") << endl;
 
@@ -486,9 +484,9 @@ namespace
 		{
 			indent += "\t";
 		}
-		BYTE val[BUFSIZ];
+		BYTE val[BUFSIZ]{};
 		desc.value(val);
-		char text[BUFSIZ];
+		char text[BUFSIZ]{};
 
 		tag << "0x" << hex << setfill('0') << setw(2) << (int)desc.tag() << " (" << getDescriptorText(desc.tag()) << ")";
 		ostrm << indent << "tag: " << tag.str() << endl;
@@ -568,7 +566,7 @@ namespace
 			else if ((cur == 5 && metadata_format != 0xFF) || cur == 8)
 			{
 				tag = std::stringstream();
-				char name[BUFSIZ];
+				char name[BUFSIZ]{};
 				BYTE flag = val[cur++];
 				sprintf(name, "%#4.2x", flag);
 				BYTE mask = 0xE0;
@@ -629,7 +627,7 @@ namespace
 	void printMetadataSTDDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		std::stringstream tag;
-		BYTE val[BUFSIZ];
+		BYTE val[BUFSIZ]{};
 		desc.value(val);
 		string text;
 		string indent;
@@ -652,7 +650,7 @@ namespace
 			{
 				BYTE a = val[cur++] ^ mask;
 				signed int n;
-				BYTE v[4];
+				BYTE v[4]{};
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
@@ -662,7 +660,7 @@ namespace
 			{
 				BYTE a = val[cur++] ^ mask;
 				signed int n;
-				BYTE v[4];
+				BYTE v[4]{};
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
@@ -672,7 +670,7 @@ namespace
 			{
 				BYTE a = val[cur++] ^ mask;
 				signed int n;
-				BYTE v[4];
+				BYTE v[4]{};
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
@@ -683,7 +681,7 @@ namespace
 
 	void printDescriptorValue(ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
-		BYTE val[BUFSIZ];
+		BYTE val[BUFSIZ]{};
 		desc.value(val);
 		std::stringstream str;
 		std::stringstream tag;
@@ -800,8 +798,7 @@ std::string TsWriter::printPCR(std::ostream& ostrm, const lcss::AdaptationField&
 	string prc;
 	if (adf.PCR_flag() && adf.length() > 0)
 	{
-		unsigned char pcr[6];
-		memset(pcr, 0, 6);
+		unsigned char pcr[6]{};
 		if (adf.getPCR(pcr))
 		{
 			UINT64 pcr_base = ((UINT64)pcr[0] << (33 - 8)) |
@@ -885,7 +882,7 @@ void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 
 	ostrm << "\t\t\tprogram_elements() {" << endl;
 	// Iterate over all the Program Elements
-	for (auto pe : pmt)
+	for (const auto& pe : pmt)
 	{
 		string indent("\t\t\t\t\t");
 		ostrm << "\t\t\t\t{" << endl;
@@ -898,7 +895,7 @@ void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 		ostrm << indent << "ES_info_length: " << pe.ES_info_length() << endl;
 
 		// Iterate over all the Descriptors in a Program Element
-		for (auto desc : pe)
+		for (const auto& desc : pe)
 		{
 			ostrm << "\t\t\t\t\tdescriptor() {" << endl;
 			printDescriptorValue(ostrm, desc, 6);
