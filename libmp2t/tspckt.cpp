@@ -3,7 +3,9 @@
 
 #include "tsadptfd.h"
 
+#include <algorithm>
 #include <iterator>
+#include <array>
 
 #ifdef _DEBUG
 #define new DEBUG_CLIENTBLOCK
@@ -23,22 +25,60 @@ const BYTE TP_SCRAMBLLING_CTRL = 0xC0;
 const BYTE TP_ADAPTATION_FD_CTRL = 0x30;
 const BYTE TP_CONTINUITY_COUNTER = 0x0F;
 
+namespace lcss
+{
+	class TransportPacket::Impl
+	{
+	public:
+		Impl() {}
+
+		void insert(const BYTE* data, size_t len)
+		{
+			clear();
+			for (int i = 0; i < len; i++)
+			{
+				push_back(data[i]);
+			}
+		}
+
+		void clear()
+		{
+			_index = 0;
+		}
+
+		void push_back(BYTE d)
+		{
+			if (_index < TransportPacket::TS_SIZE)
+			{
+				_data[_index++] = d;
+			}
+		}
+
+	public:
+		int _index{ 0 };
+		std::array<BYTE,TransportPacket::TS_SIZE> _data;
+		mutable std::unique_ptr<lcss::AdaptationField> _adptFd;
+	};
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // TransportPacket
 
 lcss::TransportPacket::TransportPacket()
 {
-	_data.resize(TS_SIZE, '\0');
+	_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
 }
 
 lcss::TransportPacket::TransportPacket(const BYTE* data)
 {
-	_data.insert(_data.end(), &data[0], &data[TS_SIZE]);
+	_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
+	_pimpl->insert(data, TransportPacket::TS_SIZE);
 }
 
 lcss::TransportPacket::TransportPacket(const BYTE* data, size_t len)
 {
-	_data.insert(_data.end(), &data[0], &data[len]);
+	_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
+	_pimpl->insert(data, TransportPacket::TS_SIZE);
 }
 
 lcss::TransportPacket::~TransportPacket()
@@ -46,12 +86,13 @@ lcss::TransportPacket::~TransportPacket()
 
 }
 
-lcss::TransportPacket::TransportPacket(const TransportPacket & src)
+lcss::TransportPacket::TransportPacket(const TransportPacket& src)
 {
-	std::copy(src._data.begin(), src._data.end(), std::back_inserter(_data));
+	_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
+	_pimpl->insert(src.data(), TransportPacket::TS_SIZE);
 }
 
-lcss::TransportPacket & lcss::TransportPacket::operator=(const TransportPacket & rhs)
+lcss::TransportPacket& lcss::TransportPacket::operator=(const TransportPacket& rhs)
 {
 	TransportPacket temp(rhs);
 	swap(temp);
@@ -59,49 +100,49 @@ lcss::TransportPacket & lcss::TransportPacket::operator=(const TransportPacket &
 	return *this;
 }
 
-lcss::TransportPacket::TransportPacket(TransportPacket && src) noexcept
+lcss::TransportPacket::TransportPacket(TransportPacket&& src) noexcept
 {
 	// Eliminate redundant code by writing the move constructor to call the
 	// move assignment operator.
 	*this = std::move(src);
 }
 
-lcss::TransportPacket & lcss::TransportPacket::operator=(TransportPacket && rhs) noexcept
+lcss::TransportPacket& lcss::TransportPacket::operator=(TransportPacket&& rhs) noexcept
 {
 	if (this != &rhs)
 	{
-		_data = std::move(rhs._data);
-		_adptFd.swap(rhs._adptFd);
+		_pimpl->_data = std::move(rhs._pimpl->_data);
+		_pimpl->_adptFd.swap(rhs._pimpl->_adptFd);
 	}
 	return *this;
 }
 
-void lcss::TransportPacket::swap(TransportPacket & src)
+void lcss::TransportPacket::swap(TransportPacket& src)
 {
-	_adptFd.swap(src._adptFd);
-	_data.swap(src._data);
+	_pimpl->_adptFd.swap(src._pimpl->_adptFd);
+	_pimpl->_data.swap(src._pimpl->_data);
 }
 
 bool lcss::TransportPacket::TEI() const
 {
-	return _data[1] & TRANSPORT_ERROR_MASK ? true : false;
+	return _pimpl->_data[1] & TRANSPORT_ERROR_MASK ? true : false;
 }
 
 bool lcss::TransportPacket::payloadUnitStart() const
 {
-	return _data[1] & PAYLOAD_UNIT_START_MASK ? true : false;
+	return _pimpl->_data[1] & PAYLOAD_UNIT_START_MASK ? true : false;
 }
 
 bool lcss::TransportPacket::transportPriority() const
 {
-	return _data[1] & TRANSPORT_PRI_MASK ? true : false;
+	return _pimpl->_data[1] & TRANSPORT_PRI_MASK ? true : false;
 }
 
 UINT16 lcss::TransportPacket::PID() const
 {
 	char pid[2]{};
-	pid[0] = _data[2];
-	pid[1] = _data[1];
+	pid[0] = _pimpl->_data[2];
+	pid[1] = _pimpl->_data[1];
 	UINT16 npid;
 	memcpy(&npid, pid, 2);
 
@@ -110,17 +151,17 @@ UINT16 lcss::TransportPacket::PID() const
 
 char lcss::TransportPacket::scramblingControl() const
 {
-	return (_data[3] & TP_SCRAMBLLING_CTRL) >> 6;
+	return (_pimpl->_data[3] & TP_SCRAMBLLING_CTRL) >> 6;
 }
 
 char lcss::TransportPacket::adaptationFieldExist() const
 {
-	return (_data[3] & TP_ADAPTATION_FD_CTRL) >> 4;
+	return (_pimpl->_data[3] & TP_ADAPTATION_FD_CTRL) >> 4;
 }
 
 char lcss::TransportPacket::cc() const
 {
-	return _data[3] & TP_CONTINUITY_COUNTER;
+	return _pimpl->_data[3] & TP_CONTINUITY_COUNTER;
 }
 
 unsigned char lcss::TransportPacket::data_byte() const
@@ -152,9 +193,9 @@ unsigned char lcss::TransportPacket::data_byte() const
 
 const lcss::AdaptationField* lcss::TransportPacket::getAdaptationField() const
 {
-	if (_adptFd.get() == nullptr)
-		_adptFd = std::make_unique<lcss::AdaptationField>(_data.data());
-	return _adptFd.get();
+	if (_pimpl->_adptFd.get() == nullptr)
+		_pimpl->_adptFd = std::make_unique<lcss::AdaptationField>(_pimpl->_data.data());
+	return _pimpl->_adptFd.get();
 }
 
 void lcss::TransportPacket::getData(BYTE* buffer, int len) const
@@ -163,14 +204,14 @@ void lcss::TransportPacket::getData(BYTE* buffer, int len) const
 	int start = TS_SIZE - dataByte;
 	if (start > 0)
 	{
-		std::vector<BYTE>::const_iterator first = _data.begin();
+		std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
 		std::advance(first, start);
 #ifdef WIN32
-		std::copy(first, _data.end(),
+		std::copy(first, _pimpl->_data.end(),
 			stdext::checked_array_iterator<BYTE*>(buffer, len));
 #else
 		int i = 0;
-		for (auto it = first; it != _data.end(); ++it, i++)
+		for (auto it = first; it != _pimpl->_data.end(); ++it, i++)
 		{
 			if (i < len)
 			{
@@ -188,7 +229,7 @@ const BYTE* lcss::TransportPacket::getData() const
 
 	if (start > 0)
 	{
-		return _data.data() + start;
+		return _pimpl->_data.data() + start;
 	}
 
 	return nullptr;
@@ -196,17 +237,17 @@ const BYTE* lcss::TransportPacket::getData() const
 
 size_t lcss::TransportPacket::length() const
 {
-	return _data.size();
+	return _pimpl->_data.size();
 }
 
 void lcss::TransportPacket::serialize(BYTE* data, int len) const
 {
 #ifdef WIN32
-	std::copy(_data.begin(), _data.end(),
+	std::copy(_pimpl->_data.begin(), _pimpl->_data.end(),
 		stdext::checked_array_iterator<BYTE*>(data, len));
 #else
 	int i = 0;
-	for (auto it = _data.begin(); it != _data.end(); ++it, i++)
+	for (auto it = _pimpl->_data.begin(); it != _pimpl->_data.end(); ++it, i++)
 	{
 		if (i < len)
 		{
@@ -218,21 +259,15 @@ void lcss::TransportPacket::serialize(BYTE* data, int len) const
 
 void lcss::TransportPacket::parse(BYTE* buf)
 {
-	_data.clear();
-	_data.insert(_data.end(), &buf[0], &buf[TS_SIZE]);
+	_pimpl->insert(buf, TransportPacket::TS_SIZE);
 }
 
 void lcss::TransportPacket::push_back(BYTE b)
 {
-	_data.push_back(b);
+	_pimpl->push_back(b);
 }
 
-const BYTE * lcss::TransportPacket::data() const
+const BYTE* lcss::TransportPacket::data() const
 {
-	return _data.data();
-}
-
-void lcss::TransportPacket::move(std::vector<BYTE>& seq)
-{
-	seq = std::move(_data);
+	return _pimpl->_data.data();
 }

@@ -4,7 +4,6 @@
 #include "tstype.h"
 
 #include <memory>
-#include <vector>
 
 namespace lcss
 {
@@ -49,11 +48,9 @@ public:
 	const BYTE* data() const;
 	size_t length() const;
 
-	void move(std::vector<BYTE>& seq);
-
 private:
-	std::vector<BYTE> _data;
-	mutable std::unique_ptr<lcss::AdaptationField> _adptFd;
+	class Impl;
+	std::unique_ptr<Impl> _pimpl;
 };
 
 }
