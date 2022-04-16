@@ -8,7 +8,8 @@ namespace lcss
 
 class AdaptationField
 {
-public: 
+public:
+	AdaptationField();
 	AdaptationField(const BYTE* data);
 	~AdaptationField();
 
@@ -23,6 +24,7 @@ public:
 	bool adaptation_field_extension_flag() const;
 
 	bool getPCR(BYTE* pcr) const;
+	void parse(const BYTE* data);
 
 private:
 	const BYTE* _data;

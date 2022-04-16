@@ -43,21 +43,21 @@ namespace lcss
 
 		void clear()
 		{
-			_index = 0;
+			_pos = 0;
 		}
 
 		void push_back(BYTE d)
 		{
-			if (_index < TransportPacket::TS_SIZE)
+			if (_pos < TransportPacket::TS_SIZE)
 			{
-				_data[_index++] = d;
+				_data[_pos++] = d;
 			}
 		}
 
 	public:
-		int _index{ 0 };
-		std::array<BYTE,TransportPacket::TS_SIZE> _data;
-		mutable std::unique_ptr<lcss::AdaptationField> _adptFd;
+		int _pos{ 0 };
+		std::array<BYTE, TransportPacket::TS_SIZE> _data{};
+		lcss::AdaptationField _adptFd;
 	};
 }
 
@@ -112,14 +112,12 @@ lcss::TransportPacket& lcss::TransportPacket::operator=(TransportPacket&& rhs) n
 	if (this != &rhs)
 	{
 		_pimpl->_data = std::move(rhs._pimpl->_data);
-		_pimpl->_adptFd.swap(rhs._pimpl->_adptFd);
 	}
 	return *this;
 }
 
 void lcss::TransportPacket::swap(TransportPacket& src)
 {
-	_pimpl->_adptFd.swap(src._pimpl->_adptFd);
 	_pimpl->_data.swap(src._pimpl->_data);
 }
 
@@ -193,9 +191,14 @@ unsigned char lcss::TransportPacket::data_byte() const
 
 const lcss::AdaptationField* lcss::TransportPacket::getAdaptationField() const
 {
-	if (_pimpl->_adptFd.get() == nullptr)
-		_pimpl->_adptFd = std::make_unique<lcss::AdaptationField>(_pimpl->_data.data());
-	return _pimpl->_adptFd.get();
+	char flag = adaptationFieldExist();
+	bool hasAdaptationField = flag == 0x02 || flag == 0x03 ? true : false;
+	if (hasAdaptationField)
+	{
+		_pimpl->_adptFd.parse(_pimpl->_data.data());
+		return &_pimpl->_adptFd;
+	}
+	return nullptr;
 }
 
 void lcss::TransportPacket::getData(BYTE* buffer, int len) const
@@ -237,7 +240,7 @@ const BYTE* lcss::TransportPacket::getData() const
 
 size_t lcss::TransportPacket::length() const
 {
-	return _pimpl->_data.size();
+	return _pimpl->_pos;
 }
 
 void lcss::TransportPacket::serialize(BYTE* data, int len) const
@@ -257,7 +260,7 @@ void lcss::TransportPacket::serialize(BYTE* data, int len) const
 #endif
 }
 
-void lcss::TransportPacket::parse(BYTE* buf)
+void lcss::TransportPacket::parse(const BYTE* buf)
 {
 	_pimpl->insert(buf, TransportPacket::TS_SIZE);
 }
@@ -270,4 +273,9 @@ void lcss::TransportPacket::push_back(BYTE b)
 const BYTE* lcss::TransportPacket::data() const
 {
 	return _pimpl->_data.data();
+}
+
+void lcss::TransportPacket::clear()
+{
+	_pimpl->clear();
 }

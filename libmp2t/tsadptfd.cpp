@@ -14,6 +14,12 @@ const BYTE AF_SPLICING_PT_MASK		= 0x04;
 const BYTE AF_TRANSPORT_PRIV_MASK	= 0x02;
 const BYTE AF_AF_EXT_MASK			= 0x01;
 
+lcss::AdaptationField::AdaptationField()
+	:_data(nullptr)
+{
+
+}
+
 
 lcss::AdaptationField::AdaptationField(const BYTE* data)
 	:_data(data+4) // start after the TS header
@@ -82,4 +88,9 @@ bool lcss::AdaptationField::getPCR(BYTE* pcr) const
 		return true;
 	}
 	return false;
+}
+
+void lcss::AdaptationField::parse(const BYTE* data)
+{
+	_data = data + 4;
 }

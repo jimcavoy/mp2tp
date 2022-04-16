@@ -41,12 +41,13 @@ public:
 	const BYTE* getData() const;
 
 	void serialize(BYTE* buf, int len) const;
-	void parse(BYTE* buf);
+	void parse(const BYTE* buf);
 	void push_back(BYTE b);
 
 	// returns the full TS packet data.  Header + payload
 	const BYTE* data() const;
 	size_t length() const;
+	void clear();
 
 private:
 	class Impl;

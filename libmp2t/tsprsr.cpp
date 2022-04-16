@@ -3,12 +3,6 @@
 
 #include "tspckt.h"
 
-#ifdef _DEBUG
-#define new DEBUG_CLIENTBLOCK
-#endif
-
-const UINT32 MPEG2_TS_PACKET_SIZE = 188;
-
 namespace lcss
 {
 	class TSParser::TSParserImpl
@@ -17,10 +11,10 @@ namespace lcss
 		TSParserImpl() {};
 
 	public:
-		std::unique_ptr<TransportPacket> _tspckt;
+		TransportPacket _tspckt;
 		UINT16	_cursor{};
 		UINT64	_count{};
-		UINT32	_packetSize{MPEG2_TS_PACKET_SIZE};
+		UINT32	_packetSize{ lcss::TransportPacket::TS_SIZE };
 	};
 }
 
@@ -45,50 +39,47 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 		// Malformed stream. Not on the 188 boundary. Find the sync byte.
 		if (*(stream + i) != 0x47)
 		{
-			if (_pimpl->_packetSize == MPEG2_TS_PACKET_SIZE)
+			if (_pimpl->_packetSize == lcss::TransportPacket::TS_SIZE)
 			{
-				if (_pimpl->_tspckt.get() != nullptr)
+				_pimpl->_tspckt.push_back(*(stream + i));
+				if (_pimpl->_tspckt.length() == lcss::TransportPacket::TS_SIZE)
 				{
-					_pimpl->_tspckt->push_back(*(stream + i));
-					if (_pimpl->_tspckt->length() == MPEG2_TS_PACKET_SIZE)
-					{
-						onPacket(*_pimpl->_tspckt);
-						_pimpl->_tspckt.reset();
-						_pimpl->_count++;
-					}
+					onPacket(_pimpl->_tspckt);
+					_pimpl->_tspckt.clear();
+					_pimpl->_count++;
 				}
 				i++;
 			}
 			else
 			{
-				i += (_pimpl->_packetSize - MPEG2_TS_PACKET_SIZE);
+				i += (_pimpl->_packetSize - lcss::TransportPacket::TS_SIZE);
 			}
 		}
-		else if (i + MPEG2_TS_PACKET_SIZE <= len)
+		else if (i + lcss::TransportPacket::TS_SIZE <= len)
 		{
-			if (_pimpl->_tspckt.get() == nullptr)
+			if (_pimpl->_tspckt.length() == 0)
 			{
-				_pimpl->_tspckt = std::make_unique<TransportPacket>(stream + i, MPEG2_TS_PACKET_SIZE);
-				i += MPEG2_TS_PACKET_SIZE;
-				onPacket(*_pimpl->_tspckt);
-				_pimpl->_tspckt.reset();
+				_pimpl->_tspckt.parse(stream + i);
+				i += lcss::TransportPacket::TS_SIZE;
+				onPacket(_pimpl->_tspckt);
+				_pimpl->_tspckt.clear();
 				_pimpl->_count++;
 			}
 			else // False sync byte read.  Add byte to the packet.
 			{
-				_pimpl->_tspckt->push_back(*(stream + i));
-				if (_pimpl->_tspckt->length() == MPEG2_TS_PACKET_SIZE)
+				_pimpl->_tspckt.push_back(*(stream + i));
+				if (_pimpl->_tspckt.length() == lcss::TransportPacket::TS_SIZE)
 				{
-					onPacket(*_pimpl->_tspckt);
-					_pimpl->_tspckt.reset();
+					onPacket(_pimpl->_tspckt);
+					_pimpl->_tspckt.clear();
 					_pimpl->_count++;
 				}
 				i++;
 			}
 		}
-		else if (i + MPEG2_TS_PACKET_SIZE > len)
+		else if (i + lcss::TransportPacket::TS_SIZE > len)
 		{
-			_pimpl->_tspckt = std::make_unique<TransportPacket>(stream + i, len - i);
+			_pimpl->_tspckt.parse(stream + i);
 			i = len;
 		}
 	}
