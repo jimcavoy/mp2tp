@@ -111,6 +111,7 @@ lcss::TransportPacket& lcss::TransportPacket::operator=(TransportPacket&& rhs) n
 {
 	if (this != &rhs)
 	{
+		_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
 		_pimpl->_data = std::move(rhs._pimpl->_data);
 	}
 	return *this;
