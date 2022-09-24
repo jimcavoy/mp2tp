@@ -32,6 +32,12 @@ namespace lcss
 		NetworkInformationTable();
 		~NetworkInformationTable();
 
+		NetworkInformationTable(const NetworkInformationTable& other);
+		NetworkInformationTable& operator=(const NetworkInformationTable& rhs);
+
+		NetworkInformationTable(NetworkInformationTable&&) noexcept = default;
+		NetworkInformationTable& operator=(NetworkInformationTable&&) noexcept = default;
+
 		// Fields
 		BYTE	pointer_field()					const;
 		BYTE	table_id()						const;

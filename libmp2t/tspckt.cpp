@@ -31,6 +31,11 @@ namespace lcss
 	{
 	public:
 		Impl() {}
+		Impl(const Impl& other)
+			:_pos(other._pos)
+		{
+			std::copy(other._data.begin(), other._data.end(), _data.begin());
+		}
 
 		void insert(const BYTE* data, size_t len)
 		{
@@ -87,40 +92,20 @@ lcss::TransportPacket::~TransportPacket()
 }
 
 lcss::TransportPacket::TransportPacket(const TransportPacket& src)
+	:_pimpl(std::make_unique<lcss::TransportPacket::Impl>(*src._pimpl))
 {
-	_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
-	_pimpl->insert(src.data(), TransportPacket::TS_SIZE);
+
 }
 
 lcss::TransportPacket& lcss::TransportPacket::operator=(const TransportPacket& rhs)
 {
-	TransportPacket temp(rhs);
-	swap(temp);
-
-	return *this;
-}
-
-lcss::TransportPacket::TransportPacket(TransportPacket&& src) noexcept
-{
-	// Eliminate redundant code by writing the move constructor to call the
-	// move assignment operator.
-	*this = std::move(src);
-}
-
-lcss::TransportPacket& lcss::TransportPacket::operator=(TransportPacket&& rhs) noexcept
-{
 	if (this != &rhs)
 	{
-		_pimpl = std::make_unique<lcss::TransportPacket::Impl>();
-		_pimpl->_data = std::move(rhs._pimpl->_data);
+		_pimpl.reset(new lcss::TransportPacket::Impl(*rhs._pimpl));
 	}
 	return *this;
 }
 
-void lcss::TransportPacket::swap(TransportPacket& src)
-{
-	_pimpl->_data.swap(src._pimpl->_data);
-}
 
 bool lcss::TransportPacket::TEI() const
 {

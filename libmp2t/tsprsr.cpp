@@ -22,8 +22,9 @@ namespace lcss
 // TSParser
 
 lcss::TSParser::TSParser()
+	:_pimpl(std::make_unique<lcss::TSParser::TSParserImpl>())
 {
-	_pimpl = std::make_unique<lcss::TSParser::TSParserImpl>();
+
 }
 
 lcss::TSParser::~TSParser()

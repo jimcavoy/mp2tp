@@ -15,7 +15,7 @@
 
 const int N = lcss::TransportPacket::TS_SIZE * 49;
 const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>";
-const char* opts = "  -i\tInput MPEG transport stream file path.\n \
+const char* opts = "  -i\tInput MPEG transport stream file path or standard console in (default: console).\n \
  -n\tThe minimum number of TS packets to read from the input file before exiting.\n \
    \tSet to zero to read all. (default: 1000).\n \
  -o\tOptional output file name (default: console).\n \

@@ -16,6 +16,11 @@ MetadataAUCell::MetadataAUCell()
 {
 }
 
+MetadataAUCell::~MetadataAUCell()
+{
+
+}
+
 MetadataAUCell::MetadataAUCell(const MetadataAUCell& cp)
 {
 	sodb_.clear();
@@ -30,9 +35,18 @@ MetadataAUCell& MetadataAUCell::operator=(const MetadataAUCell& rhs)
 	return *this;
 }
 
-MetadataAUCell::~MetadataAUCell()
+MetadataAUCell::MetadataAUCell(MetadataAUCell&& other) noexcept
 {
+	*this = std::move(other);
+}
 
+MetadataAUCell& MetadataAUCell::operator=(MetadataAUCell&& rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		sodb_ = std::move(rhs.sodb_);
+	}
+	return *this;
 }
 
 size_t MetadataAUCell::parse(BYTE* sodb, size_t len)
@@ -115,6 +129,34 @@ MetadataAUWrapper::MetadataAUWrapper()
 MetadataAUWrapper::~MetadataAUWrapper()
 {
 
+}
+
+MetadataAUWrapper::MetadataAUWrapper(const MetadataAUWrapper& other)
+{
+	std::copy(other.begin(), other.end(), std::back_inserter(metadata_au_cells_));
+}
+
+MetadataAUWrapper& MetadataAUWrapper::operator=(const MetadataAUWrapper& rhs)
+{
+	if (this != &rhs)
+	{
+		std::copy(rhs.begin(), rhs.end(), std::back_inserter(metadata_au_cells_));
+	}
+	return *this;
+}
+
+MetadataAUWrapper::MetadataAUWrapper(MetadataAUWrapper&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+MetadataAUWrapper& MetadataAUWrapper::operator=(MetadataAUWrapper&& rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		metadata_au_cells_ = std::move(rhs.metadata_au_cells_);
+	}
+	return *this;
 }
 
 size_t MetadataAUWrapper::parse(BYTE* sodb, size_t len)

@@ -12,6 +12,12 @@ namespace lcss
 		PESPacket();
 		~PESPacket();
 
+		PESPacket(const PESPacket& other);
+		PESPacket& operator=(const PESPacket& rhs);
+
+		PESPacket(PESPacket&&) noexcept = default;
+		PESPacket& operator=(PESPacket&&) noexcept = default;
+
 		UINT16 parse(const BYTE* stream);
 
 		// PES packet fields

@@ -98,8 +98,12 @@ namespace lcss
 	public:
 		ProgramMapTable();
 		~ProgramMapTable();
-		ProgramMapTable(const ProgramMapTable& orig) = delete;
-		ProgramMapTable& operator=(const ProgramMapTable& rhs) = delete;
+
+		ProgramMapTable(const ProgramMapTable& orig);
+		ProgramMapTable& operator=(const ProgramMapTable& rhs);
+
+		ProgramMapTable(ProgramMapTable&&) noexcept = default;
+		ProgramMapTable& operator=(ProgramMapTable&&) noexcept = default;
 
 		// Methods
 		void add(const BYTE* buffer, int len);

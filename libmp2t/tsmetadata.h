@@ -16,9 +16,13 @@ private:
 
 public:
 	MetadataAUCell();
+	~MetadataAUCell();
+
 	MetadataAUCell(const MetadataAUCell& cp);
 	MetadataAUCell& operator=(const MetadataAUCell& rhs);
-	~MetadataAUCell();
+
+	MetadataAUCell(MetadataAUCell&& cp) noexcept;
+	MetadataAUCell& operator=(MetadataAUCell&& rhs) noexcept;
 
 	void swap(MetadataAUCell& src);
 
@@ -56,6 +60,12 @@ public:
 public:
 	MetadataAUWrapper();
 	~MetadataAUWrapper();
+
+	MetadataAUWrapper(const MetadataAUWrapper& other);
+	MetadataAUWrapper& operator=(const MetadataAUWrapper& rhs);
+
+	MetadataAUWrapper(MetadataAUWrapper&& other) noexcept;
+	MetadataAUWrapper& operator=(MetadataAUWrapper&& rhs) noexcept;
 
 	// Return the number of metadata_AU_cells that instance of 
 	// this class contains, otherwise 0

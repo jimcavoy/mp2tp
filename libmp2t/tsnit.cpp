@@ -21,6 +21,13 @@ namespace lcss
 	{
 	public:
 		Impl() {}
+		Impl(const Impl& other)
+			:CRC_32_(other.CRC_32_)
+		{
+			std::copy(other.nit_.begin(), other.nit_.end(), std::back_inserter(nit_));
+			std::copy(other.network_descriptors_.begin(), other.network_descriptors_.end(), std::back_inserter(network_descriptors_));
+			std::copy(other.streams_.begin(), other.streams_.end(), std::back_inserter(streams_));
+		}
 		~Impl() {}
 
 	public:
@@ -31,13 +38,29 @@ namespace lcss
 	};
 
 	NetworkInformationTable::NetworkInformationTable()
+		:_pimpl(std::make_unique<lcss::NetworkInformationTable::Impl>())
 	{
-		_pimpl = std::make_unique<lcss::NetworkInformationTable::Impl>();
+		
 	}
 
 	NetworkInformationTable::~NetworkInformationTable()
 	{
 
+	}
+
+	NetworkInformationTable::NetworkInformationTable(const NetworkInformationTable& other)
+		:_pimpl(std::make_unique<lcss::NetworkInformationTable::Impl>(*other._pimpl))
+	{
+
+	}
+
+	NetworkInformationTable& NetworkInformationTable::operator=(const NetworkInformationTable& rhs)
+	{
+		if (this != &rhs)
+		{
+			_pimpl.reset(new lcss::NetworkInformationTable::Impl(*rhs._pimpl));
+		}
+		return *this;
 	}
 
 	bool NetworkInformationTable::parse(const BYTE* table)

@@ -11,7 +11,7 @@ public:
 	TsDecoder(std::ostream& ostrm);
 	virtual ~TsDecoder();
 
-	virtual void onPacket(lcss::TransportPacket& pckt);
+	virtual void onPacket(lcss::TransportPacket& pckt) override;
 
 private:
 	lcss::ProgramAssociationTable	_pat;

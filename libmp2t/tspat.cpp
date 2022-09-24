@@ -19,6 +19,20 @@ namespace lcss
 	{
 	public:
 		Impl() :reserved_(3) {}
+		Impl(const Impl& other)
+			:reserved_(3)
+			, pointer_field_(other.pointer_field_)
+			, table_id_(other.table_id_)
+			, section_length_(other.section_length_)
+			, transport_stream_id_(other.transport_stream_id_)
+			, version_number_(other.version_number_)
+			, current_next_indicator_(other.current_next_indicator_)
+			, section_number_(other.section_number_)
+			, last_section_number_(other.last_section_number_)
+			, CRC_32_(other.CRC_32_)
+		{
+			pid_to_program_.insert(other.pid_to_program_.begin(), other.pid_to_program_.end());
+		}
 
 	public:
 		BYTE pointer_field_{};
@@ -46,6 +60,20 @@ lcss::ProgramAssociationTable::~ProgramAssociationTable()
 
 }
 
+lcss::ProgramAssociationTable::ProgramAssociationTable(const ProgramAssociationTable& other)
+	:_pimpl(std::make_unique<lcss::ProgramAssociationTable::Impl>(*other._pimpl))
+{
+
+}
+
+lcss::ProgramAssociationTable& lcss::ProgramAssociationTable::operator=(const ProgramAssociationTable& rhs)
+{
+	if (this != &rhs)
+	{
+		_pimpl.reset(new lcss::ProgramAssociationTable::Impl(*rhs._pimpl));
+	}
+	return *this;
+}
 
 
 // Function name   : ProgramAssociationTable::parse

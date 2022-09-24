@@ -17,6 +17,12 @@ public:
 	ProgramAssociationTable();
 	~ProgramAssociationTable();
 
+	ProgramAssociationTable(const ProgramAssociationTable& other);
+	ProgramAssociationTable& operator=(const ProgramAssociationTable& rhs);
+
+	ProgramAssociationTable(ProgramAssociationTable&&) noexcept = default;
+	ProgramAssociationTable& operator=(ProgramAssociationTable&&) noexcept = default;
+
 	void parse( const BYTE* table );
 
 	MapType::iterator begin();

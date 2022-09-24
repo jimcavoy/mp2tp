@@ -70,6 +70,22 @@ lcss::PESPacket::~PESPacket()
 
 }
 
+lcss::PESPacket::PESPacket(const lcss::PESPacket& other)
+	:_pimpl(std::make_unique<lcss::PESPacket::Impl>(*other._pimpl))
+{
+
+}
+
+lcss::PESPacket& lcss::PESPacket::operator=(const PESPacket& rhs)
+{
+	if (this != &rhs)
+	{
+		_pimpl.reset(new lcss::PESPacket::Impl(*rhs._pimpl));
+	}
+	return *this;
+}
+
+
 UINT16 lcss::PESPacket::parse(const BYTE* stream)
 {
 	UINT16 cur = 0;

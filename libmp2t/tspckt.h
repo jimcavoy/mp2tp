@@ -18,12 +18,14 @@ public:
 	TransportPacket();
 	TransportPacket(const BYTE* data);
 	TransportPacket(const BYTE* data, size_t len);
+
 	~TransportPacket();
+
 	TransportPacket(const TransportPacket& src);
 	TransportPacket& operator=(const TransportPacket& rhs);
-	TransportPacket(TransportPacket&& src) noexcept;
-	TransportPacket& operator=(TransportPacket&& rhs) noexcept;
-	void swap(TransportPacket& src);
+
+	TransportPacket(TransportPacket&& src) noexcept = default;
+	TransportPacket& operator=(TransportPacket&& rhs) noexcept = default;
 
 	bool TEI() const; // Transport Error Indicator
 	bool payloadUnitStart() const; // is PES or PSI otherwise false
