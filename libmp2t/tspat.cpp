@@ -75,6 +75,20 @@ lcss::ProgramAssociationTable& lcss::ProgramAssociationTable::operator=(const Pr
 	return *this;
 }
 
+lcss::ProgramAssociationTable::ProgramAssociationTable(ProgramAssociationTable&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+lcss::ProgramAssociationTable& lcss::ProgramAssociationTable::operator=(ProgramAssociationTable&& rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		_pimpl = std::move(rhs._pimpl);
+	}
+	return *this;
+}
+
 
 // Function name   : ProgramAssociationTable::parse
 // Description     : This function implements definition program_association_section

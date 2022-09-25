@@ -20,8 +20,8 @@ public:
 	ProgramAssociationTable(const ProgramAssociationTable& other);
 	ProgramAssociationTable& operator=(const ProgramAssociationTable& rhs);
 
-	ProgramAssociationTable(ProgramAssociationTable&&) noexcept = default;
-	ProgramAssociationTable& operator=(ProgramAssociationTable&&) noexcept = default;
+	ProgramAssociationTable(ProgramAssociationTable&&) noexcept;
+	ProgramAssociationTable& operator=(ProgramAssociationTable&&) noexcept;
 
 	void parse( const BYTE* table );
 

@@ -36,6 +36,7 @@ namespace lcss
 		{
 			std::copy(other._data.begin(), other._data.end(), _data.begin());
 		}
+		~Impl() {}
 
 		void insert(const BYTE* data, size_t len)
 		{
@@ -106,6 +107,19 @@ lcss::TransportPacket& lcss::TransportPacket::operator=(const TransportPacket& r
 	return *this;
 }
 
+lcss::TransportPacket::TransportPacket(TransportPacket&& src) noexcept
+{
+	*this = std::move(src);
+}
+
+lcss::TransportPacket& lcss::TransportPacket::operator=(TransportPacket&& rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		_pimpl = std::move(rhs._pimpl);
+	}
+	return *this;
+}
 
 bool lcss::TransportPacket::TEI() const
 {
@@ -261,7 +275,3 @@ const BYTE* lcss::TransportPacket::data() const
 	return _pimpl->_data.data();
 }
 
-void lcss::TransportPacket::clear()
-{
-	_pimpl->clear();
-}

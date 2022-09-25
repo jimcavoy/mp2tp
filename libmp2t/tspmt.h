@@ -102,8 +102,8 @@ namespace lcss
 		ProgramMapTable(const ProgramMapTable& orig);
 		ProgramMapTable& operator=(const ProgramMapTable& rhs);
 
-		ProgramMapTable(ProgramMapTable&&) noexcept = default;
-		ProgramMapTable& operator=(ProgramMapTable&&) noexcept = default;
+		ProgramMapTable(ProgramMapTable&&) noexcept;
+		ProgramMapTable& operator=(ProgramMapTable&&) noexcept;
 
 		// Methods
 		void add(const BYTE* buffer, int len);

@@ -35,8 +35,8 @@ namespace lcss
 		NetworkInformationTable(const NetworkInformationTable& other);
 		NetworkInformationTable& operator=(const NetworkInformationTable& rhs);
 
-		NetworkInformationTable(NetworkInformationTable&&) noexcept = default;
-		NetworkInformationTable& operator=(NetworkInformationTable&&) noexcept = default;
+		NetworkInformationTable(NetworkInformationTable&&) noexcept;
+		NetworkInformationTable& operator=(NetworkInformationTable&&) noexcept;
 
 		// Fields
 		BYTE	pointer_field()					const;

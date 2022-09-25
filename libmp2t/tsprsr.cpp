@@ -46,7 +46,7 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 				if (_pimpl->_tspckt.length() == lcss::TransportPacket::TS_SIZE)
 				{
 					onPacket(_pimpl->_tspckt);
-					_pimpl->_tspckt.clear();
+					_pimpl->_tspckt = lcss::TransportPacket();
 					_pimpl->_count++;
 				}
 				i++;
@@ -63,7 +63,7 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 				_pimpl->_tspckt.parse(stream + i);
 				i += lcss::TransportPacket::TS_SIZE;
 				onPacket(_pimpl->_tspckt);
-				_pimpl->_tspckt.clear();
+				_pimpl->_tspckt = lcss::TransportPacket();
 				_pimpl->_count++;
 			}
 			else // False sync byte read.  Add byte to the packet.
@@ -72,7 +72,7 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 				if (_pimpl->_tspckt.length() == lcss::TransportPacket::TS_SIZE)
 				{
 					onPacket(_pimpl->_tspckt);
-					_pimpl->_tspckt.clear();
+					_pimpl->_tspckt = lcss::TransportPacket();
 					_pimpl->_count++;
 				}
 				i++;

@@ -85,6 +85,19 @@ lcss::PESPacket& lcss::PESPacket::operator=(const PESPacket& rhs)
 	return *this;
 }
 
+lcss::PESPacket::PESPacket(lcss::PESPacket&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+lcss::PESPacket& lcss::PESPacket::operator=(PESPacket&& rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		_pimpl = std::move(rhs._pimpl);
+	}
+	return *this;
+}
 
 UINT16 lcss::PESPacket::parse(const BYTE* stream)
 {

@@ -63,6 +63,20 @@ namespace lcss
 		return *this;
 	}
 
+	NetworkInformationTable::NetworkInformationTable(NetworkInformationTable&& other) noexcept
+	{
+		*this = std::move(other);
+	}
+
+	NetworkInformationTable& NetworkInformationTable::operator=(NetworkInformationTable&& rhs) noexcept
+	{
+		if (this != &rhs)
+		{
+			_pimpl = std::move(rhs._pimpl);
+		}
+		return *this;
+	}
+
 	bool NetworkInformationTable::parse(const BYTE* table)
 	{
 		if (table == nullptr)

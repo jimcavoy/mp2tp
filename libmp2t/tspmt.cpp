@@ -210,6 +210,20 @@ lcss::ProgramMapTable& lcss::ProgramMapTable::operator=(const ProgramMapTable& r
 	return *this;
 }
 
+lcss::ProgramMapTable::ProgramMapTable(lcss::ProgramMapTable&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+lcss::ProgramMapTable& lcss::ProgramMapTable::operator=(lcss::ProgramMapTable&& rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		_pimpl = std::move(rhs._pimpl);
+	}
+	return *this;
+}
+
 void lcss::ProgramMapTable::add(const BYTE* buffer, int len)
 {
 	std::copy(buffer, buffer + len, std::back_inserter(_pimpl->_buffer));

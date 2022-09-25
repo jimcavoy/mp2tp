@@ -24,8 +24,8 @@ public:
 	TransportPacket(const TransportPacket& src);
 	TransportPacket& operator=(const TransportPacket& rhs);
 
-	TransportPacket(TransportPacket&& src) noexcept = default;
-	TransportPacket& operator=(TransportPacket&& rhs) noexcept = default;
+	TransportPacket(TransportPacket&& src) noexcept;
+	TransportPacket& operator=(TransportPacket&& rhs) noexcept;
 
 	bool TEI() const; // Transport Error Indicator
 	bool payloadUnitStart() const; // is PES or PSI otherwise false
@@ -49,7 +49,6 @@ public:
 	// returns the full TS packet data.  Header + payload
 	const BYTE* data() const;
 	size_t length() const;
-	void clear();
 
 private:
 	class Impl;
