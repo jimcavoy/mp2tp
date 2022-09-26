@@ -190,6 +190,12 @@ lcss::ProgramMapTable::ProgramMapTable()
 
 }
 
+lcss::ProgramMapTable::ProgramMapTable(const BYTE* buffer, int len)
+	:_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>())
+{
+	add(buffer, len);
+}
+
 lcss::ProgramMapTable::~ProgramMapTable()
 {
 
@@ -367,15 +373,6 @@ bool lcss::ProgramMapTable::parse()
 	_pimpl->calcCRC(); 
 	return true;
 }
-
-void lcss::ProgramMapTable::clear()
-{
-	_pimpl->_program_info.clear();
-	_pimpl->_program_elmts.clear();
-	_pimpl->_pmt.clear();
-	_pimpl->_buffer.clear();
-}
-
 
 bool lcss::ProgramMapTable::hasPCR(UINT16 pid) const
 {

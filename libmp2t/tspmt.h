@@ -97,6 +97,7 @@ namespace lcss
 		typedef std::vector<Descriptor> DescriptorArray;
 	public:
 		ProgramMapTable();
+		ProgramMapTable(const BYTE* buffer, int len);
 		~ProgramMapTable();
 
 		ProgramMapTable(const ProgramMapTable& orig);
@@ -109,7 +110,6 @@ namespace lcss
 		void add(const BYTE* buffer, int len);
 		bool canParse() const;
 		bool parse();
-		void clear();
 
 		bool hasPCR(UINT16 pid) const;
 

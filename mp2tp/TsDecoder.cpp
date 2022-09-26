@@ -41,8 +41,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& tsPacket)
 			}
 			else
 			{
-				_pmt.clear();
-				_pmt.add(data, pckt.data_byte());
+				_pmt = lcss::ProgramMapTable(data, pckt.data_byte());
 				if (_pmt.parse())
 				{
 					_ostrm << _pmt;
