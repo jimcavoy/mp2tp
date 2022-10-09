@@ -30,6 +30,11 @@
 *.exe
 *.out
 *.app
+/CMakeFiles
+/libmp2t/CMakeFiles
+/mp2tp/CMakeFiles
+/libmp2t/libmp2t.dir
+/x64
 /.vs
 /out/build/x64-Debug
 /out/build/Linux-GCC-Debug
@@ -38,3 +43,13 @@
 /out/install/x64-Release/include
 /out/install/x64-Release/bin
 /out/install/x64-Debug/bin
+*.vcxproj
+*.tlog
+*.filters
+*.sln
+*.log
+*.pdb
+cmake_install.cmake
+CMakeCache.txt
+CTestTestfile.cmake
+libmp2t/cmake_install.cmake
