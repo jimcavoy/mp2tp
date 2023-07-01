@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iterator>
 #include <array>
+#include <cassert>
 
 #ifdef _DEBUG
 #define new DEBUG_CLIENTBLOCK
@@ -40,11 +41,9 @@ namespace lcss
 
 		void insert(const BYTE* data, size_t len)
 		{
+			assert(len == TransportPacket::TS_SIZE);
 			clear();
-			for (int i = 0; i < len; i++)
-			{
-				push_back(data[i]);
-			}
+			std::copy(data, data+len, _data.begin());
 		}
 
 		void clear()

@@ -53,3 +53,7 @@ cmake_install.cmake
 CMakeCache.txt
 CTestTestfile.cmake
 libmp2t/cmake_install.cmake
+install_manifest.txt
+*.ilk
+Testing/Temporary/CTestCostData.txt
+*.recipe
