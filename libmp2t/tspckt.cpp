@@ -44,6 +44,7 @@ namespace lcss
 			assert(len == TransportPacket::TS_SIZE);
 			clear();
 			std::copy(data, data+len, _data.begin());
+			_pos = (int)len;
 		}
 
 		void clear()
