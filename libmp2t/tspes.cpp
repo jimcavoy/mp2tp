@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #endif
 
-#ifdef _DEBUG
+#ifdef _DEBUG_NEW
 #define new DEBUG_CLIENTBLOCK
 #endif
 

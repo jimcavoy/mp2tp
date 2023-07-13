@@ -17,9 +17,9 @@
 #include <WinSock2.h>
 #include <crtdbg.h>
 
-#ifdef _DEBUG
+#ifdef _DEBUG_NEW
 #define DEBUG_CLIENTBLOCK   new( _CLIENT_BLOCK, __FILE__, __LINE__)
 #else
 #define DEBUG_CLIENTBLOCK
-#endif // _DEBUG
+#endif // _DEBUG_NEW
 #endif

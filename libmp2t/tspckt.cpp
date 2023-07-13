@@ -8,7 +8,7 @@
 #include <array>
 #include <cassert>
 
-#ifdef _DEBUG
+#ifdef _DEBUG_NEW
 #define new DEBUG_CLIENTBLOCK
 #endif
 
