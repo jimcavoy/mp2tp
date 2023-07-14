@@ -40,29 +40,7 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 		// Malformed stream. Not on the 188 boundary. Find the sync byte.
 		if (*(stream + i) != 0x47)
 		{
-			// Find the sync byte
-			if (_pimpl->_tspckt.length() == 0) 
-			{
-				i++;
-			}
-			else // The TS packet spans across the stream buffer boundary
-			{
-				if (_pimpl->_packetSize == lcss::TransportPacket::TS_SIZE)
-				{
-					_pimpl->_tspckt.push_back(*(stream + i));
-					if (_pimpl->_tspckt.length() == lcss::TransportPacket::TS_SIZE)
-					{
-						onPacket(_pimpl->_tspckt);
-						_pimpl->_tspckt = lcss::TransportPacket();
-						_pimpl->_count++;
-					}
-					i++;
-				}
-				else // AVCHD format which can add 4 bytes to the TS packet
-				{
-					i += (_pimpl->_packetSize - lcss::TransportPacket::TS_SIZE);
-				}
-			}
+			i++;
 		}
 		// The TS packet is contain in the stream buffer
 		else if (i + lcss::TransportPacket::TS_SIZE <= len)
@@ -75,22 +53,10 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 				_pimpl->_tspckt = lcss::TransportPacket();
 				_pimpl->_count++;
 			}
-			else // False sync byte read.  Add byte to the packet.
-			{
-				_pimpl->_tspckt.push_back(*(stream + i));
-				if (_pimpl->_tspckt.length() == lcss::TransportPacket::TS_SIZE)
-				{
-					onPacket(_pimpl->_tspckt);
-					_pimpl->_tspckt = lcss::TransportPacket();
-					_pimpl->_count++;
-				}
-				i++;
-			}
 		}
 		// The TS packet spans across two stream buffers
 		else if (i + lcss::TransportPacket::TS_SIZE > len)
 		{
-			_pimpl->_tspckt.push_back(*(stream + i));
 			i++;
 		}
 	}
