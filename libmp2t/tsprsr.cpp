@@ -40,7 +40,15 @@ void lcss::TSParser::parse(const BYTE* stream, UINT32 len)
 		// Malformed stream. Not on the 188 boundary. Find the sync byte.
 		if (*(stream + i) != 0x47)
 		{
-			i++;
+			// Converting AVCHD packets to TS packets
+			if (_pimpl->_packetSize != lcss::TransportPacket::TS_SIZE)
+			{
+				i += _pimpl->_packetSize - lcss::TransportPacket::TS_SIZE;
+			}
+			else
+			{
+				i++;
+			}
 		}
 		// The TS packet is contain in the stream buffer
 		else if (i + lcss::TransportPacket::TS_SIZE <= len)
