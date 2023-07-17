@@ -33,7 +33,7 @@ public:
 	unsigned short PID() const;
 	char scramblingControl() const;
 	char adaptationFieldExist() const;
-	char cc() const; // Continunity Counter
+	char cc() const; // Continuity Counter
 
 	const AdaptationField* getAdaptationField() const;
 	BYTE data_byte() const;
