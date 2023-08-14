@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 3.8)
-project(libmp2t)
+project("libmp2t"
+    VERSION 1.0 
+    DESCRIPTION "MPEG-2 TS parser library"
+    LANGUAGES C CXX)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
@@ -9,12 +12,15 @@ if (WIN32)
     set(CMAKE_INSTALL_LIBDIR $ENV{APPDATA})
 endif()
 
-aux_source_directory(. SRC_LIST)
+file(GLOB SRC_LIST
+    *.h
+    *.cpp)
 add_library(libmp2t STATIC ${SRC_LIST})
 set_property(TARGET libmp2t PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if(WIN32)
     target_link_libraries(libmp2t wsock32 ws2_32)
+    add_compile_definitions(_ITERATOR_DEBUG_LEVEL=0)
 else()
     set_target_properties(libmp2t 
         PROPERTIES
