@@ -57,3 +57,4 @@ install_manifest.txt
 *.ilk
 Testing/Temporary/CTestCostData.txt
 *.recipe
+libmp2t/Release/libmp2t.lib.lastcodeanalysissucceeded

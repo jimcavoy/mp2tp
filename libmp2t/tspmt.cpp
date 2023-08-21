@@ -238,14 +238,17 @@ void lcss::ProgramMapTable::add(const BYTE* buffer, int len)
 bool lcss::ProgramMapTable::canParse() const
 {
 	UINT16 len = section_length();
-	if (len < 184)
-	{
-		return true;
-	}
+
 	if (len == 0)
 	{
 		return false;
 	}
+
+	if (len < 184)
+	{
+		return true;
+	}
+
 	return (_pimpl->_buffer.size() - 4) >= len ? true : false;
 }
 
@@ -426,6 +429,12 @@ bool lcss::ProgramMapTable::section_syntax_indicator() const
 
 UINT16 lcss::ProgramMapTable::section_length() const
 {
+	// pre-condition
+	if (_pimpl->_buffer.empty())
+	{
+		return 0;
+	}
+
 	UINT16 sl = 0;
 	if (_pimpl->_pmt.empty())
 	{
