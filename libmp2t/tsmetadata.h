@@ -2,6 +2,7 @@
 
 #include "tstype.h"
 #include <vector>
+#include <cstddef>
 
 namespace lcss
 {
