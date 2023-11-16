@@ -36,6 +36,7 @@ public:
 	char cc() const; // Continuity Counter
 
 	const AdaptationField* getAdaptationField() const;
+	// returns the payload size
 	BYTE data_byte() const;
 
 	// returns only the payload
