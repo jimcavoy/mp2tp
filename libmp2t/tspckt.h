@@ -4,6 +4,7 @@
 #include "tstype.h"
 
 #include <memory>
+#include <ostream>
 
 namespace lcss
 {
@@ -14,6 +15,7 @@ class TransportPacket
 {
 public:
 	enum { TS_SIZE = 188};
+
 public:
 	TransportPacket();
 	TransportPacket(const BYTE* data);
@@ -54,6 +56,8 @@ public:
 private:
 	class Impl;
 	std::unique_ptr<Impl> _pimpl;
+
+	friend std::ostream& operator<<(std::ostream& os, const lcss::TransportPacket& packet);
 };
 
 }

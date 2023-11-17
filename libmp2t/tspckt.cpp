@@ -31,7 +31,10 @@ namespace lcss
 	class TransportPacket::Impl
 	{
 	public:
-		Impl() {}
+		Impl() 
+		{
+			_data.fill(0xFF);
+		}
 		Impl(const Impl& other)
 			:_pos(other._pos)
 		{
@@ -62,9 +65,18 @@ namespace lcss
 
 	public:
 		int _pos{ 0 };
-		std::array<BYTE, TransportPacket::TS_SIZE> _data{};
+		std::array<BYTE, TransportPacket::TS_SIZE> _data{ };
 		lcss::AdaptationField _adptFd;
 	};
+
+	std::ostream& operator<<(std::ostream& os, const lcss::TransportPacket& packet)
+	{
+		for (auto c : packet._pimpl->_data)
+		{
+			os << c;
+		}
+		return os;
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -274,4 +286,3 @@ const BYTE* lcss::TransportPacket::data() const
 {
 	return _pimpl->_data.data();
 }
-

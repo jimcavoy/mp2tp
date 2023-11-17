@@ -126,6 +126,19 @@ namespace lcss
 		ProgramMapTable::DescriptorArray _program_info;
 		ProgramMapTable::MapType _program_elmts;
 	};
+
+	uint8_t ProgramMapTable::default_seq[17] = {
+			0x00,					// pointer_field
+			0x02,					// table_id
+			0xB0, 0x0D,				// section_syntax_indicator, '0', reserved, section_length
+			0x00, 0x01,				// program_number
+			0xC1,					// reserved, version_number, current_next_indicator
+			0x00,					// section_number
+			0x00,					// last_section_number
+			0xE1, 0x00,				// reserved, PCR_PID
+			0xF0, 0x00,				// reserved, program_info_length
+			0x00, 0x00, 0x00, 0x00	// CRC_32
+	};
 }
 
 /////////////////////////////////////////////////////////////////////////////

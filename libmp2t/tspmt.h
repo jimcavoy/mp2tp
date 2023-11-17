@@ -95,6 +95,8 @@ namespace lcss
 		typedef MapType::iterator iterator;
 		typedef MapType::const_iterator const_iterator;
 		typedef std::vector<Descriptor> DescriptorArray;
+
+		static uint8_t default_seq[17];
 	public:
 		ProgramMapTable();
 		ProgramMapTable(const BYTE* buffer, int len);
