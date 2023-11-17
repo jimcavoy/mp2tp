@@ -32,10 +32,11 @@ public:
 	bool TEI() const; // Transport Error Indicator
 	bool payloadUnitStart() const; // is PES or PSI otherwise false
 	bool transportPriority() const;
-	unsigned short PID() const;
-	char scramblingControl() const;
-	char adaptationFieldExist() const;
-	char cc() const; // Continuity Counter
+	uint16_t PID() const;
+	uint8_t scramblingControl() const;
+	uint8_t adaptationFieldExist() const;
+	uint8_t cc() const; // Continuity Counter
+	uint8_t incrementCC(); 
 
 	const AdaptationField* getAdaptationField() const;
 	// returns the payload size
