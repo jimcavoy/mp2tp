@@ -3,8 +3,10 @@
 
 #include "tstype.h"
 #include "tspckt.h"
+#include "AccessUnit.h"
 
 #include <memory>
+#include <vector>
 
 namespace lcss
 {
@@ -19,6 +21,7 @@ namespace lcss
 
 	public:
 		lcss::TransportPacket packetize(uint8_t* buf, uint32_t bufsiz, uint16_t pid, uint8_t cc);
+		std::vector<lcss::TransportPacket> packetizePES(const lcss::AccessUnit& au, uint16_t pid, size_t* cc);
 
 	private:
 		class Impl;
