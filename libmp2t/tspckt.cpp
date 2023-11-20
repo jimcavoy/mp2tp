@@ -189,13 +189,15 @@ uint8_t lcss::TransportPacket::cc() const
 
 uint8_t lcss::TransportPacket::incrementCC()
 {
-	if (adaptationFieldExist())
+	uint8_t afc = adaptationFieldExist();
+
+	switch (afc)
 	{
-		_pimpl->_data[3] = continuity_value_adaptation[(cc() + 1) % 16];
-	}
-	else
-	{
+	case 0x01: // 01 No adaptation field, payload only
 		_pimpl->_data[3] = continuity_value[(cc() + 1) % 16];
+		break;
+	default:
+		_pimpl->_data[3] = continuity_value_adaptation[(cc() + 1) % 16];
 	}
 
 	return cc();
@@ -203,8 +205,8 @@ uint8_t lcss::TransportPacket::incrementCC()
 
 unsigned char lcss::TransportPacket::data_byte() const
 {
-	unsigned char db = 0;
-	char afc = adaptationFieldExist();
+	uint8_t db = 0;
+	uint8_t afc = adaptationFieldExist();
 
 	switch (afc)
 	{
