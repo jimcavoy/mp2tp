@@ -968,13 +968,6 @@ void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 	ostrm << "\t\t}" << endl;
 }
 
-
-std::ostream& operator<<(std::ostream& ostrm, const lcss::TransportPacket& pctk)
-{
-	TsWriter::printHeader(ostrm, pctk);
-	return ostrm;
-}
-
 std::ostream& operator<<(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
 {
 	TsWriter::printPAT(ostrm, pat);

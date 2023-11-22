@@ -4,6 +4,9 @@
 #include <vector>
 #ifdef WIN32
 #include <WinSock2.h>
+#else
+#include <memory.h>
+#include <arpa/inet.h>
 #endif
 
 namespace
