@@ -58,3 +58,7 @@ install_manifest.txt
 Testing/Temporary/CTestCostData.txt
 *.recipe
 libmp2t/Release/libmp2t.lib.lastcodeanalysissucceeded
+/build
+.vscode/labels.txt
+libmp2t/labels.txt
+.vscode/launch.json

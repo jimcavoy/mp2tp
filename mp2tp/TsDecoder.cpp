@@ -22,7 +22,7 @@ void TsDecoder::onPacket(lcss::TransportPacket& tsPacket)
 {
 	lcss::TransportPacket pckt = std::move(tsPacket);
 
-	_ostrm << pckt;
+	TsWriter::printHeader(_ostrm, pckt);
 
 	const BYTE* data = pckt.getData();
 	if (pckt.payloadUnitStart())
