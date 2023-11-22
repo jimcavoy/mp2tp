@@ -1,13 +1,22 @@
 #include "tspacker.h"
 
+#include <cassert>
 #include <vector>
+#ifdef WIN32
 #include <WinSock2.h>
+#endif
 
 namespace
 {
 	BYTE tsheader_pes[] = {
 		0x47, 0x40, 0x00, 0x10, 0x00, 0x00, 0x01, 0xBD,
 		0x00, 0x00
+	};
+
+	BYTE tsheader_adpfd_pes[] = {
+		0x47, 0x40, 0x00, 0x30, 0x07, 0x50,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x01, 0xBD, 0x00, 0x00
 	};
 
 	BYTE tsheader_onepacket[] = {
@@ -54,6 +63,18 @@ namespace
 		*bs++ = val >> 8;
 		*bs++ = val;
 	}
+
+	void writePcrBits(uint8_t* buf, int64_t pcr)
+	{
+		int64_t pcr_low = pcr % 300, pcr_high = pcr / 300;
+
+		*buf++ = pcr_high >> 25;
+		*buf++ = pcr_high >> 17;
+		*buf++ = pcr_high >> 9;
+		*buf++ = pcr_high >> 1;
+		*buf++ = pcr_high << 7 | pcr_low >> 8 | 0x7e;
+		*buf++ = pcr_low;
+	}
 }
 
 namespace lcss
@@ -80,6 +101,7 @@ namespace lcss
 
 	lcss::TransportPacket TSPacker::packetize(uint8_t* buf, uint32_t bufsiz, uint16_t pid, uint8_t cc)
 	{
+		assert(bufsiz < 185);
 		lcss::TransportPacket pckt;
 
 		std::vector<uint8_t> rawByteSeq(lcss::TransportPacket::TS_SIZE, 0xFF);
@@ -104,7 +126,7 @@ namespace lcss
 
 		return pckt;
 	}
-	std::vector<lcss::TransportPacket> TSPacker::packetizePES(const lcss::AccessUnit& au, uint16_t pid, size_t* cc)
+	std::vector<lcss::TransportPacket> TSPacker::packetizePES(const lcss::AccessUnit& au, uint16_t pid, size_t* cc, uint64_t pcr)
 	{
 		std::vector<lcss::TransportPacket> pes;
 		size_t cur{};
@@ -212,7 +234,7 @@ namespace lcss
 			}
 			else if (tsd.size() == 0)
 			{
-				if (onepacket)  // first packet
+				if (onepacket && pcr == 0)  // first packet
 				{
 					onepacket = false;
 					pesHeaderSize = 6; // TS Header + Adaptation Field for the next iteration
@@ -249,6 +271,58 @@ namespace lcss
 						tsd.push_back(0x80); // PTS present
 						tsd.push_back(0x05); // PES_header_data_length = 5
 						writePTS(pts, 0x80 >> 6 , au.PTS());
+						for (size_t i = 0; i < 5; i++)
+						{
+							tsd.push_back(pts[i]);
+						}
+					}
+				}
+				else if (onepacket && pcr > 0)
+				{
+					onepacket = false;
+					pesHeaderSize = 6; // TS Header + Adaptation Field for the next iteration
+					// write PES header with adaptation field containing a PCR
+					uint8_t tshpes[18];
+					memcpy(tshpes, tsheader_adpfd_pes, 18);
+					setPID(tshpes, pid);
+
+					// set continuity_counter
+					uint8_t c = continuity_value_adaptation[*cc % 16];
+					(*cc)++;
+					tshpes[3] = c;
+
+					uint8_t pcrBuf[6]{};
+					writePcrBits(pcrBuf, pcr);
+					tshpes[6] = pcrBuf[0];
+					tshpes[7] = pcrBuf[1];
+					tshpes[8] = pcrBuf[2];
+					tshpes[9] = pcrBuf[3];
+					tshpes[10] = pcrBuf[4];
+					tshpes[11] = pcrBuf[5];
+
+					// set stream_id
+					tshpes[15] = au.streamId();
+
+					// set PES_packet_length
+					uint8_t s[2]{};
+					uint16_t pes_len{};
+					if (au.streamId() != lcss::AccessUnit::Video)
+					{
+						pes_len = htons((uint16_t)au.length());
+					}
+					memcpy(s, (void*)&pes_len, 2);
+					tshpes[16] = s[0];
+					tshpes[17] = s[1];
+					tsd.insert(tsd.end(), &tshpes[0], &tshpes[18]);
+
+					// PTS
+					if (au.PTS() > 0)
+					{
+						uint8_t pts[5]{};
+						tsd.push_back(0x80); // Flags
+						tsd.push_back(0x80); // PTS present
+						tsd.push_back(0x05); // PES_header_data_length = 5
+						writePTS(pts, 0x80 >> 6, au.PTS());
 						for (size_t i = 0; i < 5; i++)
 						{
 							tsd.push_back(pts[i]);
