@@ -26,12 +26,28 @@ const BYTE TP_SCRAMBLLING_CTRL = 0xC0;
 const BYTE TP_ADAPTATION_FD_CTRL = 0x30;
 const BYTE TP_CONTINUITY_COUNTER = 0x0F;
 
+namespace 
+{
+	BYTE continuity_value[] = {
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+		0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+	};
+
+	BYTE continuity_value_adaptation[] = {
+		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F
+	};
+}
+
 namespace lcss
 {
 	class TransportPacket::Impl
 	{
 	public:
-		Impl() {}
+		Impl() 
+		{
+			_data.fill(0xFF);
+		}
 		Impl(const Impl& other)
 			:_pos(other._pos)
 		{
@@ -62,9 +78,18 @@ namespace lcss
 
 	public:
 		int _pos{ 0 };
-		std::array<BYTE, TransportPacket::TS_SIZE> _data{};
+		std::array<BYTE, TransportPacket::TS_SIZE> _data{ };
 		lcss::AdaptationField _adptFd;
 	};
+
+	std::ostream& operator<<(std::ostream& os, const lcss::TransportPacket& packet)
+	{
+		for (auto c : packet._pimpl->_data)
+		{
+			os << c;
+		}
+		return os;
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -136,7 +161,7 @@ bool lcss::TransportPacket::transportPriority() const
 	return _pimpl->_data[1] & TRANSPORT_PRI_MASK ? true : false;
 }
 
-UINT16 lcss::TransportPacket::PID() const
+uint16_t lcss::TransportPacket::PID() const
 {
 	char pid[2]{};
 	pid[0] = _pimpl->_data[2];
@@ -147,25 +172,41 @@ UINT16 lcss::TransportPacket::PID() const
 	return npid & TP_PID;
 }
 
-char lcss::TransportPacket::scramblingControl() const
+uint8_t lcss::TransportPacket::scramblingControl() const
 {
 	return (_pimpl->_data[3] & TP_SCRAMBLLING_CTRL) >> 6;
 }
 
-char lcss::TransportPacket::adaptationFieldExist() const
+uint8_t lcss::TransportPacket::adaptationFieldExist() const
 {
 	return (_pimpl->_data[3] & TP_ADAPTATION_FD_CTRL) >> 4;
 }
 
-char lcss::TransportPacket::cc() const
+uint8_t lcss::TransportPacket::cc() const
 {
 	return _pimpl->_data[3] & TP_CONTINUITY_COUNTER;
 }
 
+uint8_t lcss::TransportPacket::incrementCC()
+{
+	uint8_t afc = adaptationFieldExist();
+
+	switch (afc)
+	{
+	case 0x01: // 01 No adaptation field, payload only
+		_pimpl->_data[3] = continuity_value[(cc() + 1) % 16];
+		break;
+	default:
+		_pimpl->_data[3] = continuity_value_adaptation[(cc() + 1) % 16];
+	}
+
+	return cc();
+}
+
 unsigned char lcss::TransportPacket::data_byte() const
 {
-	unsigned char db = 0;
-	char afc = adaptationFieldExist();
+	uint8_t db = 0;
+	uint8_t afc = adaptationFieldExist();
 
 	switch (afc)
 	{
@@ -274,4 +315,3 @@ const BYTE* lcss::TransportPacket::data() const
 {
 	return _pimpl->_data.data();
 }
-

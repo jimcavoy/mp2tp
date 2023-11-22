@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "tspat.h"
 
+#include <iterator>
+#include <vector>
+
 #ifndef WIN32
 #include <memory.h>
 #include <arpa/inet.h>
@@ -13,12 +16,18 @@ const BYTE PAT_VERSION_NO = 0x3E;
 const BYTE PAT_CUR_NEXT_INDICATOR = 0x01;
 const UINT16 PAT_ENTRY_PID = 0x1FFF;
 
+extern uint32_t dvbpsi_crc32_table[256];
+
 namespace lcss
 {
 	class ProgramAssociationTable::Impl
 	{
 	public:
-		Impl() :reserved_(3) {}
+		Impl() 
+			: reserved_(3)
+			, version_number_(0)
+			, current_next_indicator_(0)
+		{}
 		Impl(const Impl& other)
 			:reserved_(3)
 			, pointer_field_(other.pointer_field_)
@@ -35,10 +44,13 @@ namespace lcss
 		}
 
 	public:
-		BYTE pointer_field_{};
-		BYTE table_id_{};
-		UINT16 section_length_{};
-		UINT16 transport_stream_id_{};
+		void calcCRC(const lcss::ProgramAssociationTable& pat);
+
+	public:
+		BYTE pointer_field_{0};
+		BYTE table_id_{0};
+		UINT16 section_length_{13};
+		UINT16 transport_stream_id_{1};
 		BYTE reserved_ : 2;
 		BYTE version_number_ : 5;
 		BYTE current_next_indicator_ : 1;
@@ -47,6 +59,18 @@ namespace lcss
 		UINT32 CRC_32_{};
 		ProgramAssociationTable::MapType pid_to_program_;
 	};
+}
+
+void lcss::ProgramAssociationTable::Impl::calcCRC(const lcss::ProgramAssociationTable& pat)
+{
+	std::vector<BYTE> rawByteSeq;
+	pat.serialize(std::back_inserter(rawByteSeq));
+	CRC_32_ = 0xffffffff;
+
+	for (size_t i = 1; i < rawByteSeq.size() - 4; i++)
+	{
+		CRC_32_ = (CRC_32_ << 8) ^ dvbpsi_crc32_table[(CRC_32_ >> 24) ^ (rawByteSeq[i])];
+	}
 }
 
 
@@ -90,11 +114,6 @@ lcss::ProgramAssociationTable& lcss::ProgramAssociationTable::operator=(ProgramA
 }
 
 
-// Function name   : ProgramAssociationTable::parse
-// Description     : This function implements definition program_association_section
-//  in ISO/IEC 13818-1 : 2013(E) Table 2-30 page 47.
-// Return type     : void 
-// Argument        : BYTE* table
 void lcss::ProgramAssociationTable::parse(const BYTE* table)
 {
 	_pimpl->pointer_field_ = table[0];
@@ -150,6 +169,20 @@ void lcss::ProgramAssociationTable::parse(const BYTE* table)
 	_pimpl->CRC_32_ = ntohl(crc);
 }
 
+lcss::ProgramAssociationTable::MapType::iterator lcss::ProgramAssociationTable::addProgram(uint16_t program, uint16_t pid)
+{
+	MapType::iterator it = end();
+
+	std::pair<MapType::iterator, bool> ret = _pimpl->pid_to_program_.insert(MapType::value_type(pid, program));
+
+	if (ret.second)
+	{
+		it = ret.first;
+		_pimpl->calcCRC(*this);
+	}
+	return it;
+}
+
 lcss::ProgramAssociationTable::iterator lcss::ProgramAssociationTable::begin()
 {
 	return _pimpl->pid_to_program_.begin();
@@ -171,7 +204,7 @@ lcss::ProgramAssociationTable::const_iterator lcss::ProgramAssociationTable::end
 }
 
 
-lcss::ProgramAssociationTable::iterator lcss::ProgramAssociationTable::find(UINT32 pid)
+lcss::ProgramAssociationTable::iterator lcss::ProgramAssociationTable::find(uint16_t pid)
 {
 	return _pimpl->pid_to_program_.find(pid);
 }
@@ -225,3 +258,46 @@ UINT32 lcss::ProgramAssociationTable::CRC_32() const
 {
 	return  _pimpl->CRC_32_;
 }
+
+template<typename BackInsertIter>
+void lcss::ProgramAssociationTable::serialize(BackInsertIter backit) const
+{
+	uint8_t buf[2]{};
+	*backit++ = pointer_field();
+	*backit++ = table_id();
+
+	uint16_t sz  = (uint16_t)size();
+
+	uint16_t section_len = 9 + (sz * 4);
+	section_len = htons(section_len);
+	memcpy(buf, &section_len, 2);
+	buf[0] |= 0xB0;
+
+	*backit++ = buf[0];
+	*backit++ = buf[1];
+
+	memcpy(buf, &_pimpl->transport_stream_id_, 2);
+
+	*backit++ = buf[1];
+	*backit++ = buf[0];
+	*backit++ = 0xC1;
+	*backit++ = section_number();
+	*backit++ = last_section_number();
+
+	for (auto p : _pimpl->pid_to_program_)
+	{
+		memcpy(buf, &p.second, 2);
+		*backit++ = buf[1];
+		*backit++ = buf[0];
+		memcpy(buf, &p.first, 2);
+		*backit++ = buf[1] | 0xE0;
+		*backit++ = buf[0];
+	}
+
+	*backit++ = (_pimpl->CRC_32_ >> 24) & 0xff;
+	*backit++ = (_pimpl->CRC_32_ >> 16) & 0xff;
+	*backit++ = (_pimpl->CRC_32_ >> 8) & 0xff;
+	*backit++ = (_pimpl->CRC_32_) & 0xff;
+}
+
+template void lcss::ProgramAssociationTable::serialize<std::back_insert_iterator<std::vector<BYTE>>>(std::back_insert_iterator<std::vector<BYTE>>) const;

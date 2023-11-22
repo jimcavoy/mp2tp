@@ -4,6 +4,7 @@
 #include "tstype.h"
 
 #include <memory>
+#include <ostream>
 
 namespace lcss
 {
@@ -14,6 +15,7 @@ class TransportPacket
 {
 public:
 	enum { TS_SIZE = 188};
+
 public:
 	TransportPacket();
 	TransportPacket(const BYTE* data);
@@ -30,12 +32,14 @@ public:
 	bool TEI() const; // Transport Error Indicator
 	bool payloadUnitStart() const; // is PES or PSI otherwise false
 	bool transportPriority() const;
-	unsigned short PID() const;
-	char scramblingControl() const;
-	char adaptationFieldExist() const;
-	char cc() const; // Continuity Counter
+	uint16_t PID() const;
+	uint8_t scramblingControl() const;
+	uint8_t adaptationFieldExist() const;
+	uint8_t cc() const; // Continuity Counter
+	uint8_t incrementCC(); 
 
 	const AdaptationField* getAdaptationField() const;
+	// returns the payload size
 	BYTE data_byte() const;
 
 	// returns only the payload
@@ -53,6 +57,8 @@ public:
 private:
 	class Impl;
 	std::unique_ptr<Impl> _pimpl;
+
+	friend std::ostream& operator<<(std::ostream& os, const lcss::TransportPacket& packet);
 };
 
 }
