@@ -13,47 +13,40 @@ namespace
 {
 	BYTE tsheader_pes[] = {
 		0x47, 0x40, 0x00, 0x10, 0x00, 0x00, 0x01, 0xBD,
-		0x00, 0x00
-	};
+		0x00, 0x00};
 
 	BYTE tsheader_adpfd_pes[] = {
 		0x47, 0x40, 0x00, 0x30, 0x07, 0x50,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x01, 0xBD, 0x00, 0x00
-	};
+		0x00, 0x00, 0x01, 0xBD, 0x00, 0x00};
 
 	BYTE tsheader_onepacket[] = {
-		0x47, 0x40, 0x00, 0x30
-	};
+		0x47, 0x40, 0x00, 0x30};
 
 	BYTE tsheader[] = {
-		0x47, 0x00, 0x00, 0x11
-	};
+		0x47, 0x00, 0x00, 0x11};
 
 	BYTE tsheader_payload_only[] = {
-		0x47, 0x00, 0x00, 0x10
-	};
+		0x47, 0x00, 0x00, 0x10};
 
 	BYTE continuity_value[] = {
 		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-		0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
-	};
+		0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
 
 	BYTE continuity_value_adaptation[] = {
 		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F
-	};
+		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F};
 
-	void setPID(BYTE* header, uint16_t pid)
+	void setPID(BYTE *header, uint16_t pid)
 	{
 		uint16_t nPid = htons(pid);
 		uint8_t bpid[2];
-		memcpy(bpid, (void*)&nPid, 2);
+		memcpy(bpid, (void *)&nPid, 2);
 		bpid[0] = header[1] | bpid[0];
-		memcpy(header + 1, (void*)&bpid, 2);
+		memcpy(header + 1, (void *)&bpid, 2);
 	}
 
-	void writePTS(uint8_t* bs, int fourbits, int64_t pts)
+	void writePTS(uint8_t *bs, int fourbits, int64_t pts)
 	{
 		int val;
 
@@ -61,13 +54,13 @@ namespace
 		*bs++ = val;
 		val = (((pts >> 15) & 0x7fff) << 1) | 1;
 		*bs++ = val >> 8;
-		*bs++ = val; 
+		*bs++ = val;
 		val = (((pts) & 0x7fff) << 1) | 1;
 		*bs++ = val >> 8;
 		*bs++ = val;
 	}
 
-	void writePcrBits(uint8_t* buf, int64_t pcr)
+	void writePcrBits(uint8_t *buf, int64_t pcr)
 	{
 		int64_t pcr_low = pcr % 300, pcr_high = pcr / 300;
 
@@ -85,24 +78,21 @@ namespace lcss
 	class TSPacker::Impl
 	{
 	public:
-		Impl()
-		{
+		Impl(){
 
 		};
 	};
 
 	TSPacker::TSPacker()
-		:_pimpl(std::make_unique<lcss::TSPacker::Impl>())
+		: _pimpl(std::make_unique<lcss::TSPacker::Impl>())
 	{
-
 	}
 
 	TSPacker::~TSPacker()
 	{
-
 	}
 
-	lcss::TransportPacket TSPacker::packetize(uint8_t* buf, uint32_t bufsiz, uint16_t pid, uint8_t cc)
+	lcss::TransportPacket TSPacker::packetize(uint8_t *buf, uint32_t bufsiz, uint16_t pid, uint8_t cc)
 	{
 		assert(bufsiz < 185);
 		lcss::TransportPacket pckt;
@@ -122,19 +112,28 @@ namespace lcss
 
 		for (uint32_t i = 0; i < bufsiz; i++)
 		{
-			rawByteSeq.emplace(rawByteSeq.begin() + (4+i), buf[i]);
+			rawByteSeq.emplace(rawByteSeq.begin() + (4 + i), buf[i]);
 		}
 
 		pckt.parse(rawByteSeq.data());
 
 		return pckt;
 	}
-	std::vector<lcss::TransportPacket> TSPacker::packetizePES(const lcss::AccessUnit& au, uint16_t pid, size_t* cc, uint64_t pcr)
+	std::vector<lcss::TransportPacket> TSPacker::packetizePES(const lcss::AccessUnit &au, uint16_t pid, size_t *cc, uint64_t pcr)
 	{
 		std::vector<lcss::TransportPacket> pes;
 		size_t cur{};
 		bool onepacket = true;
-		int pesHeaderSize = 12; // TS Header + Adaptation Field + PES packet header (start code, stream id, PES packet length)
+		int pesHeaderSize = 15; // TS Header + Adaptation Field + PES packet header (start code, stream id, PES packet length)
+		if (au.PTS() > 0)
+		{
+			pesHeaderSize += 5;
+		}
+		if (au.DTS() > 0)
+		{
+			pesHeaderSize += 5;
+		}
+
 		std::vector<uint8_t> tsd;
 
 		while (cur < au.length())
@@ -143,7 +142,7 @@ namespace lcss
 			{
 				pes.push_back(lcss::TransportPacket(tsd.data(), tsd.size()));
 				tsd.clear();
-			}// not enough data to fill a TS packet so add filler
+			} // not enough data to fill a TS packet so add filler
 			else if ((tsd.size() + (au.length() - cur) + pesHeaderSize) <= lcss::TransportPacket::TS_SIZE)
 			{
 				// There are two case:
@@ -162,16 +161,18 @@ namespace lcss
 					// write the header
 					tsd.insert(tsd.end(), &tsh[0], &tsh[4]);
 
-					uint16_t len = 188 - (11 + (uint16_t)au.length());
+					uint16_t len = 189 - (pesHeaderSize + (uint16_t)au.length());
 
-					tsd.push_back((uint8_t)len);
-					tsd.push_back(0x40); // Adaptation Field Flag, Random Access = true
+					tsd.push_back((uint8_t)len); // Adaptation field length
+					tsd.push_back(0x40);		 // Adaptation Field Flag, Random Access = true
 
 					// fill with stuffing
 					for (int i = 0; i < len - 1; ++i)
 						tsd.push_back(0xFF);
 
-					tsd.push_back(0); tsd.push_back(0); tsd.push_back(1); // packet_start_code_prefix
+					tsd.push_back(0);
+					tsd.push_back(0);
+					tsd.push_back(1); // packet_start_code_prefix
 					uint8_t stream_id = au.streamId();
 					tsd.push_back(stream_id); // stream_id
 
@@ -180,7 +181,13 @@ namespace lcss
 					uint16_t peslen{};
 					if (au.streamId() != lcss::AccessUnit::Video)
 					{
-						peslen = htons((uint16_t)au.length());
+						uint16_t pesLen = au.length() + 3;
+						if (au.PTS() > 0)
+							pesLen += 5;
+						if (au.DTS() > 0)
+							pesLen += 5;
+
+						peslen = htons(pesLen);
 					}
 					memcpy(bytePesLen, &peslen, 2);
 					tsd.push_back(bytePesLen[0]);
@@ -198,6 +205,12 @@ namespace lcss
 						{
 							tsd.push_back(pts[i]);
 						}
+					}
+					else
+					{
+						tsd.push_back(0x85);
+						tsd.push_back(0x00);
+						tsd.push_back(0x00);
 					}
 
 					// filling the packet with data
@@ -237,7 +250,7 @@ namespace lcss
 			}
 			else if (tsd.size() == 0)
 			{
-				if (onepacket && pcr == 0)  // first packet
+				if (onepacket && pcr == 0) // first packet
 				{
 					onepacket = false;
 					pesHeaderSize = 6; // TS Header + Adaptation Field for the next iteration
@@ -259,9 +272,15 @@ namespace lcss
 					uint16_t pes_len{};
 					if (au.streamId() != lcss::AccessUnit::Video)
 					{
-						pes_len = htons((uint16_t)au.length());
+						uint16_t pesLen = au.length() + 3;
+						if (au.PTS() > 0)
+							pesLen += 5;
+						if (au.DTS() > 0)
+							pesLen += 5;
+
+						pes_len = htons(pesLen);
 					}
-					memcpy(s, (void*)&pes_len, 2);
+					memcpy(s, (void *)&pes_len, 2);
 					tshpes[8] = s[0];
 					tshpes[9] = s[1];
 					tsd.insert(tsd.end(), &tshpes[0], &tshpes[10]);
@@ -273,11 +292,17 @@ namespace lcss
 						tsd.push_back(0x80); // Flags
 						tsd.push_back(0x80); // PTS present
 						tsd.push_back(0x05); // PES_header_data_length = 5
-						writePTS(pts, 0x80 >> 6 , au.PTS());
+						writePTS(pts, 0x80 >> 6, au.PTS());
 						for (size_t i = 0; i < 5; i++)
 						{
 							tsd.push_back(pts[i]);
 						}
+					}
+					else
+					{
+						tsd.push_back(0x85);
+						tsd.push_back(0x00);
+						tsd.push_back(0x00);
 					}
 				}
 				else if (onepacket && pcr > 0)
@@ -311,9 +336,15 @@ namespace lcss
 					uint16_t pes_len{};
 					if (au.streamId() != lcss::AccessUnit::Video)
 					{
-						pes_len = htons((uint16_t)au.length());
+						uint16_t pesLen = au.length() + 3;
+						if (au.PTS() > 0)
+							pesLen += 5;
+						if (au.DTS() > 0)
+							pesLen += 5;
+
+						pes_len = htons(pesLen);
 					}
-					memcpy(s, (void*)&pes_len, 2);
+					memcpy(s, (void *)&pes_len, 2);
 					tshpes[16] = s[0];
 					tshpes[17] = s[1];
 					tsd.insert(tsd.end(), &tshpes[0], &tshpes[18]);
@@ -330,6 +361,12 @@ namespace lcss
 						{
 							tsd.push_back(pts[i]);
 						}
+					}
+					else
+					{
+						tsd.push_back(0x85);
+						tsd.push_back(0x00);
+						tsd.push_back(0x00);
 					}
 				}
 				else // subsequent packets
