@@ -92,7 +92,7 @@ namespace lcss
 	{
 	}
 
-	lcss::TransportPacket TSPacker::packetize(uint8_t *buf, uint32_t bufsiz, uint16_t pid, uint8_t cc)
+	lcss::TransportPacket TSPacker::packetize(uint8_t *buf, size_t bufsiz, uint16_t pid, uint8_t cc)
 	{
 		assert(bufsiz < 185);
 		lcss::TransportPacket pckt;
@@ -119,6 +119,104 @@ namespace lcss
 
 		return pckt;
 	}
+
+
+	std::vector<lcss::TransportPacket> TSPacker::packetize(uint8_t* buf, size_t bufsiz, uint16_t pid, size_t* cc)
+	{
+		std::vector<lcss::TransportPacket> tps;
+		std::vector<uint8_t> tsd;
+		size_t cur = 0;
+		bool onepacket = true;
+
+		while (cur < bufsiz)
+		{
+			if (tsd.size() == lcss::TransportPacket::TS_SIZE)
+			{
+				tps.push_back(lcss::TransportPacket(tsd.data(), tsd.size()));
+				tsd.clear();
+			}
+			else if (tsd.size() + (bufsiz - cur) <= lcss::TransportPacket::TS_SIZE)
+			{
+				// There are two case:
+				// 1. All KLV set can fit into one TS packet
+				// 2. The KLV set is split across multiple TS packets
+				if (onepacket) // case 1
+				{
+					uint8_t header[4];
+					memcpy(header, tsheader_onepacket, 4);
+					setPID(header, pid);
+					// set continuity counter
+					uint8_t c = continuity_value[*cc % 16];
+					(*cc)++;
+					header[3] = c;
+					tsd.insert(tsd.end(), &header[0], &header[4]);
+					// PMT 
+					while (cur < bufsiz)
+					{
+						tsd.push_back(buf[cur++]);
+					}
+					// Stuffing
+					size_t len = lcss::TransportPacket::TS_SIZE - tsd.size();
+					for (size_t i = 0; i < len; i++)
+					{
+						tsd.push_back(0xFF);
+					}
+					tps.push_back(lcss::TransportPacket(tsd.data(), tsd.size()));
+				}
+				else // Case 2
+				{
+					// last packet
+					// Setup the ts header and adaptation field
+					uint8_t tsh[4];
+					memcpy(tsh, tsheader, 4);
+					setPID(tsh, pid);
+					// set continuity_counter
+					uint8_t c = continuity_value_adaptation[(*cc) % 16];
+					(*cc)++;
+					tsh[3] = c;
+					// write the header
+					tsd.insert(tsd.end(), &tsh[0], &tsh[4]);
+
+					const uint16_t len = (uint16_t)188 - (5 + (bufsiz - cur));
+
+					tsd.push_back((uint8_t)len);
+					tsd.push_back(0);
+					// fill with stuffing
+					for (int i = 0; i < len - 1; ++i)
+						tsd.push_back(0xFF);
+					// filling the packet with data
+					while (cur < bufsiz)
+						tsd.push_back(buf[cur++]);
+					tps.push_back(lcss::TransportPacket(tsd.data(), tsd.size()));
+				}
+			}
+			// The data will fit across multiple TS Packets
+			else if (tsd.size() == 0)
+			{
+				uint8_t tsh[4];
+				memcpy(tsh, tsheader_payload_only, 4);
+				if (onepacket) //first packet
+				{
+					onepacket = false;
+					tsh[1] = 0x40; // set payload_unit_start_indicator to 1 (true)
+				}
+				setPID(tsh, pid);
+				// set continuity_counter
+				uint8_t c = continuity_value[*cc % 16];
+				(*cc)++;
+				tsh[3] = c;
+				tsd.insert(tsd.end(), &tsh[0], &tsh[4]);
+			}
+			else
+			{
+				tsd.push_back(buf[cur++]);
+			}
+		}
+
+		return tps;
+	}
+
+
 	std::vector<lcss::TransportPacket> TSPacker::packetizePES(const lcss::AccessUnit &au, uint16_t pid, size_t *cc, uint64_t pcr)
 	{
 		std::vector<lcss::TransportPacket> pes;
@@ -181,7 +279,7 @@ namespace lcss
 					uint16_t peslen{};
 					if (au.streamId() != lcss::AccessUnit::Video)
 					{
-						uint16_t pesLen = au.length() + 3;
+						uint16_t pesLen = (uint16_t)au.length() + 3;
 						if (au.PTS() > 0)
 							pesLen += 5;
 						if (au.DTS() > 0)
@@ -272,7 +370,7 @@ namespace lcss
 					uint16_t pes_len{};
 					if (au.streamId() != lcss::AccessUnit::Video)
 					{
-						uint16_t pesLen = au.length() + 3;
+						uint16_t pesLen = (uint16_t)au.length() + 3;
 						if (au.PTS() > 0)
 							pesLen += 5;
 						if (au.DTS() > 0)
@@ -336,7 +434,7 @@ namespace lcss
 					uint16_t pes_len{};
 					if (au.streamId() != lcss::AccessUnit::Video)
 					{
-						uint16_t pesLen = au.length() + 3;
+						uint16_t pesLen = (uint16_t)au.length() + 3;
 						if (au.PTS() > 0)
 							pesLen += 5;
 						if (au.DTS() > 0)

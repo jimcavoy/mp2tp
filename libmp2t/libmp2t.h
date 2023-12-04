@@ -7,4 +7,5 @@
 #include "tsprsr.h"
 #include "tspat.h"
 #include "tspckt.h"
+#include "tspacker.h"
 #include "tsnit.h"

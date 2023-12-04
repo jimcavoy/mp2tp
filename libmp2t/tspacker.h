@@ -20,7 +20,9 @@ namespace lcss
 		~TSPacker();
 
 	public:
-		lcss::TransportPacket packetize(uint8_t* buf, uint32_t bufsiz, uint16_t pid, uint8_t cc);
+		lcss::TransportPacket packetize(uint8_t* buf, size_t bufsiz, uint16_t pid, uint8_t cc);
+
+		std::vector<lcss::TransportPacket> packetize(uint8_t* buf, size_t bufsiz, uint16_t pid, size_t* cc);
 
 		std::vector<lcss::TransportPacket> packetizePES(const lcss::AccessUnit& au, uint16_t pid, size_t* cc, uint64_t pcr);
 
