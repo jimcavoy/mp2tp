@@ -455,6 +455,10 @@ UINT16 lcss::ProgramMapTable::section_length() const
 		cur += 2;
 		BYTE chVal[2]{};
 		UINT16 value;
+		if (cur > _pimpl->_buffer.size() || cur + 1 > _pimpl->_buffer.size())
+		{
+			return 0;
+		}
 		chVal[0] = _pimpl->_buffer[cur++];
 		chVal[1] = _pimpl->_buffer[cur];
 		memcpy(&value, chVal, 2);
@@ -466,6 +470,10 @@ UINT16 lcss::ProgramMapTable::section_length() const
 		cur += 2;
 		BYTE chVal[2]{};
 		UINT16 value;
+		if (cur > _pimpl->_buffer.size() || cur + 1 > _pimpl->_buffer.size())
+		{
+			return 0;
+		}
 		chVal[0] = _pimpl->_pmt[cur++];
 		chVal[1] = _pimpl->_pmt[cur];
 		memcpy(&value, chVal, 2);
