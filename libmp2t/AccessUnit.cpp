@@ -31,13 +31,13 @@ namespace lcss
 	{
 	}
 
-	AccessUnit::AccessUnit(uint8_t* sodb, size_t len)
+	AccessUnit::AccessUnit(const uint8_t* sodb, size_t len)
 		:_pimpl(new lcss::AccessUnit::Impl{})
 	{
 		std::copy(sodb, sodb + len, std::back_inserter(_pimpl->_sodb));
 	}
 
-	AccessUnit::AccessUnit(uint8_t* sodb, size_t len, uint8_t streamId, uint64_t pts, uint64_t dts)
+	AccessUnit::AccessUnit(const uint8_t* sodb, size_t len, uint8_t streamId, uint64_t pts, uint64_t dts)
 		:_pimpl(new lcss::AccessUnit::Impl{})
 	{
 		std::copy(sodb, sodb + len, std::back_inserter(_pimpl->_sodb));
