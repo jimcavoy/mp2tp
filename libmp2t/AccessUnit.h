@@ -22,8 +22,8 @@ namespace lcss
 		typedef sodb_type::const_iterator const_iterator;
 	public:
 		AccessUnit();
-		AccessUnit(uint8_t* sodb, size_t len);
-		AccessUnit(uint8_t* sodb, size_t len, uint8_t streamId, uint64_t pts, uint64_t dts);
+		AccessUnit(const uint8_t* sodb, size_t len);
+		AccessUnit(const uint8_t* sodb, size_t len, uint8_t streamId, uint64_t pts, uint64_t dts);
 		~AccessUnit();
 
 		AccessUnit(const AccessUnit& cp);
