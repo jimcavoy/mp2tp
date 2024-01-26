@@ -1,25 +1,39 @@
-﻿# CMakeList.txt : CMake project for mp2tp, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
-project(mp2tp)
+cmake_minimum_required (VERSION 3.21)
+
+project(mp2tp
+    VERSION 0.2.0
+    DESCRIPTION "MPEG-2 TS parser library"
+    LANGUAGES C CXX)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Add source to this project's executable.
-add_executable (mp2tp "mp2tp.cpp" "TsDecoder.h" "TsDecoder.cpp" "TsWriter.h" "TsWriter.cpp")
+add_library(mp2tp STATIC)
 
-list(APPEND EXTRA_LIBS libmp2t)
+file(GLOB SRC_LIST
+	src/*.cpp)
+	
+target_sources(mp2tp PRIVATE ${SRC_LIST})
 
-target_link_libraries(mp2tp PUBLIC ${EXTRA_LIBS})
+set_property(TARGET mp2tp PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-# TODO: Add tests and install targets if needed.
-install(TARGETS mp2tp 
-    EXPORT mp2tpTargets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include
+if(WIN32)
+    set(WS wsock32 ws2_32)
+endif()
+
+target_link_libraries(mp2tp ${WS})
+
+target_include_directories(mp2tp
+          PRIVATE src/mp2tp
+		  PUBLIC include
+          )
+		  
+include(GNUInstallDirs)
+
+install(TARGETS mp2tp)
+
+install (
+	DIRECTORY include/
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
