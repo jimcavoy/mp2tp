@@ -11,6 +11,12 @@ include(GNUInstallDirs)
 # It is relative to install prefix.
 set(mp2tp_INSTALL_CMAKEDIR cmake CACHE PATH "Installation directory for config-file package cmake files")
 
+# set the postfix "d" for the resulting .so or .dll files when building the
+# library in debug mode
+set(CMAKE_DEBUG_POSTFIX
+    d
+)
+
 add_library(mp2tp STATIC)
 
 file(GLOB SRC_LIST
@@ -33,9 +39,9 @@ endif()
 target_link_libraries(mp2tp ${WS})
 
 target_include_directories(mp2tp
-          PRIVATE src/mp2tp
-		  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-          )
+            PRIVATE src/mp2tp
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
 install(TARGETS mp2tp
         EXPORT mp2tp_export
@@ -43,8 +49,8 @@ install(TARGETS mp2tp
 )
 
 install (
-	DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install (EXPORT mp2tp_export
