@@ -2,7 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 #include "TsWriter.h"
-#include "libmp2t.h"
+#include <mp2tp/libmp2tp.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
