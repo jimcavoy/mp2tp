@@ -4,7 +4,7 @@
 cmake_minimum_required (VERSION 3.21)
 
 project (mp2tp
-	VERSION 0.2.0
+	VERSION 1.0.0
 	DESCRIPTION "MPEG-2 TS Parser library"
 	LANGUAGES C CXX
 )

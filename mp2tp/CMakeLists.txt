@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(mp2tp
-    VERSION 0.2.0
+    VERSION 1.0.0
     DESCRIPTION "MPEG-2 TS parser library"
     LANGUAGES C CXX)
 
@@ -21,7 +21,7 @@ add_library(mp2tp STATIC)
 
 file(GLOB SRC_LIST
 	src/*.cpp)
-	
+
 target_sources(mp2tp PRIVATE ${SRC_LIST})
 
 set_property(TARGET mp2tp PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -66,7 +66,7 @@ include(CMakePackageConfigHelpers)
 # version argument to select between several versions of the package via specifying VERSION argument
 # to find_package().
 # We're not explicitly specifying the VERSION parameter to allow `write_basic_package_version_file` to 
-# get it from project(...) version (which is 0.2.0)
+# get it from project(...) version (which is 1.0.0)
 write_basic_package_version_file(
   "mp2tp-config-version.cmake"
   # Package compatibility strategy. SameMajorVersion is essentially `semantic versioning`.
