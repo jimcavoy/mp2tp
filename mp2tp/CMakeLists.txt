@@ -9,20 +9,41 @@ include(GNUInstallDirs)
 
 # This is the default install directory for config-file package cmake files
 # It is relative to install prefix.
-set(mp2tp_INSTALL_CMAKEDIR cmake CACHE PATH "Installation directory for config-file package cmake files")
+set(mp2tp_INSTALL_CMAKEDIR lib/cmake/mp2tp CACHE PATH "Installation directory for config-file package cmake files")
 
 # set the postfix "d" for the resulting .so or .dll files when building the
 # library in debug mode
-set(CMAKE_DEBUG_POSTFIX
-    d
-)
+set(CMAKE_DEBUG_POSTFIX d)
 
 add_library(mp2tp STATIC)
 
-file(GLOB SRC_LIST
-	src/*.cpp)
-
-target_sources(mp2tp PRIVATE ${SRC_LIST})
+target_sources(mp2tp PRIVATE 
+    include/mp2tp/AccessUnit.h
+    include/mp2tp/libmp2tp.h
+    include/mp2tp/tsadptfd.h
+    include/mp2tp/tsmetadata.h
+    include/mp2tp/tsnit.h
+    include/mp2tp/tspacker.h
+    include/mp2tp/tspat.h
+    include/mp2tp/tspckt.h
+    include/mp2tp/tspes.h
+    include/mp2tp/tspmt.h
+    include/mp2tp/tsprsr.h
+    include/mp2tp/tstype.h
+    src/AccessUnit.cpp
+    src/stdafx.cpp
+    src/stdafx.h
+    src/targetver.h
+    src/tsadptfd.cpp
+    src/tsmetadata.cpp
+    src/tsnit.cpp
+    src/tspacker.cpp
+    src/tspat.cpp
+    src/tspckt.cpp
+    src/tspes.cpp
+    src/tspmt.cpp
+    src/tsprsr.cpp
+)
 
 set_property(TARGET mp2tp PROPERTY POSITION_INDEPENDENT_CODE ON)
 
@@ -39,13 +60,13 @@ endif()
 target_link_libraries(mp2tp ${WS})
 
 target_include_directories(mp2tp
-            PRIVATE src/mp2tp
-            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE src/mp2tp
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 install(TARGETS mp2tp
-        EXPORT mp2tp_export
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    EXPORT mp2tp_export
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install (
@@ -54,9 +75,9 @@ install (
 )
 
 install (EXPORT mp2tp_export
-        FILE mp2tp-config.cmake
-        NAMESPACE lcss::
-        DESTINATION ${mp2tp_INSTALL_CMAKEDIR}
+    FILE mp2tp-config.cmake
+    NAMESPACE lcss::
+    DESTINATION ${mp2tp_INSTALL_CMAKEDIR}
 )
 
 # Defines write_basic_package_version_file
