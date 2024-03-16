@@ -1,15 +1,12 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(mp2tp
-    VERSION 1.0.0
-    DESCRIPTION "MPEG-2 TS parser library"
-    LANGUAGES C CXX)
+  VERSION 1.0.0
+  DESCRIPTION "MPEG-2 TS parser library"
+  LANGUAGES CXX
+)
 
 include(GNUInstallDirs)
-
-# This is the default install directory for config-file package cmake files
-# It is relative to install prefix.
-set(mp2tp_INSTALL_CMAKEDIR lib/cmake/mp2tp CACHE PATH "Installation directory for config-file package cmake files")
 
 # set the postfix "d" for the resulting .so or .dll files when building the
 # library in debug mode
@@ -17,7 +14,8 @@ set(CMAKE_DEBUG_POSTFIX d)
 
 add_library(mp2tp STATIC)
 
-target_sources(mp2tp PRIVATE 
+target_sources(mp2tp
+  PRIVATE
     include/mp2tp/AccessUnit.h
     include/mp2tp/libmp2tp.h
     include/mp2tp/tsadptfd.h
@@ -48,20 +46,23 @@ target_sources(mp2tp PRIVATE
 set_property(TARGET mp2tp PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # specify the C++ standard
-target_compile_features(
-    mp2tp
-    PUBLIC cxx_std_14
+target_compile_features( mp2tp
+  PUBLIC
+    cxx_std_14
 )
 
 if(WIN32)
-    set(WS wsock32 ws2_32)
+  target_link_libraries(mp2tp 
+    PUBLIC
+     wsock32 ws2_32
+  )
 endif()
 
-target_link_libraries(mp2tp ${WS})
-
 target_include_directories(mp2tp
-    PRIVATE src/mp2tp
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE
+    src/mp2tp
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 install(TARGETS mp2tp
@@ -77,7 +78,7 @@ install (
 install (EXPORT mp2tp_export
     FILE mp2tp-config.cmake
     NAMESPACE lcss::
-    DESTINATION ${mp2tp_INSTALL_CMAKEDIR}
+    DESTINATION lib/cmake/mp2tp
 )
 
 # Defines write_basic_package_version_file
@@ -98,5 +99,5 @@ write_basic_package_version_file(
 # in the same directory as `mp2tp_lib-config.cmake` file.
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/mp2tp-config-version.cmake"
-  DESTINATION "${mp2tp_INSTALL_CMAKEDIR}"
+  DESTINATION lib/cmake/mp2tp
 )
