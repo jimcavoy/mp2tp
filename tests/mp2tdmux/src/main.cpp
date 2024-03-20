@@ -10,6 +10,12 @@ using namespace std;
 
 const int N = 188*7;
 
+#ifdef WIN32
+#define fprintf_s fprintf
+#else
+#define _MAX_PATH 260
+#endif
+
 void createFilename(const char* ifname, const char* ext, char* ofname);
 
 int main(int argc, char* argv[])
@@ -94,7 +100,7 @@ int main(int argc, char* argv[])
 
 			end = clock();
 			double dif = (double)(end - start) / CLOCKS_PER_SEC;
-			fprintf_s(stdout, "Elapsed time is %2.3lf seconds.\n", dif);
+			fprintf(stdout, "Elapsed time is %2.3lf seconds.\n", dif);
 		}
 		catch(...)
 		{
@@ -114,6 +120,7 @@ int main(int argc, char* argv[])
 
 void createFilename(const char* ifname, const char* newext, char* ofname)
 {
+#ifdef WIN32
 	char drive[_MAX_DRIVE];
 	char dir[_MAX_DIR];
 	char fname[_MAX_FNAME];
@@ -122,4 +129,7 @@ void createFilename(const char* ifname, const char* newext, char* ofname)
 	_splitpath_s(ifname,drive,dir,fname,ext);
 
 	_makepath_s(ofname,_MAX_PATH,drive,dir,fname,newext);
+#else
+	sprintf(ofname, "%s.%s", ifname, newext);
+#endif
 }
