@@ -31,20 +31,22 @@ target_link_libraries(mp2tpser
 # Test cases
 enable_testing()
 
-add_test(NAME Read 
+add_subdirectory(tests)
+
+add_test(NAME mp2tpser_read
   COMMAND mp2tpser -i${PROJECT_SOURCE_DIR}/sample/foreman_cif_klv.ts -n100 -olabels.txt )
-set_tests_properties(Read
+set_tests_properties(mp2tpser_read
   PROPERTIES PASS_REGULAR_EXPRESSION "TS Packets Read: 147"
 )
 
-add_test(NAME NoFile 
+add_test(NAME mp2tpser_nofile
   COMMAND mp2tpser -iC:/users/joe/samples/foo.ts)
-set_tests_properties(NoFile
+set_tests_properties(mp2tpser_nofile
   PROPERTIES PASS_REGULAR_EXPRESSION "Error: Fail to open input file, foo.ts"
 )
 
-add_test(NAME ReadAll 
+add_test(NAME mp2tpser_readall
   COMMAND mp2tpser -i${PROJECT_SOURCE_DIR}/sample/foreman_cif_klv.ts -n0 -olabels.txt )
-set_tests_properties(ReadAll
+set_tests_properties(mp2tpser_readall
   PROPERTIES PASS_REGULAR_EXPRESSION "TS Packets Read: 4234"
 )
