@@ -63,3 +63,7 @@ libmp2t/Release/libmp2t.lib.lastcodeanalysissucceeded
 libmp2t/labels.txt
 .vscode/launch.json
 /mp2tp/build
+/sample/foreman_cif_klv.exi
+/sample/foreman_cif_klv.h264
+/sample/foreman_cif_klv.klv
+/sample/foreman_cif_klv.mp2
