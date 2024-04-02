@@ -81,6 +81,10 @@ install (EXPORT mp2tp_export
     DESTINATION lib/cmake/mp2tp
 )
 
+if (WIN32)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Debug/mp2tpd.pdb DESTINATION lib OPTIONAL)
+endif()
+
 # Defines write_basic_package_version_file
 include(CMakePackageConfigHelpers)
 
