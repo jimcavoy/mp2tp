@@ -6,6 +6,8 @@
 namespace lcss
 {
 
+/// @brief AdaptationField represents an instance of a adaptation_field as defined in
+/// Ref: ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Reserved, Table 2-6 page 23
 class AdaptationField
 {
 public:

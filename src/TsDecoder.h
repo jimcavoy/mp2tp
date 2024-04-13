@@ -4,18 +4,21 @@
 #include <iostream>
 #include <sstream>
 
-class TsDecoder :
-	public lcss::TSParser
+namespace mp2tpser
 {
-public:
-	TsDecoder(std::ostream& ostrm);
-	virtual ~TsDecoder();
+	class TsDecoder :
+		public lcss::TSParser
+	{
+	public:
+		TsDecoder(std::ostream& ostrm);
+		virtual ~TsDecoder();
 
-	virtual void onPacket(lcss::TransportPacket& pckt) override;
+		virtual void onPacket(lcss::TransportPacket& pckt) override;
 
-private:
-	lcss::ProgramAssociationTable	_pat;
-	lcss::ProgramMapTable			_pmt;
-	std::ostream&					_ostrm;
-};
+	private:
+		lcss::ProgramAssociationTable	_pat;
+		lcss::ProgramMapTable			_pmt;
+		std::ostream& _ostrm;
+	};
+}
 

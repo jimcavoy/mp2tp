@@ -44,6 +44,6 @@ Add additional CMake parameters as required depending on your host development e
 The `--install` command will install a CMake package so it can be imported into other CMake projects.
 
 ### Run Test
-To run the projects build-in test, enter the following:
+To run the project's build-in test, enter the following:
 
     ctest --test-dir ./build
