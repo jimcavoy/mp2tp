@@ -176,6 +176,8 @@ uint8_t lcss::TransportPacket::scramblingControl() const
 	return (_pimpl->_data[3] & TP_SCRAMBLLING_CTRL) >> 6;
 }
 
+/// @brief Query if an AdaptationField instance is insert into this instance.
+/// @return Return non-zero if an AdaptationField instance is present, otherwise zero if one does not exist.
 uint8_t lcss::TransportPacket::adaptationFieldExist() const
 {
 	return (_pimpl->_data[3] & TP_ADAPTATION_FD_CTRL) >> 4;
@@ -202,6 +204,8 @@ uint8_t lcss::TransportPacket::incrementCC()
 	return cc();
 }
 
+/// @brief Get the number of bytes to skip before reading the PES data.
+/// @return Returns the number of bytes to skip before reading the PES data.
 unsigned char lcss::TransportPacket::data_byte() const
 {
 	uint8_t db = 0;
@@ -228,7 +232,8 @@ unsigned char lcss::TransportPacket::data_byte() const
 	return db;
 }
 
-
+/// @brief Get the AdaptationField instance for this TransportPacket instance.
+/// @return Return a pointer to AdaptationField instance if the TransportPacket has one, otherwise null.
 const lcss::AdaptationField* lcss::TransportPacket::getAdaptationField() const
 {
 	char flag = adaptationFieldExist();
@@ -241,6 +246,9 @@ const lcss::AdaptationField* lcss::TransportPacket::getAdaptationField() const
 	return nullptr;
 }
 
+/// @brief Get the payload data for this TransportPacket instance.
+/// @param buffer [in, out] The buffer to hold the payload data.
+/// @param len [in] The number of bytes that @p buffer can hold.
 void lcss::TransportPacket::getData(BYTE* buffer, int len) const
 {
 	BYTE dataByte = data_byte();
@@ -265,6 +273,8 @@ void lcss::TransportPacket::getData(BYTE* buffer, int len) const
 	}
 }
 
+/// @brief Get the TransportPacket instance's payload data. 
+/// @return Return the address of the first byte to the payload data. 
 const BYTE* lcss::TransportPacket::getData() const
 {
 	BYTE dataByte = data_byte();
@@ -278,11 +288,17 @@ const BYTE* lcss::TransportPacket::getData() const
 	return nullptr;
 }
 
+/// @brief Get the TransportPacket instance's implementation length. 
+/// @return Returns the number of bytes this instance's implementation length.  Valid values are 0 to 188.
 size_t lcss::TransportPacket::length() const
 {
 	return _pimpl->_pos;
 }
 
+
+/// @brief Copy the TransportPacket instance into a buffer passed in by the client in @p data.
+/// @param data [in, out] The buffer that the TransportPacket instance will be copied into.
+/// @param len [in] The buffer size in bytes of @p data.
 void lcss::TransportPacket::serialize(BYTE* data, int len) const
 {
 #ifdef WIN32
@@ -300,16 +316,22 @@ void lcss::TransportPacket::serialize(BYTE* data, int len) const
 #endif
 }
 
+/// @brief Copy raw byte sequence of data into the TransportPacket instance.
+/// @param buf [in] The buffer @p buf to be copied into the TransportPacket instance.
 void lcss::TransportPacket::parse(const BYTE* buf)
 {
 	_pimpl->insert(buf, TransportPacket::TS_SIZE);
 }
 
+/// @brief Insert one byte into the TransportPacket instance.
+/// @param b [in] The byte to be added the TransportPacket instance.
 void lcss::TransportPacket::push_back(BYTE b)
 {
 	_pimpl->push_back(b);
 }
 
+/// @brief Get the full TransportPacket instance's data.  Header + payload
+/// @return Returns the address of the first byte of the TransportPacket instance in memory.
 const BYTE* lcss::TransportPacket::data() const
 {
 	return _pimpl->_data.data();

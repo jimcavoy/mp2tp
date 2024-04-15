@@ -11,15 +11,15 @@
 #include <arpa/inet.h>
 #endif
 
-/// <summary>
-/// Classes required to represent entities that compose a Program Map Table
-/// Ref: ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Reserved, Table 2-33 page 50 
-/// </summary>
+
 namespace lcss
 {
 
 	/////////////////////////////////////////////////////////////////////////////
 	// class Descriptor
+	
+	/// @brief Descriptor represents additional information associated with a 
+	/// ProgramElement
 	class Descriptor
 	{
 	public:
@@ -43,6 +43,8 @@ namespace lcss
 
 	/////////////////////////////////////////////////////////////////////////////
 	// class ProgramElement
+
+	/// @brief ProgramElement describes the elementary stream in a ProgramMapTable.
 	class ProgramElement
 	{
 	public:
@@ -87,7 +89,10 @@ namespace lcss
 
 	/////////////////////////////////////////////////////////////////////////////
 	// ProgramMapTable
-	// 
+	/// <summary>
+	/// ProgramMapTable implements the TS_program_map_section as defined in
+	/// Ref: ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Reserved, Table 2-33 page 50 
+	/// </summary>
 	class ProgramMapTable
 	{
 	public:
@@ -153,6 +158,10 @@ namespace lcss
 	/////////////////////////////////////////////////////////////////////////////
 	// eqDescriptor
 	// Predicate Functor
+
+	/// @brief eqDescriptor is a predicate functor to determine if a 
+	/// Descriptor is equal to a tag that is passed in the 
+	/// constructor
 	class eqDescriptor
 	{
 	public:

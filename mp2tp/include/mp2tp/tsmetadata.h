@@ -8,8 +8,9 @@ namespace lcss
 {
 /////////////////////////////////////////////////////////////////////////////
 // MetadataAUCell
-// The class represents a Metadata Access Unit cell (metadata_AU_cell)
-// Ref: ISO/IEC 13818-1 : 2013 (E), Table 2-108 - Metadata AU cell, pg 129
+
+/// @brief The class represents a Metadata Access Unit cell (metadata_AU_cell)
+/// Ref: ISO/IEC 13818-1 : 2013 (E), Table 2-108 - Metadata AU cell, pg 129
 class MetadataAUCell
 {
 private:
@@ -50,8 +51,10 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 // MetadataAUWrapper
-// The class represents a Metadata Access Unit Wrapper (metadata_AU_wrapper)
-// Ref: ISO/IEC 13818-1 : 2013 (E), Table 2-107 - Metadata Access Unit Wrapper, pg 129
+
+/// @brief The class represents a Metadata Access Unit Wrapper (metadata_AU_wrapper)
+/// Ref: ISO/IEC 13818-1 : 2013 (E), Table 2-107 - Metadata Access Unit Wrapper, pg 129
+
 class MetadataAUWrapper
 {
 public:

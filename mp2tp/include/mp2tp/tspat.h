@@ -78,8 +78,8 @@ public:
 	UINT32	CRC_32()					const;
 
 private:
-	class Impl;
-	std::unique_ptr<Impl> _pimpl;
+	class Impl; ///< ProgramAssociationTable implementation class
+	std::unique_ptr<Impl> _pimpl; ///< smart pointer to the implementation class instance
 };
 
 

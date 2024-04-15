@@ -11,6 +11,8 @@ namespace lcss
 	/////////////////////////////////////////////////////////////////////////////
 	// Network Information Table
 	// Ref: ETSI EN 300 468 V1.11.1 (2010-04), page 19
+
+	/// @brief NetworkInformationTable represents an instance defined in ETSI EN 300 468 V1.11.1 (2010-04), page 19
 	class NetworkInformationTable
 	{
 	private:

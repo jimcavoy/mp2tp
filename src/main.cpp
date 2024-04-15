@@ -22,7 +22,7 @@ const char* opts = "  -i\tInput MPEG transport stream file path or standard cons
  -?\tPrint this message.";
 
 // Forward declarations
-std::unique_ptr<TsDecoder> createDecoder(std::string outputFilename, std::ofstream& oStream);
+std::unique_ptr<mp2tpser::TsDecoder> createDecoder(std::string outputFilename, std::ofstream& oStream);
 bool canStop(int num, int limit);
 std::string getFilename(std::string& path);
 
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 	}
 
 	ofstream oStream;
-	std::unique_ptr<TsDecoder> decoder = createDecoder(ofile, oStream);
+	std::unique_ptr<mp2tpser::TsDecoder> decoder = createDecoder(ofile, oStream);
 
 	BYTE memblock[N];
 	int num_of_packets = 0;
@@ -104,23 +104,23 @@ int main(int argc, char* argv[])
 }
 
 
-std::unique_ptr<TsDecoder> createDecoder(std::string ofile, std::ofstream& oStream)
+std::unique_ptr<mp2tpser::TsDecoder> createDecoder(std::string ofile, std::ofstream& oStream)
 {
-	std::unique_ptr<TsDecoder> decoder;
+	std::unique_ptr<mp2tpser::TsDecoder> decoder;
 	if (ofile.empty())
 	{
-		decoder = std::make_unique<TsDecoder>(std::cout);
+		decoder = std::make_unique<mp2tpser::TsDecoder>(std::cout);
 	}
 	else
 	{
 		oStream.open(ofile);
 		if (oStream.is_open())
 		{
-			decoder = std::make_unique<TsDecoder>(oStream);
+			decoder = std::make_unique<mp2tpser::TsDecoder>(oStream);
 		}
 		else
 		{
-			decoder = std::make_unique<TsDecoder>(std::cout);
+			decoder = std::make_unique<mp2tpser::TsDecoder>(std::cout);
 		}
 	}
 	return decoder;

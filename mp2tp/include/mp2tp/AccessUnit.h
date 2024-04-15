@@ -6,6 +6,9 @@ namespace lcss
 {
 	/////////////////////////////////////////////////////////////////////////////
 	// AccessUnit
+
+	/// @brief An AccessUnit is a coded representation of a presentation unit.
+	/// For video it is a video frame and for metadata it is one KLV set.
 	class AccessUnit
 	{
 	public:

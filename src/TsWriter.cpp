@@ -732,7 +732,7 @@ namespace
 
 }
 
-void TsWriter::printHeader(std::ostream& ostrm, const lcss::TransportPacket& pckt)
+void mp2tpser::TsWriter::printHeader(std::ostream& ostrm, const lcss::TransportPacket& pckt)
 {
 	bool isAdaptationField = false;
 	ostrm << "\ttransport_packet() {" << endl;
@@ -773,7 +773,7 @@ void TsWriter::printHeader(std::ostream& ostrm, const lcss::TransportPacket& pck
 	}
 }
 
-void TsWriter::printAdaptationField(std::ostream& ostrm, const lcss::AdaptationField& adf)
+void mp2tpser::TsWriter::printAdaptationField(std::ostream& ostrm, const lcss::AdaptationField& adf)
 {
 	ostrm << "\t\tadaptation_field() {" << endl;
 	ostrm << "\t\t\tadaptation_field_length: " << adf.length() << endl;
@@ -793,7 +793,7 @@ void TsWriter::printAdaptationField(std::ostream& ostrm, const lcss::AdaptationF
 	ostrm << "\t\t}" << endl;
 }
 
-std::string TsWriter::printPCR(std::ostream& ostrm, const lcss::AdaptationField& adf)
+std::string mp2tpser::TsWriter::printPCR(std::ostream& ostrm, const lcss::AdaptationField& adf)
 {
 	string prc;
 	if (adf.PCR_flag() && adf.length() > 0)
@@ -819,7 +819,7 @@ std::string TsWriter::printPCR(std::ostream& ostrm, const lcss::AdaptationField&
 	return prc;
 }
 
-void TsWriter::printPAT(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
+void mp2tpser::TsWriter::printPAT(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
 {
 	std::stringstream val;
 
@@ -850,7 +850,7 @@ void TsWriter::printPAT(std::ostream& ostrm, const lcss::ProgramAssociationTable
 	ostrm << "\t\t}" << endl;
 }
 
-void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
+void mp2tpser::TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 {
 	ostrm << "\t\tTS_program_map_section() {" << endl;
 
@@ -911,7 +911,7 @@ void TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTable& pmt)
 	ostrm << "\t\t}" << endl;
 }
 
-void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
+void mp2tpser::TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 {
 	string text = getStreamIdDescription(pes.stream_id());
 	UINT16 pts_dts_flag = (pes.flags2() & PTS_DTS_MASK);
@@ -968,20 +968,21 @@ void TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 	ostrm << "\t\t}" << endl;
 }
 
-std::ostream& operator<<(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
+std::ostream& mp2tpser::operator<<(std::ostream& ostrm, const lcss::ProgramAssociationTable& pat)
 {
-	TsWriter::printPAT(ostrm, pat);
+	mp2tpser::TsWriter::printPAT(ostrm, pat);
 	return ostrm;
 }
 
-std::ostream& operator<<(std::ostream& ostrm, const lcss::ProgramMapTable& pat)
+std::ostream& mp2tpser::operator<<(std::ostream& ostrm, const lcss::ProgramMapTable& pat)
 {
-	TsWriter::printPMT(ostrm, pat);
+	mp2tpser::TsWriter::printPMT(ostrm, pat);
 	return ostrm;
 }
 
-std::ostream& operator<<(std::ostream& ostrm, const lcss::PESPacket& pctk)
+std::ostream& mp2tpser::operator<<(std::ostream& ostrm, const lcss::PESPacket& pctk)
 {
-	TsWriter::printPES(ostrm, pctk);
+	mp2tpser::TsWriter::printPES(ostrm, pctk);
 	return ostrm;
 }
+
