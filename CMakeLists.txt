@@ -28,7 +28,7 @@ target_link_libraries(mp2tpser
     mp2tp
 )
 
-option(ENABLE_DOCUMENTATION "Enable documentation" ON)
+option(ENABLE_DOCUMENTATION "Enable documentation" OFF)
 
 if (ENABLE_DOCUMENTATION)
 ############################################################################
