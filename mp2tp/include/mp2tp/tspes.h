@@ -5,7 +5,11 @@
 
 namespace lcss
 {
-
+	/// @brief TransportPacket implements the PES_packet() as defined in
+	/// Ref: ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Reserved, Table 2-21 page 33.
+	/// How to use: If the TransportPacket::payloadUnitStart is true, 
+	/// get the payload data from a TransportPacket::getData. 
+	/// Pass the payload data into PESPacket::parse to read PES fields.
 	class PESPacket
 	{
 	public:
@@ -26,8 +30,8 @@ namespace lcss
 		BYTE flags1() const;
 		BYTE flags2() const;
 		BYTE header_data_length() const;
-		const BYTE* PTS() const;
-		const BYTE* DTS() const;
+		const BYTE* PTS() const; 
+		const BYTE* DTS() const; 
 
 		// Methods
 		bool hasPacketStartCodePrefix() const;
