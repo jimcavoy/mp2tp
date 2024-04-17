@@ -25,7 +25,7 @@ namespace lcss
 		/// @param pid [in] The PID associated with the elementary stream.
 		/// @param cc [in] The continuity counter to assign to the TransportPacket instance.
 		/// @return A TransportPacket for an elementary stream.
-		lcss::TransportPacket packetize(uint8_t* buf, size_t bufsiz, uint16_t pid, uint8_t cc);
+		lcss::TransportPacket packetize(const uint8_t* buf, size_t bufsiz, uint16_t pid, uint8_t cc);
 
 		/// @brief Creates a collection of TransportPacket instances for an elementary stream where the coded media representation size is greater than 184 bytes.
 		/// @param buf [in] Buffer containing the coded media representation for an elementary stream.
@@ -34,7 +34,7 @@ namespace lcss
 		/// @param cc [in,out] The continuity counter to assign to the TransportPacket instances.  The function will increment the @p cc for each new 
 		/// TransportPacket instance created.
 		/// @return A collection of TransportPacket instances for an elementary stream.
-		std::vector<lcss::TransportPacket> packetize(uint8_t* buf, size_t bufsiz, uint16_t pid, size_t* cc);
+		std::vector<lcss::TransportPacket> packetize(const uint8_t* buf, size_t bufsiz, uint16_t pid, size_t* cc);
 
 		/// @brief Creates a collection of TransportPacket instances for an elementary stream where the coded media representation is based on an
 		/// an AccessUnit instance.
