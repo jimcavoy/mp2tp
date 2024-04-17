@@ -92,7 +92,7 @@ namespace lcss
 	{
 	}
 
-	lcss::TransportPacket TSPacker::packetize(uint8_t *buf, size_t bufsiz, uint16_t pid, uint8_t cc)
+	lcss::TransportPacket TSPacker::packetize(const uint8_t *buf, size_t bufsiz, uint16_t pid, uint8_t cc)
 	{
 		assert(bufsiz < 185);
 		lcss::TransportPacket pckt;
@@ -121,7 +121,7 @@ namespace lcss
 	}
 
 
-	std::vector<lcss::TransportPacket> TSPacker::packetize(uint8_t* buf, size_t bufsiz, uint16_t pid, size_t* cc)
+	std::vector<lcss::TransportPacket> TSPacker::packetize(const uint8_t* buf, size_t bufsiz, uint16_t pid, size_t* cc)
 	{
 		std::vector<lcss::TransportPacket> tps;
 		std::vector<uint8_t> tsd;
