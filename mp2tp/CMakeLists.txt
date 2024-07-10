@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.21)
+cmake_minimum_required (VERSION 3.20)
 
 project(mp2tp
   VERSION 1.0.1
@@ -43,7 +43,7 @@ target_sources(mp2tp
     src/tsprsr.cpp
 )
 
-set_property(TARGET mp2tp PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_target_properties(mp2tp PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # specify the C++ standard
 target_compile_features( mp2tp
