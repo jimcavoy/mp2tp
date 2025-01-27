@@ -28,121 +28,128 @@ std::string getFilename(std::string& path);
 
 int main(int argc, char* argv[])
 {
-	using namespace std;
-	std::string ifile;
-	std::string ofile;
-	int limit = 1000;
-	char c;
+    using namespace std;
+    std::string ifile;
+    std::string ofile;
+    int limit = 1000;
+    char c;
 
-	while (--argc > 0 && (*++argv)[0] == '-')
-	{
-		c = *++argv[0];
-		switch (c)
-		{
-		case 'i':
-			ifile = *argv + 1;
-			break;
-		case 'o':
-			ofile = *argv + 1;
-			break;
-		case 'n':
-			limit = std::stoi(*argv + 1);
-			break;
-		case '?':
-			cout << usage << endl;
-			cout << endl << "Options: " << endl;
-			cout << opts << endl;
-			return 0;
-			break;
-		default:
-			cout << "mp2tp: illegal option " << c << endl;
-			return -1;
-		}
-	}
+    while (--argc > 0 && (*++argv)[0] == '-')
+    {
+        c = *++argv[0];
+        switch (c)
+        {
+        case 'i':
+            ifile = *argv + 1;
+            break;
+        case 'o':
+            ofile = *argv + 1;
+            break;
+        case 'n':
+            limit = std::stoi(*argv + 1);
+            break;
+        case '?':
+            cout << usage << endl;
+            cout << endl << "Options: " << endl;
+            cout << opts << endl;
+            return 0;
+            break;
+        default:
+            cout << "mp2tp: illegal option " << c << endl;
+            return -1;
+        }
+    }
 
-	shared_ptr<istream> input;
-	// read file from stdin
-	if (ifile.empty())
-	{
+    shared_ptr<istream> input;
+    // read file from stdin
+    if (ifile.empty())
+    {
 #ifdef WIN32
-		int result = _setmode(_fileno(stdin), _O_BINARY);
-		if (result < 0)
-		{
-			cout << "Error: Fail to open input stream in binary mode" << endl;
-			return 1;
-		}
+        int result = _setmode(_fileno(stdin), _O_BINARY);
+        if (result < 0)
+        {
+            cout << "Error: Fail to open input stream in binary mode" << endl;
+            return 1;
+        }
 #endif
-		input.reset(&cin, [](...) {});
-	}
-	else // read the file
-	{
-		ifstream* tsfile = new ifstream(ifile, std::ios::binary);
-		if (!tsfile->is_open())
-		{
-			cout << "Error: Fail to open input file, " << getFilename(ifile) << endl;
-			return -1;
-		}
-		input.reset(tsfile);
-	}
+        input.reset(&cin, [](...) {});
+    }
+    else // read the file
+    {
+        ifstream* tsfile = new ifstream(ifile, std::ios::binary);
+        if (!tsfile->is_open())
+        {
+            cout << "Error: Fail to open input file, " << getFilename(ifile) << endl;
+            return -1;
+        }
+        input.reset(tsfile);
+    }
 
-	ofstream oStream;
-	std::unique_ptr<mp2tpser::TsDecoder> decoder = createDecoder(ofile, oStream);
+    ofstream oStream;
+    std::unique_ptr<mp2tpser::TsDecoder> decoder = createDecoder(ofile, oStream);
 
-	BYTE memblock[N];
-	int num_of_packets = 0;
-	while (input->good())
-	{
-		input->read((char*)memblock, N);
-		decoder->parse(memblock, (unsigned)input->gcount());
-		num_of_packets += (int)input->gcount() / lcss::TransportPacket::TS_SIZE;
-		if (canStop(num_of_packets, limit))
-			break;
-	}
+    BYTE memblock[N];
+    int num_of_packets = 0;
+    while (input->good())
+    {
+        input->read((char*)memblock, N);
+        bool result = decoder->parse(memblock, (unsigned)input->gcount());
 
-	cout << "TS Packets Read: " << num_of_packets << endl;
-	return 0;
+        if (!result)
+        {
+            cout << "Error: " << getFilename(ifile) << " is not a valid MPEG-2 TS file." << endl;
+            return -1;
+        }
+
+        num_of_packets += (int)input->gcount() / lcss::TransportPacket::TS_SIZE;
+        if (canStop(num_of_packets, limit))
+            break;
+    }
+
+    cout << "TS Packets Read: " << num_of_packets << endl;
+    return 0;
 }
 
 
 std::unique_ptr<mp2tpser::TsDecoder> createDecoder(std::string ofile, std::ofstream& oStream)
 {
-	std::unique_ptr<mp2tpser::TsDecoder> decoder;
-	if (ofile.empty())
-	{
-		decoder = std::make_unique<mp2tpser::TsDecoder>(std::cout);
-	}
-	else
-	{
-		oStream.open(ofile);
-		if (oStream.is_open())
-		{
-			decoder = std::make_unique<mp2tpser::TsDecoder>(oStream);
-		}
-		else
-		{
-			decoder = std::make_unique<mp2tpser::TsDecoder>(std::cout);
-		}
-	}
-	return decoder;
+    std::unique_ptr<mp2tpser::TsDecoder> decoder;
+    if (ofile.empty())
+    {
+        decoder = std::make_unique<mp2tpser::TsDecoder>(std::cout);
+    }
+    else
+    {
+        oStream.open(ofile);
+        if (oStream.is_open())
+        {
+            decoder = std::make_unique<mp2tpser::TsDecoder>(oStream);
+        }
+        else
+        {
+            decoder = std::make_unique<mp2tpser::TsDecoder>(std::cout);
+        }
+    }
+    return decoder;
 }
 
 bool canStop(int num, int limit)
 {
-	if (limit == 0)
-		return false;
-	return num > limit ? true : false;
+    if (limit == 0)
+        return false;
+    return num > limit ? true : false;
 }
 
 std::string getFilename(std::string& path)
 {
-	std::string fname;
-	std::string::const_reverse_iterator it;
-	for (it = path.rbegin(); it != path.rend(); ++it)
-	{
-		if (*it == '\\' || *it == '/')
-			break;
-		fname.push_back(*it);
-	}
-	std::reverse(fname.begin(), fname.end());
-	return fname;
+    std::string fname;
+    std::string::const_reverse_iterator it;
+    for (it = path.rbegin(); it != path.rend(); ++it)
+    {
+        if (*it == '\\' || *it == '/')
+            break;
+        fname.push_back(*it);
+    }
+    std::reverse(fname.begin(), fname.end());
+    return fname;
 }
