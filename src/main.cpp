@@ -14,11 +14,12 @@
 #include "TsDecoder.h"
 
 const int N = lcss::TransportPacket::TS_SIZE * 49;
-const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file>";
+const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file> -s<TS_packet_size>";
 const char* opts = "  -i\tInput MPEG transport stream file path or standard console in (default: console).\n \
  -n\tThe minimum number of TS packets to read from the input file before exiting.\n \
    \tSet to zero to read all. (default: 1000).\n \
  -o\tOptional output file name (default: console).\n \
+ -s\tTS Packet Size (default: 188).\n \
  -?\tPrint this message.";
 
 // Forward declarations
@@ -32,6 +33,7 @@ int main(int argc, char* argv[])
     std::string ifile;
     std::string ofile;
     int limit = 1000;
+    int packetSize = 188;
     char c;
 
     while (--argc > 0 && (*++argv)[0] == '-')
@@ -47,6 +49,9 @@ int main(int argc, char* argv[])
             break;
         case 'n':
             limit = std::stoi(*argv + 1);
+            break;
+        case 's':
+            packetSize = std::stoi(*argv + 1);
             break;
         case '?':
             cout << usage << endl;
@@ -68,7 +73,7 @@ int main(int argc, char* argv[])
         int result = _setmode(_fileno(stdin), _O_BINARY);
         if (result < 0)
         {
-            cout << "Error: Fail to open input stream in binary mode" << endl;
+            cerr << "Error: Fail to open input stream in binary mode." << endl;
             return 1;
         }
 #endif
@@ -79,7 +84,7 @@ int main(int argc, char* argv[])
         ifstream* tsfile = new ifstream(ifile, std::ios::binary);
         if (!tsfile->is_open())
         {
-            cout << "Error: Fail to open input file, " << getFilename(ifile) << endl;
+            cerr << "Error: Fail to open input file, " << getFilename(ifile) << "." << endl;
             return -1;
         }
         input.reset(tsfile);
@@ -87,6 +92,7 @@ int main(int argc, char* argv[])
 
     ofstream oStream;
     std::unique_ptr<mp2tpser::TsDecoder> decoder = createDecoder(ofile, oStream);
+    decoder->setPacketSize(packetSize);
 
     BYTE memblock[N];
     int num_of_packets = 0;
@@ -97,7 +103,7 @@ int main(int argc, char* argv[])
 
         if (!result)
         {
-            cout << "Error: " << getFilename(ifile) << " is not a valid MPEG-2 TS file." << endl;
+            cerr << "Error: " << getFilename(ifile) << " is not a valid MPEG-2 TS file." << endl;
             return -1;
         }
 
@@ -106,7 +112,7 @@ int main(int argc, char* argv[])
             break;
     }
 
-    cout << "TS Packets Read: " << num_of_packets << endl;
+    cerr << "TS Packets Read: " << num_of_packets << endl;
     return 0;
 }
 
