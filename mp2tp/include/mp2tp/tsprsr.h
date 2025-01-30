@@ -29,7 +29,7 @@ namespace lcss
         /// <param name="size">The number of bytes in buf.</param>
         /// <returns>Return true if the function is able to parse the input stream
         /// in buf;otherwise return false.</returns>
-        virtual bool parse(const BYTE* buf, UINT32 size);
+        virtual bool parse(const BYTE* buf, UINT32 size, bool strict=false);
 
         /// <summary>
         /// A callback function that returns the most recent Transport 

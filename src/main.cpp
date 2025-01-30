@@ -96,17 +96,29 @@ int main(int argc, char* argv[])
 
     BYTE memblock[N];
     int num_of_packets = 0;
+    std::streamsize bytesRead = 0;
+    bool strict = true;
+
     while (input->good())
     {
         input->read((char*)memblock, N);
-        bool result = decoder->parse(memblock, (unsigned)input->gcount());
+        bytesRead += input->gcount();
+        bool result = decoder->parse(memblock, (unsigned)input->gcount(), strict);
 
         if (!result)
         {
-            cerr << "Error: " << getFilename(ifile) << " is not a valid MPEG-2 TS file." << endl;
-            return -1;
+            if (bytesRead == N)
+            {
+                cerr << "Error: " << getFilename(ifile) << " is not a valid MPEG-2 TS file." << endl;
+                return -1;
+            }
+            else
+            {
+                cerr << "Error: " << "Parsing error in file, " << getFilename(ifile) << ", when " << bytesRead << " bytes were read" << endl;
+            }
         }
 
+        strict = false;
         num_of_packets += (int)input->gcount() / lcss::TransportPacket::TS_SIZE;
         if (canStop(num_of_packets, limit))
             break;

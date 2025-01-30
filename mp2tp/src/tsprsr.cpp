@@ -39,7 +39,7 @@ lcss::TSParser::~TSParser()
 
 }
 
-bool lcss::TSParser::parse(const BYTE* stream, UINT32 len)
+bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
 {
     uint32_t h = 0;
     uint32_t i = 0;
@@ -71,11 +71,14 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len)
         // The TS packet is contain in the stream buffer
         else if (i + lcss::TransportPacket::TS_SIZE <= len)
         {
-            if ( h != 0 && i - h != _pimpl->_packetSize && h != i)
+            if (strict)
             {
-                return false;
+                if (h != 0 && i - h != _pimpl->_packetSize && h != i)
+                {
+                    return false;
+                }
+                h = i;
             }
-            h = i;
 
             if (_pimpl->_buffer.size() == 0)
             {
