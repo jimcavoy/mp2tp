@@ -71,6 +71,7 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
         // The TS packet is contain in the stream buffer
         else if (i + lcss::TransportPacket::TS_SIZE <= len)
         {
+            // Check to see if the sync byte falls on TS Packet size boundary
             if (strict)
             {
                 if (h != 0 && i - h != _pimpl->_packetSize && h != i)

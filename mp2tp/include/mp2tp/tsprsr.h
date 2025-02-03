@@ -11,7 +11,7 @@ namespace lcss
     class TransportPacket;
 
     /// <summary>
-    /// TSParser decompose an input MPEG-2 TS stream into Transport Stream packets.
+    /// TSParser decompose an input MPEG-2 TS stream into Transport Stream (TS) packets.
     /// The client application uses this class to create a demultiplex process. 
     /// </summary>
     class TSParser
@@ -22,11 +22,15 @@ namespace lcss
 
         /// <summary>
         /// The function parses a MPEG-2 TS stream that is passed in as a raw 
-        /// byte sequence.  It decompose the stream into Transport Packets 
+        /// byte sequence in buf.  It decompose the stream into Transport Packets 
         /// that is provided onPacket function.
         /// </summary>
         /// <param name="buf">The raw byte sequence of a MPEG-2 TS stream.</param>
         /// <param name="size">The number of bytes in buf.</param>
+        /// <param name="strict">If false, the parse function will try to find the next
+        /// sync byte (0x47) in the stream; otherwise, if the sync byte is not on the 
+        /// TS Packet size boundary (usually 188 bytes), the parse function will return
+        /// false.</param>
         /// <returns>Return true if the function is able to parse the input stream
         /// in buf;otherwise return false.</returns>
         virtual bool parse(const BYTE* buf, UINT32 size, bool strict=false);
