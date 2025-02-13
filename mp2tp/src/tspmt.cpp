@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <mp2tp/tspmt.h>
 
-
+#include <algorithm>
 #include <iterator>
 
 #ifndef WIN32
