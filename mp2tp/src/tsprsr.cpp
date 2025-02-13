@@ -43,23 +43,23 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
 {
     uint32_t h = 0;
     uint32_t i = 0;
-    bool result = true;
+
+    // The TS packet spans across two stream buffers
+    if (_pimpl->_buffer.size() > 0 && _pimpl->_buffer.size() != lcss::TransportPacket::TS_SIZE)
+    {
+        while (_pimpl->_buffer.size() < lcss::TransportPacket::TS_SIZE)
+        {
+            _pimpl->_buffer.push_back(stream[i++]);
+        }
+    }
 
     while (i < len)
     {
         // Malformed stream. Not on the 188 boundary. Find the sync byte.
         if (*(stream + i) != 0x47)
         {
-            // The TS packet spans across two stream buffers
-            if (_pimpl->_buffer.size() > 0 && _pimpl->_buffer.size() != lcss::TransportPacket::TS_SIZE)
-            {
-                while (_pimpl->_buffer.size() < lcss::TransportPacket::TS_SIZE)
-                {
-                    _pimpl->_buffer.push_back(stream[i++]);
-                }
-            }
             // Converting AVCHD packets to TS packets
-            else if (_pimpl->_packetSize != lcss::TransportPacket::TS_SIZE)
+            if (_pimpl->_packetSize != lcss::TransportPacket::TS_SIZE)
             {
                 i += _pimpl->_packetSize - lcss::TransportPacket::TS_SIZE;
             }
@@ -74,7 +74,10 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
             // Check to see if the sync byte falls on TS Packet size boundary
             if (strict)
             {
-                if (h != 0 && i - h != _pimpl->_packetSize && h != i)
+                if (h != 0 && 
+                    h != i &&
+                    i - h != _pimpl->_packetSize
+                )
                 {
                     return false;
                 }
@@ -93,14 +96,23 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
             _pimpl->_count++;
             _pimpl->_buffer.clear();
         }
-        // The TS packet spans across two stream buffers
+        // The TS packet spans across two buffer reads
         else if (i + lcss::TransportPacket::TS_SIZE > len)
         {
             while (i < len)
                 _pimpl->_buffer.push_back(stream[i++]);
         }
     }
-    return result;
+
+    if (strict)
+    {
+        if (_pimpl->_buffer.empty() && // TS Packet spans over two buffer reads so don't check
+            i - h != _pimpl->_packetSize)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void lcss::TSParser::onPacket(lcss::TransportPacket& pckt)

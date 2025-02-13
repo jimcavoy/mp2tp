@@ -85,7 +85,7 @@ add_test(NAME mp2tpser_read
   COMMAND mp2tpser -i${PROJECT_SOURCE_DIR}/sample/foreman_cif_klv.ts -n100 -olabels.txt
 )
 set_tests_properties(mp2tpser_read
-  PROPERTIES PASS_REGULAR_EXPRESSION "TS Packets Read: 147"
+  PROPERTIES PASS_REGULAR_EXPRESSION "TS Packets Read: 105"
 )
 
 add_test(NAME mp2tpser_nofile
