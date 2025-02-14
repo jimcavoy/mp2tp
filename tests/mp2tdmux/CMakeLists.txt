@@ -1,8 +1,9 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(mp2tdmux
-    DESCRIPTION "MPEG-2 TS Demultiplexor: creates a file for each elementary stream in the container."
-    LANGUAGES CXX
+  VERSION 1.1.2
+  DESCRIPTION "MPEG-2 TS Demultiplexor: creates a file for each elementary stream in the container."
+  LANGUAGES CXX
 )
 
 add_executable(mp2tdmux)
@@ -10,10 +11,10 @@ add_executable(mp2tdmux)
 target_sources(mp2tdmux 
   PRIVATE 
     src/main.cpp
-	src/AccessUnit.h
-	src/AccessUnit.cpp
-	src/MP2TFileDemux.h
-	src/MP2TFileDemux.cpp)
+    src/AccessUnit.h
+    src/AccessUnit.cpp
+    src/MP2TFileDemux.h
+    src/MP2TFileDemux.cpp)
 
 target_link_libraries(mp2tdmux PRIVATE mp2tp)
 
