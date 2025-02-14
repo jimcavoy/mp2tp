@@ -1,6 +1,5 @@
-#include "stdafx.h"
-#include <mp2tp/tsprsr.h>
-#include <mp2tp/tspckt.h>
+#include "tsprsr.h"
+#include "tspckt.h"
 
 #include <vector>
 
@@ -16,12 +15,10 @@ namespace lcss
         ~TSParserImpl() = default;
 
     public:
-        TransportPacket _tspckt;
-        UINT16	_cursor{};
-        UINT64	_count{};
-        UINT32	_packetSize{ lcss::TransportPacket::TS_SIZE };
-
-        std::vector<uint8_t> _buffer{};
+        TransportPacket         _tspckt;
+        uint64_t                _count{};
+        uint32_t                _packetSize{ lcss::TransportPacket::TS_SIZE };
+        std::vector<uint8_t>    _buffer{};
     };
 }
 
