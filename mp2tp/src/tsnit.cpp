@@ -1,10 +1,11 @@
-#include "stdafx.h"
-#include <mp2tp/tsnit.h>
+#include "tsnit.h"
 
 #include <algorithm>
 #include <iterator>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
 #include <arpa/inet.h>
 #endif

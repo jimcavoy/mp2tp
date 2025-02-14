@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include <mp2tp/tsadptfd.h>
+#include "tsadptfd.h"
 
 #include <memory.h>
 #include <string.h>

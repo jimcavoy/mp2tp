@@ -1,16 +1,13 @@
-#include "stdafx.h"
-#include <mp2tp/tspmt.h>
+#include "tspmt.h"
 
 #include <algorithm>
 #include <iterator>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
 #include <arpa/inet.h>
-#endif
-
-#ifdef _DEBUG_NEW
-#define new DEBUG_CLIENTBLOCK
 #endif
 
 using namespace std;

@@ -29,8 +29,6 @@ target_sources(mp2tp
     include/mp2tp/tsprsr.h
     include/mp2tp/tstype.h
     src/AccessUnit.cpp
-    src/stdafx.cpp
-    src/stdafx.h
     src/targetver.h
     src/tsadptfd.cpp
     src/tsmetadata.cpp
@@ -60,7 +58,8 @@ endif()
 
 target_include_directories(mp2tp
   PRIVATE
-    src/mp2tp
+    src
+    include/mp2tp
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )

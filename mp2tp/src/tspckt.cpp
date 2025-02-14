@@ -1,13 +1,8 @@
-#include "stdafx.h"
-#include <mp2tp/tspckt.h>
-#include <mp2tp/tsadptfd.h>
+#include "tspckt.h"
+#include "tsadptfd.h"
 
 #include <array>
 #include <cassert>
-
-#ifdef _DEBUG_NEW
-#define new DEBUG_CLIENTBLOCK
-#endif
 
 #ifndef WIN32
 #include <memory.h>
