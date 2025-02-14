@@ -89,9 +89,6 @@ int main(int argc, char* argv[])
         MP2TFileDemux demux(ofileh264, ofileKlv, ofileAudio, ofileExi);
         try
         {
-            clock_t start, end;
-            start = clock();
-
             while (ifile.good())
             {
                 ifile.read((char*)memblock, N);
@@ -103,10 +100,6 @@ int main(int argc, char* argv[])
                     break;
                 }
             }
-
-            end = clock();
-            double dif = (double)(end - start) / CLOCKS_PER_SEC;
-            fprintf(stdout, "Elapsed time is %2.3lf seconds.\n", dif);
         }
         catch (...)
         {
@@ -114,6 +107,7 @@ int main(int argc, char* argv[])
             ret = -1;
             break;
         }
+        cerr << "TS Packets Read: " << demux.packetCount() << endl;
     } while (false);
 
     ifile.close();

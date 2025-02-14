@@ -14,7 +14,6 @@
 #include "TsDecoder.h"
 
 const int N = lcss::TransportPacket::TS_SIZE * 7;
-//const int N = 500;
 const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file> -s<TS_packet_size>";
 const char* opts = "  -i\tInput MPEG transport stream file path or standard console in (default: console).\n \
  -n\tThe minimum number of TS packets to read from the input file before exiting.\n \

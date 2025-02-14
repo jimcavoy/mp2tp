@@ -24,5 +24,5 @@ add_test(NAME mp2tdmux_test
 
 set_tests_properties( mp2tdmux_test
   PROPERTIES PASS_REGULAR_EXPRESSION 
-    "Elapsed time is"
+    "TS Packets Read: 4234"
 )
