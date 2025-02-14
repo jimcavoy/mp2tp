@@ -1,16 +1,13 @@
-#include "stdafx.h"
-#include <mp2tp/tspmt.h>
+#include "tspmt.h"
 
 #include <algorithm>
 #include <iterator>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
 #include <arpa/inet.h>
-#endif
-
-#ifdef _DEBUG_NEW
-#define new DEBUG_CLIENTBLOCK
 #endif
 
 using namespace std;
@@ -91,122 +88,122 @@ unsigned int dvbpsi_crc32_table[256] =
 
 namespace
 {
-	char TAG_HDMV[] = { (char)0x48, (char)0x44, (char)0x4D, (char)0x56, (char)0xFF, (char)0x1B, (char)0x44, (char)0x3F, 0 };
-	char TAG_HDPR[] = { (char)0x48, (char)0x44, (char)0x50, (char)0x52, (char)0xFF, (char)0x1B, (char)0x67, (char)0x3F, 0 };
+    char TAG_HDMV[] = { (char)0x48, (char)0x44, (char)0x4D, (char)0x56, (char)0xFF, (char)0x1B, (char)0x44, (char)0x3F, 0 };
+    char TAG_HDPR[] = { (char)0x48, (char)0x44, (char)0x50, (char)0x52, (char)0xFF, (char)0x1B, (char)0x67, (char)0x3F, 0 };
 }
 
 namespace lcss
 {
-	class ProgramMapTable::Impl
-	{
-	public:
-		Impl() {}
-		~Impl() {}
-		Impl(const Impl& other)
-		{
-			std::copy(other._pmt.begin(), other._pmt.end(), std::back_inserter(_pmt));
-			std::copy(other._buffer.begin(), other._buffer.end(), std::back_inserter(_buffer));
-			std::copy(other._program_info.begin(), other._program_info.end(), std::back_inserter(_program_info));
-			std::copy(other._program_elmts.begin(), other._program_elmts.end(), std::back_inserter(_program_elmts));
-		}
+    class ProgramMapTable::Impl
+    {
+    public:
+        Impl() {}
+        ~Impl() {}
+        Impl(const Impl& other)
+        {
+            std::copy(other._pmt.begin(), other._pmt.end(), std::back_inserter(_pmt));
+            std::copy(other._buffer.begin(), other._buffer.end(), std::back_inserter(_buffer));
+            std::copy(other._program_info.begin(), other._program_info.end(), std::back_inserter(_program_info));
+            std::copy(other._program_elmts.begin(), other._program_elmts.end(), std::back_inserter(_program_elmts));
+        }
 
-	public:
-		void calcCRC();
-		void calcLen();
-		UINT16 programInfoLength() const;
-		void set_section_length(UINT16 len);
+    public:
+        void calcCRC();
+        void calcLen();
+        UINT16 programInfoLength() const;
+        void set_section_length(UINT16 len);
 
-		template<class BackInsertIter>
-		void serialize(BackInsertIter backit) const;
+        template<class BackInsertIter>
+        void serialize(BackInsertIter backit) const;
 
-	public:
-		std::vector<BYTE> _pmt;
-		std::vector<BYTE> _buffer;
-		uint32_t CRC_32_{0};
-		ProgramMapTable::DescriptorArray _program_info;
-		ProgramMapTable::MapType _program_elmts;
-	};
+    public:
+        std::vector<BYTE> _pmt;
+        std::vector<BYTE> _buffer;
+        uint32_t CRC_32_{ 0 };
+        ProgramMapTable::DescriptorArray _program_info;
+        ProgramMapTable::MapType _program_elmts;
+    };
 
-	uint8_t ProgramMapTable::default_seq[17] = {
-			0x00,					// pointer_field
-			0x02,					// table_id
-			0xB0, 0x0D,				// section_syntax_indicator, '0', reserved, section_length
-			0x00, 0x01,				// program_number
-			0xC1,					// reserved, version_number, current_next_indicator
-			0x00,					// section_number
-			0x00,					// last_section_number
-			0xE1, 0x00,				// reserved, PCR_PID
-			0xF0, 0x00,				// reserved, program_info_length
-			0x00, 0x00, 0x00, 0x00	// CRC_32
-	};
+    uint8_t ProgramMapTable::default_seq[17] = {
+            0x00,					// pointer_field
+            0x02,					// table_id
+            0xB0, 0x0D,				// section_syntax_indicator, '0', reserved, section_length
+            0x00, 0x01,				// program_number
+            0xC1,					// reserved, version_number, current_next_indicator
+            0x00,					// section_number
+            0x00,					// last_section_number
+            0xE1, 0x00,				// reserved, PCR_PID
+            0xF0, 0x00,				// reserved, program_info_length
+            0x00, 0x00, 0x00, 0x00	// CRC_32
+    };
 }
 
 /////////////////////////////////////////////////////////////////////////////
-	// ProgramMapTable::serialize
+    // ProgramMapTable::serialize
 template<class BackInsertIter>
 void lcss::ProgramMapTable::Impl::serialize(BackInsertIter backit) const
 {
-	std::copy(_pmt.begin(), _pmt.end(), backit);
-	if (programInfoLength() > 0)
-	{
-		BYTE val[BUFSIZ]{};
-		for (const lcss::Descriptor& descr : _program_info)
-		{
-			*++backit = descr.tag();
-			*++backit = descr.length();
-			descr.value(val);
-			for (UINT32 i = 0; i < descr.length(); i++)
-				*++backit = val[i];
-		}
-	}
+    std::copy(_pmt.begin(), _pmt.end(), backit);
+    if (programInfoLength() > 0)
+    {
+        BYTE val[BUFSIZ]{};
+        for (const lcss::Descriptor& descr : _program_info)
+        {
+            *++backit = descr.tag();
+            *++backit = descr.length();
+            descr.value(val);
+            for (UINT32 i = 0; i < descr.length(); i++)
+                *++backit = val[i];
+        }
+    }
 
-	for (const lcss::ProgramElement& pe : _program_elmts)
-	{
-		BYTE bValue[2]{};
-		*++backit = pe.stream_type();
-		UINT16 value = htons(pe.pid());
-		memcpy(bValue, &value, 2);
-		BYTE b = bValue[0] | 0xE0;
-		*++backit = b;
-		*++backit = bValue[1];
-		value = htons(pe.raw_ES_info_length());
-		memcpy(bValue, &value, 2);
-		*++backit = bValue[0];
-		*++backit = bValue[1];
-		if (pe.ES_info_length() > 0)
-		{
-			for (const lcss::Descriptor& d : pe)
-			{
-				BYTE val[BUFSIZ]{};
-				*++backit = d.tag();
-				*++backit = d.length();
-				d.value(val);
-				for (UINT32 i = 0; i < d.length(); i++)
-				{
-					*++backit = val[i];
-				}
-			}
-		}
-	}
+    for (const lcss::ProgramElement& pe : _program_elmts)
+    {
+        BYTE bValue[2]{};
+        *++backit = pe.stream_type();
+        UINT16 value = htons(pe.pid());
+        memcpy(bValue, &value, 2);
+        BYTE b = bValue[0] | 0xE0;
+        *++backit = b;
+        *++backit = bValue[1];
+        value = htons(pe.raw_ES_info_length());
+        memcpy(bValue, &value, 2);
+        *++backit = bValue[0];
+        *++backit = bValue[1];
+        if (pe.ES_info_length() > 0)
+        {
+            for (const lcss::Descriptor& d : pe)
+            {
+                BYTE val[BUFSIZ]{};
+                *++backit = d.tag();
+                *++backit = d.length();
+                d.value(val);
+                for (UINT32 i = 0; i < d.length(); i++)
+                {
+                    *++backit = val[i];
+                }
+            }
+        }
+    }
 
-	*++backit = (CRC_32_ >> 24) & 0xff;
-	*++backit = (CRC_32_ >> 16) & 0xff;
-	*++backit = (CRC_32_ >> 8) & 0xff;
-	*++backit = (CRC_32_) & 0xff;
+    *++backit = (CRC_32_ >> 24) & 0xff;
+    *++backit = (CRC_32_ >> 16) & 0xff;
+    *++backit = (CRC_32_ >> 8) & 0xff;
+    *++backit = (CRC_32_) & 0xff;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // ProgramMapTable
 lcss::ProgramMapTable::ProgramMapTable()
-	:_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>())
+    :_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>())
 {
 
 }
 
 lcss::ProgramMapTable::ProgramMapTable(const BYTE* buffer, int len)
-	:_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>())
+    :_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>())
 {
-	add(buffer, len);
+    add(buffer, len);
 }
 
 lcss::ProgramMapTable::~ProgramMapTable()
@@ -215,54 +212,54 @@ lcss::ProgramMapTable::~ProgramMapTable()
 }
 
 lcss::ProgramMapTable::ProgramMapTable(const ProgramMapTable& other)
-	:_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>(*other._pimpl))
+    :_pimpl(std::make_unique<lcss::ProgramMapTable::Impl>(*other._pimpl))
 {
 
 }
 
 lcss::ProgramMapTable& lcss::ProgramMapTable::operator=(const ProgramMapTable& rhs)
 {
-	if (this != &rhs)
-	{
-		_pimpl.reset(new lcss::ProgramMapTable::Impl(*rhs._pimpl));
-	}
-	return *this;
+    if (this != &rhs)
+    {
+        _pimpl.reset(new lcss::ProgramMapTable::Impl(*rhs._pimpl));
+    }
+    return *this;
 }
 
 lcss::ProgramMapTable::ProgramMapTable(lcss::ProgramMapTable&& other) noexcept
 {
-	*this = std::move(other);
+    *this = std::move(other);
 }
 
 lcss::ProgramMapTable& lcss::ProgramMapTable::operator=(lcss::ProgramMapTable&& rhs) noexcept
 {
-	if (this != &rhs)
-	{
-		_pimpl = std::move(rhs._pimpl);
-	}
-	return *this;
+    if (this != &rhs)
+    {
+        _pimpl = std::move(rhs._pimpl);
+    }
+    return *this;
 }
 
 void lcss::ProgramMapTable::add(const BYTE* buffer, int len)
 {
-	std::copy(buffer, buffer + len, std::back_inserter(_pimpl->_buffer));
+    std::copy(buffer, buffer + len, std::back_inserter(_pimpl->_buffer));
 }
 
 bool lcss::ProgramMapTable::canParse() const
 {
-	UINT16 len = section_length();
+    UINT16 len = section_length();
 
-	if (len == 0)
-	{
-		return false;
-	}
+    if (len == 0)
+    {
+        return false;
+    }
 
-	if (len < 184)
-	{
-		return true;
-	}
+    if (len < 184)
+    {
+        return true;
+    }
 
-	return (_pimpl->_buffer.size() - 4) >= len ? true : false;
+    return (_pimpl->_buffer.size() - 4) >= len ? true : false;
 }
 
 // Function name   : ProgramMapTable::parse
@@ -273,357 +270,357 @@ bool lcss::ProgramMapTable::canParse() const
 // Return type     : bool 
 bool lcss::ProgramMapTable::parse()
 {
-	if (!canParse())
-		return false;
+    if (!canParse())
+        return false;
 
-	_pimpl->_pmt.push_back(_pimpl->_buffer[0]);
-	UINT16 offset = _pimpl->_pmt[0] == 0 ? 1 : _pimpl->_pmt[0]; // pointer_field
-	UINT16 cur = offset;
-	UINT16 value = 0;
+    _pimpl->_pmt.push_back(_pimpl->_buffer[0]);
+    UINT16 offset = _pimpl->_pmt[0] == 0 ? 1 : _pimpl->_pmt[0]; // pointer_field
+    UINT16 cur = offset;
+    UINT16 value = 0;
 
-	// stuffing bytes
-	for (size_t i = 1; i < _pimpl->_pmt[0]; i++)
-		_pimpl->_pmt.push_back(_pimpl->_buffer[i]);
+    // stuffing bytes
+    for (size_t i = 1; i < _pimpl->_pmt[0]; i++)
+        _pimpl->_pmt.push_back(_pimpl->_buffer[i]);
 
-	if (_pimpl->_buffer[cur] != 2) // table_id must equal 0x02
-		return false;
+    if (_pimpl->_buffer[cur] != 2) // table_id must equal 0x02
+        return false;
 
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // table_id
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // table_id
 
-	memcpy(&value, _pimpl->_buffer.data() + cur, 2);
-	UINT16 section_length = ntohs(value) & PMT_SECTION_LEN;
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // section_syntax_indicator, reserved, section_length
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
-	UINT16 crcPos = cur + section_length - 4;
-	UINT32 crc{};
-	memcpy(&crc, _pimpl->_buffer.data() + crcPos, 4);
-	_pimpl->CRC_32_ = ntohl(crc);
+    memcpy(&value, _pimpl->_buffer.data() + cur, 2);
+    UINT16 section_length = ntohs(value) & PMT_SECTION_LEN;
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // section_syntax_indicator, reserved, section_length
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
+    UINT16 crcPos = cur + section_length - 4;
+    UINT32 crc{};
+    memcpy(&crc, _pimpl->_buffer.data() + crcPos, 4);
+    _pimpl->CRC_32_ = ntohl(crc);
 
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // program_number
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // program_number
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
 
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // reserved, version_number, current_next_indicator
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // reserved, version_number, current_next_indicator
 
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // section_number
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // last_section_number
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // section_number
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // last_section_number
 
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // reserved, PCR_PID
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]); // reserved, PCR_PID
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
 
-	memcpy(&value, _pimpl->_buffer.data() + cur, 2);
-	UINT16 program_info_length = ntohs(value) & PMT_SECTION_LEN;
-	BYTE b = _pimpl->_buffer[cur++];
-	BYTE b1 = b | 0xF0;
-	b1 = b1 & 0xF3;
-	_pimpl->_pmt.push_back(b1); // reserved, program_info_length
-	_pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
+    memcpy(&value, _pimpl->_buffer.data() + cur, 2);
+    UINT16 program_info_length = ntohs(value) & PMT_SECTION_LEN;
+    BYTE b = _pimpl->_buffer[cur++];
+    BYTE b1 = b | 0xF0;
+    b1 = b1 & 0xF3;
+    _pimpl->_pmt.push_back(b1); // reserved, program_info_length
+    _pimpl->_pmt.push_back(_pimpl->_buffer[cur++]);
 
-	UINT16 end = program_info_length + cur;
+    UINT16 end = program_info_length + cur;
 
-	while (cur < end)
-	{
-		BYTE bValue;
-		memcpy(&bValue, _pimpl->_buffer.data() + cur, 1);
-		Descriptor desc(bValue);
-		cur++;
+    while (cur < end)
+    {
+        BYTE bValue;
+        memcpy(&bValue, _pimpl->_buffer.data() + cur, 1);
+        Descriptor desc(bValue);
+        cur++;
 
-		memcpy(&bValue, _pimpl->_buffer.data() + cur, 1);
-		UINT16 len = bValue;
-		cur++;
+        memcpy(&bValue, _pimpl->_buffer.data() + cur, 1);
+        UINT16 len = bValue;
+        cur++;
 
-		if (len > 0)
-		{
-			desc.setValue(_pimpl->_buffer.data() + cur, len);
-			cur += len;
-		}
+        if (len > 0)
+        {
+            desc.setValue(_pimpl->_buffer.data() + cur, len);
+            cur += len;
+        }
 
-		lcss::eqDescriptor pred(desc.tag());
-		lcss::ProgramMapTable::DescriptorArray::iterator result = find_if(_pimpl->_program_info.begin(), _pimpl->_program_info.end(), pred);
-		if (result == _pimpl->_program_info.end()) // prevent adding duplicates
-			_pimpl->_program_info.push_back(desc);
-	}
+        lcss::eqDescriptor pred(desc.tag());
+        lcss::ProgramMapTable::DescriptorArray::iterator result = find_if(_pimpl->_program_info.begin(), _pimpl->_program_info.end(), pred);
+        if (result == _pimpl->_program_info.end()) // prevent adding duplicates
+            _pimpl->_program_info.push_back(desc);
+    }
 
-	while (cur < crcPos)
-	{
-		BYTE byte;
-		memcpy(&byte, _pimpl->_buffer.data() + cur, 1);
-		BYTE stype = byte;
-		cur++;
+    while (cur < crcPos)
+    {
+        BYTE byte;
+        memcpy(&byte, _pimpl->_buffer.data() + cur, 1);
+        BYTE stype = byte;
+        cur++;
 
-		memcpy(&value, _pimpl->_buffer.data() + cur, 2);
-		UINT16 elem_pid_ = ntohs(value) & PMT_PCR_PID;
-		cur += 2;
+        memcpy(&value, _pimpl->_buffer.data() + cur, 2);
+        UINT16 elem_pid_ = ntohs(value) & PMT_PCR_PID;
+        cur += 2;
 
-		memcpy(&value, _pimpl->_buffer.data() + cur, 2);
-		UINT16 ES_info_len = ntohs(value);
+        memcpy(&value, _pimpl->_buffer.data() + cur, 2);
+        UINT16 ES_info_len = ntohs(value);
 
-		lcss::ProgramElement pe(stype, elem_pid_);
-		UINT16 len = ES_info_len & PMT_SECTION_LEN;
-		cur += 2;
-		int i = 0;
+        lcss::ProgramElement pe(stype, elem_pid_);
+        UINT16 len = ES_info_len & PMT_SECTION_LEN;
+        cur += 2;
+        int i = 0;
 
-		while (i < len) // retrieve the descriptors
-		{
-			BYTE value8;
-			memcpy(&value8, _pimpl->_buffer.data() + cur, 1);
-			Descriptor desc(value8);
-			cur++; i++;
-			value8 = 0;
+        while (i < len) // retrieve the descriptors
+        {
+            BYTE value8;
+            memcpy(&value8, _pimpl->_buffer.data() + cur, 1);
+            Descriptor desc(value8);
+            cur++; i++;
+            value8 = 0;
 
-			memcpy(&value8, _pimpl->_buffer.data() + cur, 1);
-			UINT16 desc_len = value8;
-			cur++; i++;
+            memcpy(&value8, _pimpl->_buffer.data() + cur, 1);
+            UINT16 desc_len = value8;
+            cur++; i++;
 
-			if (desc_len > 0)
-			{
-				desc.setValue(_pimpl->_buffer.data() + cur, desc_len);
-				cur += desc_len;
-				i += desc_len;
-			}
-			pe.addDescriptor(desc);
-		}
-		_pimpl->_program_elmts.push_back(pe);
-	}
-	// calculate CRC because reserved bits that are set to 0 are now set to 1
-	// as per standard
-	_pimpl->calcCRC(); 
-	return true;
+            if (desc_len > 0)
+            {
+                desc.setValue(_pimpl->_buffer.data() + cur, desc_len);
+                cur += desc_len;
+                i += desc_len;
+            }
+            pe.addDescriptor(desc);
+        }
+        _pimpl->_program_elmts.push_back(pe);
+    }
+    // calculate CRC because reserved bits that are set to 0 are now set to 1
+    // as per standard
+    _pimpl->calcCRC();
+    return true;
 }
 
 bool lcss::ProgramMapTable::hasPCR(UINT16 pid) const
 {
-	return pid == PCR_PID();
+    return pid == PCR_PID();
 }
 
 void lcss::ProgramMapTable::addProgramElement(const lcss::ProgramElement& pe)
 {
-	_pimpl->_program_elmts.push_back(pe);
+    _pimpl->_program_elmts.push_back(pe);
 
-	_pimpl->calcLen();
-	_pimpl->calcCRC();
+    _pimpl->calcLen();
+    _pimpl->calcCRC();
 }
 
 void lcss::ProgramMapTable::removeProgramElement(const lcss::ProgramElement& pe)
 {
-	MapType::iterator it;
-	for (it = _pimpl->_program_elmts.begin(); it != _pimpl->_program_elmts.end(); ++it)
-	{
-		if (pe.stream_type() == it->stream_type() && pe.pid() == it->pid())
-		{
-			_pimpl->_program_elmts.erase(it);
-			break;
-		}
-	}
+    MapType::iterator it;
+    for (it = _pimpl->_program_elmts.begin(); it != _pimpl->_program_elmts.end(); ++it)
+    {
+        if (pe.stream_type() == it->stream_type() && pe.pid() == it->pid())
+        {
+            _pimpl->_program_elmts.erase(it);
+            break;
+        }
+    }
 
-	_pimpl->calcLen();
-	_pimpl->calcCRC();
+    _pimpl->calcLen();
+    _pimpl->calcCRC();
 }
 
 BYTE lcss::ProgramMapTable::pointer_field() const
 {
-	return _pimpl->_pmt[0];
+    return _pimpl->_pmt[0];
 }
 
 BYTE lcss::ProgramMapTable::table_id() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 1 : _pimpl->_pmt[0];
-	if (cur > _pimpl->_pmt.size() - 1)
-		return 0xFF;
-	return _pimpl->_pmt[cur];
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 1 : _pimpl->_pmt[0];
+    if (cur > _pimpl->_pmt.size() - 1)
+        return 0xFF;
+    return _pimpl->_pmt[cur];
 }
 
 bool lcss::ProgramMapTable::section_syntax_indicator() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 2;
-	bool ret = (_pimpl->_pmt[cur] & 0x80) == 0x80 ? true : false;
-	return ret;
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 2;
+    bool ret = (_pimpl->_pmt[cur] & 0x80) == 0x80 ? true : false;
+    return ret;
 }
 
 UINT16 lcss::ProgramMapTable::section_length() const
 {
-	// pre-condition
-	if (_pimpl->_buffer.empty())
-	{
-		return 0;
-	}
+    // pre-condition
+    if (_pimpl->_buffer.empty())
+    {
+        return 0;
+    }
 
-	UINT16 sl = 0;
-	if (_pimpl->_pmt.empty())
-	{
-		UINT16 cur = _pimpl->_buffer[0] == 0 ? 0 : _pimpl->_buffer[0];
-		cur += 2;
-		BYTE chVal[2]{};
-		UINT16 value;
-		if (cur > _pimpl->_buffer.size() || cur + 1 > _pimpl->_buffer.size())
-		{
-			return 0;
-		}
-		chVal[0] = _pimpl->_buffer[cur++];
-		chVal[1] = _pimpl->_buffer[cur];
-		memcpy(&value, chVal, 2);
-		sl = ntohs(value) & PMT_SECTION_LEN;
-	}
-	else
-	{
-		UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-		cur += 2;
-		BYTE chVal[2]{};
-		UINT16 value;
-		if (cur > _pimpl->_buffer.size() || cur + 1 > _pimpl->_buffer.size())
-		{
-			return 0;
-		}
-		chVal[0] = _pimpl->_pmt[cur++];
-		chVal[1] = _pimpl->_pmt[cur];
-		memcpy(&value, chVal, 2);
-		sl = ntohs(value) & PMT_SECTION_LEN;
-	}
-	return sl;
+    UINT16 sl = 0;
+    if (_pimpl->_pmt.empty())
+    {
+        UINT16 cur = _pimpl->_buffer[0] == 0 ? 0 : _pimpl->_buffer[0];
+        cur += 2;
+        BYTE chVal[2]{};
+        UINT16 value;
+        if (cur > _pimpl->_buffer.size() || cur + 1 > _pimpl->_buffer.size())
+        {
+            return 0;
+        }
+        chVal[0] = _pimpl->_buffer[cur++];
+        chVal[1] = _pimpl->_buffer[cur];
+        memcpy(&value, chVal, 2);
+        sl = ntohs(value) & PMT_SECTION_LEN;
+    }
+    else
+    {
+        UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+        cur += 2;
+        BYTE chVal[2]{};
+        UINT16 value;
+        if (cur > _pimpl->_buffer.size() || cur + 1 > _pimpl->_buffer.size())
+        {
+            return 0;
+        }
+        chVal[0] = _pimpl->_pmt[cur++];
+        chVal[1] = _pimpl->_pmt[cur];
+        memcpy(&value, chVal, 2);
+        sl = ntohs(value) & PMT_SECTION_LEN;
+    }
+    return sl;
 }
 
 void lcss::ProgramMapTable::Impl::set_section_length(UINT16 len)
 {
-	BYTE chLen[2];
-	UINT16 nLen = htons(len);
-	memcpy(chLen, &nLen, 2);
-	UINT16 cur = _pmt[0] == 0 ? 0 : _pmt[0];
-	cur += 2;
-	_pmt[cur++] = chLen[0];
-	_pmt[cur] = chLen[1];
+    BYTE chLen[2];
+    UINT16 nLen = htons(len);
+    memcpy(chLen, &nLen, 2);
+    UINT16 cur = _pmt[0] == 0 ? 0 : _pmt[0];
+    cur += 2;
+    _pmt[cur++] = chLen[0];
+    _pmt[cur] = chLen[1];
 }
 
 UINT16 lcss::ProgramMapTable::program_number() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 4;
-	BYTE chVal[2]{};
-	UINT16 value;
-	chVal[0] = _pimpl->_pmt[cur++];
-	chVal[1] = _pimpl->_pmt[cur];
-	memcpy(&value, chVal, 2);
-	return ntohs(value);
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 4;
+    BYTE chVal[2]{};
+    UINT16 value;
+    chVal[0] = _pimpl->_pmt[cur++];
+    chVal[1] = _pimpl->_pmt[cur];
+    memcpy(&value, chVal, 2);
+    return ntohs(value);
 }
 
 BYTE lcss::ProgramMapTable::version_number() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 6;
-	return (_pimpl->_pmt[cur] & PMT_VERSION_NO) >> 1;
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 6;
+    return (_pimpl->_pmt[cur] & PMT_VERSION_NO) >> 1;
 }
 
 bool lcss::ProgramMapTable::current_next_indicator() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 6;
-	return (_pimpl->_pmt[cur] & 0x01) == 0x01 ? true : false;
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 6;
+    return (_pimpl->_pmt[cur] & 0x01) == 0x01 ? true : false;
 }
 
 BYTE lcss::ProgramMapTable::section_number() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 7;
-	return _pimpl->_pmt[cur];
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 7;
+    return _pimpl->_pmt[cur];
 }
 
 BYTE lcss::ProgramMapTable::last_section_number() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 8;
-	return _pimpl->_pmt[cur];
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 8;
+    return _pimpl->_pmt[cur];
 }
 
 UINT16 lcss::ProgramMapTable::PCR_PID() const
 {
-	UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
-	cur += 9;
-	BYTE chVal[2]{};
-	UINT16 value;
-	chVal[0] = _pimpl->_pmt[cur++];
-	chVal[1] = _pimpl->_pmt[cur];
-	memcpy(&value, chVal, 2);
-	UINT16 pid = ntohs(value) & PMT_PCR_PID;
-	return pid;
+    UINT16 cur = _pimpl->_pmt[0] == 0 ? 0 : _pimpl->_pmt[0];
+    cur += 9;
+    BYTE chVal[2]{};
+    UINT16 value;
+    chVal[0] = _pimpl->_pmt[cur++];
+    chVal[1] = _pimpl->_pmt[cur];
+    memcpy(&value, chVal, 2);
+    UINT16 pid = ntohs(value) & PMT_PCR_PID;
+    return pid;
 }
 
 UINT16 lcss::ProgramMapTable::program_info_length() const
 {
-	return _pimpl->programInfoLength();
+    return _pimpl->programInfoLength();
 }
 
 UINT16 lcss::ProgramMapTable::Impl::programInfoLength() const
 {
-	UINT16 cur = _pmt[0] == 0 ? 0 : _pmt[0];
-	cur += 11;
-	BYTE chVal[2]{};
-	UINT16 value;
-	chVal[0] = _pmt[cur++];
-	chVal[1] = _pmt[cur];
-	memcpy(&value, chVal, 2);
-	UINT16 len = ntohs(value) & PMT_PROGRAM_INFO_LEN;
-	return len;
+    UINT16 cur = _pmt[0] == 0 ? 0 : _pmt[0];
+    cur += 11;
+    BYTE chVal[2]{};
+    UINT16 value;
+    chVal[0] = _pmt[cur++];
+    chVal[1] = _pmt[cur];
+    memcpy(&value, chVal, 2);
+    UINT16 len = ntohs(value) & PMT_PROGRAM_INFO_LEN;
+    return len;
 }
 
 UINT32 lcss::ProgramMapTable::CRC_32() const
 {
-	return _pimpl->CRC_32_;
+    return _pimpl->CRC_32_;
 }
 
 lcss::ProgramMapTable::MapType::iterator lcss::ProgramMapTable::begin()
 {
-	return _pimpl->_program_elmts.begin();
+    return _pimpl->_program_elmts.begin();
 }
 
 lcss::ProgramMapTable::MapType::iterator lcss::ProgramMapTable::end()
 {
-	return _pimpl->_program_elmts.end();
+    return _pimpl->_program_elmts.end();
 }
 
 lcss::ProgramMapTable::MapType::const_iterator lcss::ProgramMapTable::begin() const
 {
-	return _pimpl->_program_elmts.begin();
+    return _pimpl->_program_elmts.begin();
 }
 
 lcss::ProgramMapTable::MapType::const_iterator lcss::ProgramMapTable::end() const
 {
-	return _pimpl->_program_elmts.end();
+    return _pimpl->_program_elmts.end();
 }
 
 
 void lcss::ProgramMapTable::Impl::calcCRC()
 {
-	std::vector<BYTE> pmt;
-	serialize(std::back_inserter(pmt));
-	CRC_32_ = 0xffffffff;
+    std::vector<BYTE> pmt;
+    serialize(std::back_inserter(pmt));
+    CRC_32_ = 0xffffffff;
 
-	for (size_t i = 1; i < pmt.size() - 4; i++)
-	{
-		CRC_32_ = (CRC_32_ << 8) ^ dvbpsi_crc32_table[(CRC_32_ >> 24) ^ (pmt[i])];
-	}
+    for (size_t i = 1; i < pmt.size() - 4; i++)
+    {
+        CRC_32_ = (CRC_32_ << 8) ^ dvbpsi_crc32_table[(CRC_32_ >> 24) ^ (pmt[i])];
+    }
 }
 
 void lcss::ProgramMapTable::Impl::calcLen()
 {
-	UINT16 len = 13; // 9 for the pmt header + 4 for CRC
+    UINT16 len = 13; // 9 for the pmt header + 4 for CRC
 
-	ProgramMapTable::iterator it;
+    ProgramMapTable::iterator it;
 
-	for (it = _program_elmts.begin(); it != _program_elmts.end(); ++it)
-	{
-		len += 5;
-		len += it->ES_info_length();
-	}
+    for (it = _program_elmts.begin(); it != _program_elmts.end(); ++it)
+    {
+        len += 5;
+        len += it->ES_info_length();
+    }
 
-	len += programInfoLength();
-	len = len | 0xB000;
-	set_section_length(len);
+    len += programInfoLength();
+    len = len | 0xB000;
+    set_section_length(len);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Descriptor
 
 lcss::Descriptor::Descriptor(BYTE tag)
-	:_tag(tag)
+    :_tag(tag)
 {
 
 }
@@ -634,55 +631,51 @@ lcss::Descriptor::~Descriptor()
 }
 
 lcss::Descriptor::Descriptor(const lcss::Descriptor& orig)
-	: _tag(orig._tag)
+    : _tag(orig._tag)
 {
-	std::copy(orig._value.begin(), orig._value.end(), std::back_inserter(_value));
+    std::copy(orig._value.begin(), orig._value.end(), std::back_inserter(_value));
 }
 
 lcss::Descriptor& lcss::Descriptor::operator=(const lcss::Descriptor& rhs)
 {
-	Descriptor temp(rhs);
-	swap(temp);
+    Descriptor temp(rhs);
+    swap(temp);
 
-	return *this;
+    return *this;
 }
 
 void lcss::Descriptor::swap(lcss::Descriptor& src)
 {
-	std::swap(_tag, src._tag);
-	_value.swap(src._value);
+    std::swap(_tag, src._tag);
+    _value.swap(src._value);
 }
 
 void lcss::Descriptor::setValue(const BYTE* newval, UINT16 len)
 {
-	_value.clear();
-	std::copy(newval, newval + len, std::back_inserter(_value));
+    _value.clear();
+    std::copy(newval, newval + len, std::back_inserter(_value));
 }
 
 void lcss::Descriptor::value(BYTE* value) const
 {
-#ifdef WIN32
-	std::copy(_value.begin(), _value.end(), stdext::checked_array_iterator<BYTE*>(value, _value.size()));
-#else
-	std::copy(_value.begin(), _value.end(), value);
-#endif
+    std::copy(_value.begin(), _value.end(), value);
 }
 
 BYTE lcss::Descriptor::tag() const
 {
-	return _tag;
+    return _tag;
 }
 
 BYTE lcss::Descriptor::length() const
 {
-	return (BYTE)_value.size();
+    return (BYTE)_value.size();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // ProgramElement
 lcss::ProgramElement::ProgramElement(BYTE type, UINT16 pid)
-	:stream_type_(type)
-	, elementary_PID_(pid)
+    :stream_type_(type)
+    , elementary_PID_(pid)
 {
 
 }
@@ -694,146 +687,146 @@ lcss::ProgramElement::~ProgramElement()
 
 lcss::ProgramElement::ProgramElement(const lcss::ProgramElement& orig)
 {
-	stream_type_ = orig.stream_type_;
-	elementary_PID_ = orig.elementary_PID_;
+    stream_type_ = orig.stream_type_;
+    elementary_PID_ = orig.elementary_PID_;
 
-	std::copy(orig.descriptors_.begin(), orig.descriptors_.end(), std::back_inserter(descriptors_));
+    std::copy(orig.descriptors_.begin(), orig.descriptors_.end(), std::back_inserter(descriptors_));
 }
 
 lcss::ProgramElement& lcss::ProgramElement::operator=(const lcss::ProgramElement& rhs)
 {
-	ProgramElement temp(rhs);
-	swap(temp);
+    ProgramElement temp(rhs);
+    swap(temp);
 
-	return *this;
+    return *this;
 }
 
 void lcss::ProgramElement::swap(lcss::ProgramElement& src)
 {
-	std::swap(stream_type_, src.stream_type_);
-	std::swap(elementary_PID_, src.elementary_PID_);
-	descriptors_.swap(src.descriptors_);
+    std::swap(stream_type_, src.stream_type_);
+    std::swap(elementary_PID_, src.elementary_PID_);
+    descriptors_.swap(src.descriptors_);
 }
 
 void lcss::ProgramElement::addDescriptor(const lcss::Descriptor& desc)
 {
-	bool insert = true;
-	lcss::ProgramElement::iterator it;
-	for (it = begin(); it != end(); ++it)
-	{
-		if (it->tag() == desc.tag())
-		{
-			insert = false;
-			break;
-		}
-	}
+    bool insert = true;
+    lcss::ProgramElement::iterator it;
+    for (it = begin(); it != end(); ++it)
+    {
+        if (it->tag() == desc.tag())
+        {
+            insert = false;
+            break;
+        }
+    }
 
-	if (insert)
-		descriptors_.push_back(desc);
+    if (insert)
+        descriptors_.push_back(desc);
 }
 
 lcss::ProgramElement::iterator lcss::ProgramElement::begin()
 {
-	return descriptors_.begin();
+    return descriptors_.begin();
 }
 
 lcss::ProgramElement::const_iterator lcss::ProgramElement::begin() const
 {
-	return descriptors_.begin();
+    return descriptors_.begin();
 }
 
 lcss::ProgramElement::iterator lcss::ProgramElement::end()
 {
-	return descriptors_.end();
+    return descriptors_.end();
 }
 
 lcss::ProgramElement::const_iterator lcss::ProgramElement::end() const
 {
-	return descriptors_.end();
+    return descriptors_.end();
 }
 
 size_t lcss::ProgramElement::size() const
 {
-	return descriptors_.size();
+    return descriptors_.size();
 }
 
 BYTE lcss::ProgramElement::stream_type() const
 {
-	return stream_type_;
+    return stream_type_;
 }
 
 UINT16 lcss::ProgramElement::pid() const
 {
-	return elementary_PID_;
+    return elementary_PID_;
 }
 
 UINT16 lcss::ProgramElement::ES_info_length() const
 {
-	UINT16 len = 0;
-	for (auto& d : descriptors_)
-	{
-		len += 2;
-		len += d.length();
-	}
-	return len;
+    UINT16 len = 0;
+    for (auto& d : descriptors_)
+    {
+        len += 2;
+        len += d.length();
+    }
+    return len;
 }
 
 UINT16 lcss::ProgramElement::raw_ES_info_length() const
 {
-	UINT16 len = ES_info_length();
-	return len | 0xF000;
+    UINT16 len = ES_info_length();
+    return len | 0xF000;
 }
 
 template<typename BackInsertIter>
 void lcss::ProgramMapTable::serialize(BackInsertIter backit) const
 {
-	std::copy(_pimpl->_pmt.begin(), _pimpl->_pmt.end(), backit);
-	if (program_info_length() > 0)
-	{
-		BYTE val[BUFSIZ];
-		for (const lcss::Descriptor& descr : _pimpl->_program_info)
-		{
-			*++backit = descr.tag();
-			*++backit = descr.length();
-			descr.value(val);
-			for (UINT32 i = 0; i < descr.length(); i++)
-				*++backit = val[i];
-		}
-	}
+    std::copy(_pimpl->_pmt.begin(), _pimpl->_pmt.end(), backit);
+    if (program_info_length() > 0)
+    {
+        BYTE val[BUFSIZ];
+        for (const lcss::Descriptor& descr : _pimpl->_program_info)
+        {
+            *++backit = descr.tag();
+            *++backit = descr.length();
+            descr.value(val);
+            for (UINT32 i = 0; i < descr.length(); i++)
+                *++backit = val[i];
+        }
+    }
 
-	for (const lcss::ProgramElement& pe : _pimpl->_program_elmts)
-	{
-		BYTE bValue[2]{};
-		*++backit = pe.stream_type();
-		UINT16 value = htons(pe.pid());
-		memcpy(bValue, &value, 2);
-		BYTE b = bValue[0] | 0xE0;
-		*++backit = b;
-		*++backit = bValue[1];
-		value = htons(pe.raw_ES_info_length());
-		memcpy(bValue, &value, 2);
-		*++backit = bValue[0];
-		*++backit = bValue[1];
-		if (pe.ES_info_length() > 0)
-		{
-			for (const lcss::Descriptor& d : pe)
-			{
-				BYTE val[BUFSIZ]{};
-				*++backit = d.tag();
-				*++backit = d.length();
-				d.value(val);
-				for (UINT32 i = 0; i < d.length(); i++)
-				{
-					*++backit = val[i];
-				}
-			}
-		}
-	}
+    for (const lcss::ProgramElement& pe : _pimpl->_program_elmts)
+    {
+        BYTE bValue[2]{};
+        *++backit = pe.stream_type();
+        UINT16 value = htons(pe.pid());
+        memcpy(bValue, &value, 2);
+        BYTE b = bValue[0] | 0xE0;
+        *++backit = b;
+        *++backit = bValue[1];
+        value = htons(pe.raw_ES_info_length());
+        memcpy(bValue, &value, 2);
+        *++backit = bValue[0];
+        *++backit = bValue[1];
+        if (pe.ES_info_length() > 0)
+        {
+            for (const lcss::Descriptor& d : pe)
+            {
+                BYTE val[BUFSIZ]{};
+                *++backit = d.tag();
+                *++backit = d.length();
+                d.value(val);
+                for (UINT32 i = 0; i < d.length(); i++)
+                {
+                    *++backit = val[i];
+                }
+            }
+        }
+    }
 
-	*++backit = (_pimpl->CRC_32_ >> 24) & 0xff;
-	*++backit = (_pimpl->CRC_32_ >> 16) & 0xff;
-	*++backit = (_pimpl->CRC_32_ >> 8) & 0xff;
-	*++backit = (_pimpl->CRC_32_) & 0xff;
+    *++backit = (_pimpl->CRC_32_ >> 24) & 0xff;
+    *++backit = (_pimpl->CRC_32_ >> 16) & 0xff;
+    *++backit = (_pimpl->CRC_32_ >> 8) & 0xff;
+    *++backit = (_pimpl->CRC_32_) & 0xff;
 }
 
 template void lcss::ProgramMapTable::serialize<std::back_insert_iterator<std::vector<BYTE>>>(std::back_insert_iterator<std::vector<BYTE>>) const;
@@ -841,9 +834,9 @@ template void lcss::ProgramMapTable::serialize<std::back_insert_iterator<std::ve
 template<typename BackInsertIter>
 void lcss::ProgramMapTable::program_infos(BackInsertIter backit) const
 {
-	std::copy(_pimpl->_program_info.begin(),
-		_pimpl->_program_info.end(),
-		backit);
+    std::copy(_pimpl->_program_info.begin(),
+        _pimpl->_program_info.end(),
+        backit);
 }
 
 template void lcss::ProgramMapTable::program_infos<std::back_insert_iterator<std::vector<lcss::Descriptor>>>(std::back_insert_iterator<std::vector<lcss::Descriptor>>) const;

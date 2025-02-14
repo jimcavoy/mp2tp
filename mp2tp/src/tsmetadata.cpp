@@ -1,9 +1,10 @@
-#include "stdafx.h"
-#include <mp2tp/tsmetadata.h>
+#include "tsmetadata.h"
 
 #include <iterator>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
 #include <arpa/inet.h>
 #endif

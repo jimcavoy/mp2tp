@@ -1,13 +1,10 @@
-#include "stdafx.h"
-#include <mp2tp/tspes.h>
+#include "tspes.h"
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
 #include <arpa/inet.h>
-#endif
-
-#ifdef _DEBUG_NEW
-#define new DEBUG_CLIENTBLOCK
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

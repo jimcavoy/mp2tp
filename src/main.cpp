@@ -13,7 +13,7 @@
 
 #include "TsDecoder.h"
 
-const int N = lcss::TransportPacket::TS_SIZE * 49;
+const int N = lcss::TransportPacket::TS_SIZE * 7;
 const char* usage = "Usage: mp2tp -i<MPEG_transport_stream_file> -n<Count> -o<Output_file> -s<TS_packet_size>";
 const char* opts = "  -i\tInput MPEG transport stream file path or standard console in (default: console).\n \
  -n\tThe minimum number of TS packets to read from the input file before exiting.\n \
@@ -95,7 +95,6 @@ int main(int argc, char* argv[])
     decoder->setPacketSize(packetSize);
 
     BYTE memblock[N];
-    int num_of_packets = 0;
     std::streamsize bytesRead = 0;
     bool strict = true;
 
@@ -118,13 +117,11 @@ int main(int argc, char* argv[])
             }
         }
 
-        strict = false;
-        num_of_packets += (int)input->gcount() / lcss::TransportPacket::TS_SIZE;
-        if (canStop(num_of_packets, limit))
+        if (canStop(decoder->packetCount(), limit))
             break;
     }
 
-    cerr << "TS Packets Read: " << num_of_packets << endl;
+    cerr << "TS Packets Read: " << decoder->packetCount() << endl;
     return 0;
 }
 

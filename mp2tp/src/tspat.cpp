@@ -1,10 +1,12 @@
-#include "stdafx.h"
-#include <mp2tp/tspat.h>
+
+#include "tspat.h"
 
 #include <iterator>
 #include <vector>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
 #include <arpa/inet.h>
 #endif
