@@ -40,6 +40,7 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
 {
     uint32_t h = 0;
     uint32_t i = 0;
+    bool result = true;
 
     // The TS packet spans across two stream buffers
     if (_pimpl->_buffer.size() > 0 && _pimpl->_buffer.size() != lcss::TransportPacket::TS_SIZE)
@@ -76,7 +77,7 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
                     i - h != _pimpl->_packetSize
                 )
                 {
-                    return false;
+                    result = false;
                 }
                 h = i;
             }
@@ -106,10 +107,10 @@ bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
         if (_pimpl->_buffer.empty() && // TS Packet spans over two buffer reads so don't check
             i - h != _pimpl->_packetSize)
         {
-            return false;
+            result = false;
         }
     }
-    return true;
+    return result;
 }
 
 void lcss::TSParser::onPacket(lcss::TransportPacket& pckt)
