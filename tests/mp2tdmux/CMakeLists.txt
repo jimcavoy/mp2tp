@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(mp2tdmux
-  VERSION 1.1.2
+  VERSION 1.1.3
   DESCRIPTION "MPEG-2 TS Demultiplexor: creates a file for each elementary stream in the container."
   LANGUAGES CXX
 )
