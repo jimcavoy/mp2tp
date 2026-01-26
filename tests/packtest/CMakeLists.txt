@@ -15,11 +15,29 @@ target_sources(packtest
 target_link_libraries(packtest PRIVATE mp2tp)
 
 # Test cases
-#add_test(NAME mp2tdmux_test
-#  COMMAND mp2tdmux ${PROJECT_SOURCE_DIR}/../../sample/foreman_cif_klv.ts
-#)
+add_test(NAME packtest_175
+  COMMAND packtest 175
+)
 
-#set_tests_properties( mp2tdmux_test
-#  PROPERTIES PASS_REGULAR_EXPRESSION 
-#    "TS Packets Read: 4234"
-#)
+set_tests_properties( packtest_175
+  PROPERTIES PASS_REGULAR_EXPRESSION 
+    "1"
+)
+
+add_test(NAME packtest_543
+  COMMAND packtest 543
+)
+
+set_tests_properties( packtest_543
+  PROPERTIES PASS_REGULAR_EXPRESSION 
+    "3"
+)
+
+add_test(NAME packtest_542
+  COMMAND packtest 542
+)
+
+set_tests_properties( packtest_542
+  PROPERTIES PASS_REGULAR_EXPRESSION 
+    "4"
+)
