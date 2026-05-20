@@ -43,6 +43,14 @@ namespace lcss
 		UINT64 pts() const;
 		UINT64 dts() const;
 
+		void setPTS(BYTE* pts);
+		void setDTS(BYTE* dts);
+
+		void setPTS(UINT64 pts);
+		void setDTS(UINT64 dts);
+
+		void serialize(BYTE* stream);
+
 	private:
 		class Impl;
 		std::unique_ptr<Impl> _pimpl;

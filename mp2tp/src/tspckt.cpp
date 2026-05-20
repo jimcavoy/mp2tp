@@ -277,6 +277,19 @@ const BYTE* lcss::TransportPacket::getData() const
     return nullptr;
 }
 
+BYTE* lcss::TransportPacket::getData()
+{
+    BYTE dataByte = data_byte();
+    int start = TS_SIZE - dataByte;
+
+    if (start > 0)
+    {
+        return _pimpl->_data.data() + start;
+    }
+
+    return nullptr;
+}
+
 /// @brief Get the TransportPacket instance's implementation length. 
 /// @return Returns the number of bytes this instance's implementation length.  Valid values are 0 to 188.
 size_t lcss::TransportPacket::length() const
