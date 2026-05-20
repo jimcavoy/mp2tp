@@ -4,8 +4,11 @@
 #include <array>
 #include <cassert>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
+#include <arpa/inet.h>
 #endif
 
 // Transport Headers
@@ -162,6 +165,17 @@ uint16_t lcss::TransportPacket::PID() const
     memcpy(&npid, pid, 2);
 
     return npid & TP_PID;
+}
+
+void lcss::TransportPacket::setPID(uint16_t pid)
+{
+    uint16_t npid = htons(pid);
+    char pidArray[2]{};
+    memset(pidArray, npid, 2);
+    uint8_t flags = _pimpl->_data[1] & 0xE0;
+    _pimpl->_data[1] = pidArray[0];
+    _pimpl->_data[2] = pidArray[1];
+    _pimpl->_data[1] |= flags;
 }
 
 uint8_t lcss::TransportPacket::scramblingControl() const
