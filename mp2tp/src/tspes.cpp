@@ -356,28 +356,41 @@ void lcss::PESPacket::setDTS(UINT64 dts)
 
 void lcss::PESPacket::serialize(BYTE* stream)
 {
-    memcpy(stream, _pimpl->packet_start_code_prefix_, 3);
-    stream += 3;
-    *stream++ = _pimpl->stream_id_;
-    memcpy(stream, (void*)_pimpl->PES_packet_length_, 2);
-    stream += 2;
-    *stream++ = _pimpl->flags1_;
-    *stream++ = _pimpl->flags2_;
-    *stream++ = _pimpl->PES_header_data_length_;
+    stream[0] = _pimpl->packet_start_code_prefix_[0];
+    stream[1] = _pimpl->packet_start_code_prefix_[1];
+    stream[2] = _pimpl->packet_start_code_prefix_[2];
+    stream[3] = _pimpl->stream_id_;
+    uint8_t buf[2];
+    uint16_t len = htons(_pimpl->PES_packet_length_);
+    memset(buf, len, 2);
+    stream[4] = buf[0];
+    stream[5] = buf[1];
+    stream[6] = _pimpl->flags1_;
+    stream[7] = _pimpl->flags2_;
+    stream[8] = _pimpl->PES_header_data_length_;
     uint16_t value = _pimpl->flags2_ & PTS_DTS_MASK;
     if (value > 0)
     {
         if (value == 0xC0)
         {
-            memcpy(stream, _pimpl->PTS_, 5);
-            stream += 5;
-            memcpy(stream, _pimpl->DTS_, 5);
-            stream += 5;
+            stream[9] = _pimpl->PTS_[0];
+            stream[10] = _pimpl->PTS_[1];
+            stream[11] = _pimpl->PTS_[2];
+            stream[12] = _pimpl->PTS_[3];
+            stream[13] = _pimpl->PTS_[4];
+            stream[14] = _pimpl->DTS_[0];
+            stream[15] = _pimpl->DTS_[1];
+            stream[16] = _pimpl->DTS_[2];
+            stream[17] = _pimpl->DTS_[3];
+            stream[18] = _pimpl->DTS_[4];
         }
         else if (value == 0x80)
         {
-            memcpy(stream, _pimpl->PTS_, 5);
-            stream += 5;
+            stream[9] = _pimpl->PTS_[0];
+            stream[10] = _pimpl->PTS_[1];
+            stream[11] = _pimpl->PTS_[2];
+            stream[12] = _pimpl->PTS_[3];
+            stream[13] = _pimpl->PTS_[4];
         }
     }
 }

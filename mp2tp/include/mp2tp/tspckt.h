@@ -46,7 +46,8 @@ public:
 	// returns only the payload
 	void getData(BYTE* data, int len) const;
 	const BYTE* getData() const;
-	BYTE* getData();
+	int getPayload(BYTE* data, int len) const;
+	void setPayload(BYTE* data, int len);
 
 	void serialize(BYTE* buf, int len) const;
 	void parse(const BYTE* buf);

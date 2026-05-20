@@ -277,18 +277,47 @@ const BYTE* lcss::TransportPacket::getData() const
     return nullptr;
 }
 
-BYTE* lcss::TransportPacket::getData()
+int lcss::TransportPacket::getPayload(BYTE* data, int len) const
 {
     BYTE dataByte = data_byte();
     int start = TS_SIZE - dataByte;
-
+    int bytesRead = 0;
     if (start > 0)
     {
-        return _pimpl->_data.data() + start;
-    }
+        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::advance(first, start);
 
-    return nullptr;
+        for (auto it = first; it != _pimpl->_data.end(); ++it, bytesRead++)
+        {
+            if (bytesRead < len)
+            {
+                data[bytesRead] = *it;
+            }
+        }
+    }
+    return bytesRead;
 }
+
+void lcss::TransportPacket::setPayload(BYTE* data, int len)
+{
+    BYTE dataByte = data_byte();
+    int start = TS_SIZE - dataByte;
+    if (start > 0)
+    {
+        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::advance(first, start);
+
+        int i = 0;
+        for (auto it = first; it != _pimpl->_data.end(); ++it, i++)
+        {
+            if (i < len)
+            {
+                *it = data[i];
+            }
+        }
+    }
+}
+
 
 /// @brief Get the TransportPacket instance's implementation length. 
 /// @return Returns the number of bytes this instance's implementation length.  Valid values are 0 to 188.
