@@ -7,10 +7,72 @@
 #include <arpa/inet.h>
 #endif
 
+#include <bitset>
+#include <cstdint>
+
 /////////////////////////////////////////////////////////////////////////////
 namespace
 {
     const BYTE PTS_DTS_MASK = 0xC0;
+
+    void reverse(u_char arr[], int n)
+    {
+        for (int low = 0, high = n - 1; low < high; low++, high--) {
+            std::swap(arr[low], arr[high]);
+        }
+    }
+
+    void encodeTimestamp(BYTE* outTs, uint64_t ts)
+    {
+        u_char buf[8]{};
+        memcpy(buf, &ts, 8);
+
+        u_short PTS3{ 0 };
+        memcpy(&PTS3, buf, 2);
+        std::bitset<16> bsPTS3(PTS3);
+
+        u_short PTS2{ 0 };
+        memcpy(&PTS2, buf + 2, 2);
+        std::bitset<16> bsPTS2(PTS2);
+
+        u_char PTS1 = buf[5];
+        std::bitset<8> bsPTS1(PTS1);
+
+        std::bitset<64> bsPTS;
+        bsPTS[0] = 1;
+        for (int i = 0; i < 16; i++)
+        {
+            if (i < 15) {
+                bsPTS[i + 1] = bsPTS3[i];
+            }
+            else {
+                bsPTS[i + 1] = 1;
+                bsPTS[i + 2] = bsPTS3[i];
+            }
+        }
+
+        for (int i = 0; i < 16; i++)
+        {
+            if (i < 15) {
+                bsPTS[i + 18] = bsPTS2[i];
+            }
+            else {
+                bsPTS[i + 17] = 1;
+                bsPTS[i + 18] = bsPTS2[i];
+            }
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            bsPTS[i + 34] = bsPTS1[i];
+        }
+        bsPTS[37] = 1;
+
+        uint64_t nPts = bsPTS.to_ullong();
+
+        memcpy(outTs, &nPts, 5);
+        reverse(outTs, 5);
+    }
 };
 
 namespace lcss
@@ -263,6 +325,75 @@ UINT64 lcss::PESPacket::dts() const
         DTS = DTS & 0x1FFFFFFFF;
     }
     return DTS;
+}
+
+void lcss::PESPacket::setPTS(BYTE* pts)
+{
+    _pimpl->PES_header_data_length_ = 0x05;
+    _pimpl->flags2_ = 0x80;
+    memcpy(_pimpl->PTS_, pts, 5);
+}
+
+void lcss::PESPacket::setDTS(BYTE * dts)
+{
+    _pimpl->PES_header_data_length_ = 0x0A;
+    _pimpl->flags2_ = 0xC0;
+    memcpy(_pimpl->DTS_, dts, 5);
+}
+
+void lcss::PESPacket::setPTS(UINT64 pts)
+{
+    _pimpl->PES_header_data_length_ = 0x05;
+    _pimpl->flags2_ = 0x80;
+    encodeTimestamp(_pimpl->PTS_, pts);
+}
+
+void lcss::PESPacket::setDTS(UINT64 dts)
+{
+    _pimpl->PES_header_data_length_ = 0x0A;
+    _pimpl->flags2_ = 0xC0;
+    encodeTimestamp(_pimpl->DTS_, dts);
+}
+
+void lcss::PESPacket::serialize(BYTE* stream)
+{
+    stream[0] = _pimpl->packet_start_code_prefix_[0];
+    stream[1] = _pimpl->packet_start_code_prefix_[1];
+    stream[2] = _pimpl->packet_start_code_prefix_[2];
+    stream[3] = _pimpl->stream_id_;
+    uint8_t buf[2];
+    uint16_t len = htons(_pimpl->PES_packet_length_);
+    memset(buf, len, 2);
+    stream[4] = buf[0];
+    stream[5] = buf[1];
+    stream[6] = _pimpl->flags1_;
+    stream[7] = _pimpl->flags2_;
+    stream[8] = _pimpl->PES_header_data_length_;
+    uint16_t value = _pimpl->flags2_ & PTS_DTS_MASK;
+    if (value > 0)
+    {
+        if (value == 0xC0)
+        {
+            stream[9] = _pimpl->PTS_[0];
+            stream[10] = _pimpl->PTS_[1];
+            stream[11] = _pimpl->PTS_[2];
+            stream[12] = _pimpl->PTS_[3];
+            stream[13] = _pimpl->PTS_[4];
+            stream[14] = _pimpl->DTS_[0];
+            stream[15] = _pimpl->DTS_[1];
+            stream[16] = _pimpl->DTS_[2];
+            stream[17] = _pimpl->DTS_[3];
+            stream[18] = _pimpl->DTS_[4];
+        }
+        else if (value == 0x80)
+        {
+            stream[9] = _pimpl->PTS_[0];
+            stream[10] = _pimpl->PTS_[1];
+            stream[11] = _pimpl->PTS_[2];
+            stream[12] = _pimpl->PTS_[3];
+            stream[13] = _pimpl->PTS_[4];
+        }
+    }
 }
 
 const BYTE* lcss::PESPacket::DTS() const

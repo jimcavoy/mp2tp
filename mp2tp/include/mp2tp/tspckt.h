@@ -35,6 +35,7 @@ public:
 	bool payloadUnitStart() const; ///< Is true for PES or PSI otherwise false
 	bool transportPriority() const;
 	uint16_t PID() const; ///< PID is a 13-bit field indicating the type of the data stored in the packet payload.
+	void setPID(uint16_t pid);
 	uint8_t scramblingControl() const;
 	uint8_t adaptationFieldExist() const;
 	uint8_t cc() const; ///<  Continuity Counter
@@ -46,6 +47,8 @@ public:
 	// returns only the payload
 	void getData(BYTE* data, int len) const;
 	const BYTE* getData() const;
+	int getPayload(BYTE* data, int len) const;
+	void setPayload(BYTE* data, int len);
 
 	void serialize(BYTE* buf, int len) const;
 	void parse(const BYTE* buf);

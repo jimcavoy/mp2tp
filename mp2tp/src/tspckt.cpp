@@ -4,8 +4,11 @@
 #include <array>
 #include <cassert>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <memory.h>
+#include <arpa/inet.h>
 #endif
 
 // Transport Headers
@@ -164,6 +167,17 @@ uint16_t lcss::TransportPacket::PID() const
     return npid & TP_PID;
 }
 
+void lcss::TransportPacket::setPID(uint16_t pid)
+{
+    uint16_t npid = htons(pid);
+    char pidArray[2]{};
+    memset(pidArray, npid, 2);
+    uint8_t flags = _pimpl->_data[1] & 0xE0;
+    _pimpl->_data[1] = pidArray[0];
+    _pimpl->_data[2] = pidArray[1];
+    _pimpl->_data[1] |= flags;
+}
+
 uint8_t lcss::TransportPacket::scramblingControl() const
 {
     return (_pimpl->_data[3] & TP_SCRAMBLLING_CTRL) >> 6;
@@ -276,6 +290,48 @@ const BYTE* lcss::TransportPacket::getData() const
 
     return nullptr;
 }
+
+int lcss::TransportPacket::getPayload(BYTE* data, int len) const
+{
+    BYTE dataByte = data_byte();
+    int start = TS_SIZE - dataByte;
+    int bytesRead = 0;
+    if (start > 0)
+    {
+        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::advance(first, start);
+
+        for (auto it = first; it != _pimpl->_data.end(); ++it, bytesRead++)
+        {
+            if (bytesRead < len)
+            {
+                data[bytesRead] = *it;
+            }
+        }
+    }
+    return bytesRead;
+}
+
+void lcss::TransportPacket::setPayload(BYTE* data, int len)
+{
+    BYTE dataByte = data_byte();
+    int start = TS_SIZE - dataByte;
+    if (start > 0)
+    {
+        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::advance(first, start);
+
+        int i = 0;
+        for (auto it = first; it != _pimpl->_data.end(); ++it, i++)
+        {
+            if (i < len)
+            {
+                *it = data[i];
+            }
+        }
+    }
+}
+
 
 /// @brief Get the TransportPacket instance's implementation length. 
 /// @return Returns the number of bytes this instance's implementation length.  Valid values are 0 to 188.

@@ -2,3 +2,4 @@ cmake_minimum_required (VERSION 3.21)
 
 add_subdirectory(mp2tdmux)
 add_subdirectory(packtest)
+add_subdirectory(modifytest)
