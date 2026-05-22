@@ -8,6 +8,7 @@
 #endif
 
 #include <bitset>
+#include <cstdint>
 
 /////////////////////////////////////////////////////////////////////////////
 namespace
@@ -67,7 +68,7 @@ namespace
         }
         bsPTS[37] = 1;
 
-        u_int64 nPts = bsPTS.to_ullong();
+        uint64_t nPts = bsPTS.to_ullong();
 
         memcpy(outTs, &nPts, 5);
         reverse(outTs, 5);
