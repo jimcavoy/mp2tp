@@ -16,7 +16,14 @@ target_link_libraries(modifytest PRIVATE mp2tp)
 
 # Test cases
 add_test(NAME modifytest
-  COMMAND modifytest
+  COMMAND modifytest ${PROJECT_SOURCE_DIR}/../../sample/oneklvset.ts
+)
+
+set_tests_properties( modifytest
+  PROPERTIES PASS_REGULAR_EXPRESSION  
+    "PTS 1 => 90001
+PID 482 => 257
+PID 482 => 257"
 )
 
 
