@@ -35,7 +35,7 @@ namespace
         memcpy(&PTS2, buf + 2, 2);
         std::bitset<16> bsPTS2(PTS2);
 
-        u_char PTS1 = buf[5];
+        u_char PTS1 = buf[4];
         std::bitset<8> bsPTS1(PTS1);
 
         std::bitset<64> bsPTS;

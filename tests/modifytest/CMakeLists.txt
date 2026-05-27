@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(modifytest
-  VERSION 1.0.0
+  VERSION 1.0.1
   DESCRIPTION "MPEG-2 TS set and get test"
   LANGUAGES CXX
 )
@@ -21,9 +21,7 @@ add_test(NAME modifytest
 
 set_tests_properties( modifytest
   PROPERTIES PASS_REGULAR_EXPRESSION  
-    "PTS 1 => 90001
-PID 482 => 257
-PID 482 => 257"
+    "Add one second to PTS[\r\n\t ]*PTS 82108.6 sec \\(7389776209\\) \\(0x2d 0xe1 0xdd 0x12 0xa3\\) => 82109.6 sec \\(7389866209\\) \\(0x2d 0xe1 0xe1 0xd1 0xc3\\)[\r\n\t ]*Reset PID[\r\n\t ]*PID 482 => 257[\r\n\t ]*PID 482 => 257[\r\n\t ]*"
 )
 
 
