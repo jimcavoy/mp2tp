@@ -58,13 +58,13 @@ namespace
             }
             else {
                 bsPTS[i + 17] = 1;
-                bsPTS[i + 18] = bsPTS2[i];
+                bsPTS[i + 19] = bsPTS2[i];
             }
         }
 
         for (int i = 0; i < 3; i++)
         {
-            bsPTS[i + 34] = bsPTS1[i];
+            bsPTS[i + 35] = bsPTS1[i];
         }
         bsPTS[37] = 1;
 
