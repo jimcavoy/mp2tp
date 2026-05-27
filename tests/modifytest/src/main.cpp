@@ -2,6 +2,7 @@
 #include <mp2tp/tspckt.h>
 #include <mp2tp/tspes.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 
@@ -29,6 +30,26 @@ public:
 public:
     std::vector<lcss::TransportPacket> _oneKlvSet;
 };
+
+void outputPTS(const uint8_t* pts)
+{
+    cout << " (";
+    for (int i = 0; i < 5; i++)
+    {
+        cout << std::hex << std::showbase
+            << std::internal
+            << std::setw(4)
+            << std::setfill('0')
+            << (int)pts[i];
+
+        if (i < 4)
+        {
+            cout << " ";
+        }
+    }
+    cout << ")";
+    cout << std::dec;
+}
 
 int main(int argc, char* argv[])
 {
@@ -82,17 +103,23 @@ int main(int argc, char* argv[])
         const UINT16 bytesParsed = pes.parse(pckt.getData());
         if (bytesParsed > 0)
         {
-            cout << "PTS " << pes.pts() << " => ";
+            cout << "Add one second to PTS" << endl;
+            cout << "PTS " << pes.ptsInSeconds() << " sec (" <<pes.pts() << ")";
+            outputPTS(pes.PTS());
+            cout << " => ";
             uint64_t newPts = pes.pts() + 90000; // add one second
             pes.setPTS(newPts);
             uint8_t payload[188]{};
             int bytesRead = pckt.getPayload(payload, 188);
             pes.serialize(payload);
             pckt.setPayload(payload, bytesRead);
-            cout << pes.pts() << endl;
+            cout << pes.ptsInSeconds() << " sec (" << pes.pts() << ")";
+            outputPTS(pes.PTS());
+            cout << endl;
         }
 
         // reset PID
+        cout << "Reset PID" << endl;
         for (auto& ts : parser._oneKlvSet)
         {
             cout << "PID " << ts.PID() << " => ";
