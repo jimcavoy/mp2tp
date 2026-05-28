@@ -363,7 +363,7 @@ void lcss::PESPacket::serialize(BYTE* stream)
     stream[3] = _pimpl->stream_id_;
     uint8_t buf[2];
     uint16_t len = htons(_pimpl->PES_packet_length_);
-    memset(buf, len, 2);
+    memcpy(buf, &len, 2);
     stream[4] = buf[0];
     stream[5] = buf[1];
     stream[6] = _pimpl->flags1_;
