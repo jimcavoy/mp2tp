@@ -27,7 +27,11 @@ To build the project, it requires CMake, https://cmake.org/, to be installed on 
 ### To Build and Install
 In __mp2tp__ root directory, build and install this project using CMake with the following commands on a terminal:
 
-#### 1. Generate the build environment
+#### 1.a Generate the build environment on Windows
+
+    cmake -S . -B ./build -A x64
+
+#### 1.b Generate the build environment on Linux
 
     cmake -S . -B ./build
 
