@@ -51,3 +51,50 @@ The `--install` command will install a CMake package so it can be imported into 
 To run the project's build-in test, enter the following:
 
     ctest --test-dir ./build
+
+## Cross-Compile ARM64
+This section describes how to cross-compile ARM64 (aarch64-linux-gnu) on a Linux x86_64 host machine.
+
+### 1. Install the Cross-Compiler
+Install the `aarch64` toolchain on your host Linux machine.
+
+```
+sudo apt update
+sudo apt install gcc-linux-gnu g++-aarch64-linux-gnu
+```
+
+### 2. Generate Build System
+Use `aarch64-toolchain.cmake` file to generate a cross-compile build system.  At the root of the project directory entry the following commands.
+
+```
+cmake -B build-arm64 -S . -DCMAKE_TOOLCHAIN_FILE=aarch64-toolchain.cmake
+```
+
+### 3. Build Project
+To build all the binaries in this project, enter the following command.
+
+```
+cmake --build ./build-arm64
+```
+### 4. Verify Binaries
+Once the build completes, confirm that the generated binaries are compiled for the correct architecture using the `file` utility.
+
+```
+file build-arm64/mp2tpser
+```
+
+#### Expected Output:
+
+```
+build-arm64/mp2tpser: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=c44373f18f3f3a915d8226215d36daa9fd05d90f, for GNU/Linux 3.7.0, not stripped
+```
+
+### 5. Install the mp2tp Library
+For other cross-compiled projects that need to link to the __mp2tp__ library, enter the following command:
+
+```
+sudo cmake --install ./build-arm64 --prefix /usr/aarch64-linux-gnu
+```
+
+
+
