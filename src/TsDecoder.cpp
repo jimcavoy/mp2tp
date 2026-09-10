@@ -26,7 +26,7 @@ namespace mp2tpser
 
 		TsWriter::printHeader(_ostrm, pckt);
 
-		const BYTE* data = pckt.getData();
+		const uint8_t* data = pckt.getData();
 		if (pckt.payloadUnitStart())
 		{
 			if (pckt.PID() == 0)

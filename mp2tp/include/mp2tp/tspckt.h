@@ -1,10 +1,9 @@
 #ifndef TSPCKT_H
 #define TSPCKT_H
 
-#include "tstype.h"
-
 #include <memory>
 #include <ostream>
+#include <cstdint>
 
 namespace lcss
 {
@@ -20,8 +19,8 @@ public:
 
 public:
 	TransportPacket();
-	TransportPacket(const BYTE* data);
-	TransportPacket(const BYTE* data, size_t len);
+	TransportPacket(const uint8_t* data);
+	TransportPacket(const uint8_t* data, size_t len);
 
 	~TransportPacket();
 
@@ -42,19 +41,19 @@ public:
 	uint8_t incrementCC(); ///< Increment the continuity counter for this instance.
 
 	const AdaptationField* getAdaptationField() const;
-	BYTE data_byte() const; 
+	uint8_t data_byte() const; 
 
 	// returns only the payload
-	void getData(BYTE* data, int len) const;
-	const BYTE* getData() const;
-	int getPayload(BYTE* data, int len) const;
-	void setPayload(BYTE* data, int len);
+	void getData(uint8_t* data, int len) const;
+	const uint8_t* getData() const;
+	int getPayload(uint8_t* data, int len) const;
+	void setPayload(uint8_t* data, int len);
 
-	void serialize(BYTE* buf, int len) const;
-	void parse(const BYTE* buf);
-	void push_back(BYTE b);
+	void serialize(uint8_t* buf, int len) const;
+	void parse(const uint8_t* buf);
+	void push_back(uint8_t b);
 
-	const BYTE* data() const;
+	const uint8_t* data() const;
 	size_t length() const;
 
 private:

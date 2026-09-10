@@ -11,33 +11,33 @@
 
 namespace
 {
-    BYTE tsheader_pes[] = {
+    uint8_t tsheader_pes[] = {
         0x47, 0x40, 0x00, 0x10, 0x00, 0x00, 0x01, 0xBD,
         0x00, 0x00 };
 
-    BYTE tsheader_adpfd_pes[] = {
+    uint8_t tsheader_adpfd_pes[] = {
         0x47, 0x40, 0x00, 0x30, 0x07, 0x50,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x01, 0xBD, 0x00, 0x00 };
 
-    BYTE tsheader_onepacket[] = {
+    uint8_t tsheader_onepacket[] = {
         0x47, 0x40, 0x00, 0x30 };
 
-    BYTE tsheader[] = {
+    uint8_t tsheader[] = {
         0x47, 0x00, 0x00, 0x11 };
 
-    BYTE tsheader_payload_only[] = {
+    uint8_t tsheader_payload_only[] = {
         0x47, 0x00, 0x00, 0x10 };
 
-    BYTE continuity_value[] = {
+    uint8_t continuity_value[] = {
         0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
         0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F };
 
-    BYTE continuity_value_adaptation[] = {
+    uint8_t continuity_value_adaptation[] = {
         0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
         0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F };
 
-    void setPID(BYTE* header, uint16_t pid)
+    void setPID(uint8_t* header, uint16_t pid)
     {
         uint16_t nPid = htons(pid);
         uint8_t bpid[2];
@@ -319,11 +319,11 @@ namespace lcss
                 else // last packet
                 {
                     // Setup the ts header and adaptation field
-                    BYTE tsh[4];
+                    uint8_t tsh[4];
                     memcpy(tsh, tsheader, 4);
                     setPID(tsh, pid);
                     // set continuity_counter and adaption field control value
-                    BYTE c = continuity_value_adaptation[(*cc) % 16];
+                    uint8_t c = continuity_value_adaptation[(*cc) % 16];
                     (*cc)++;
                     tsh[3] = c;
                     // write the header
@@ -348,11 +348,11 @@ namespace lcss
             else if (tsd.size() == 0 && pes.size() != 0 && whatIsLeft == 183)
             {
                 // Setup the ts header and adaptation field
-                BYTE tsh[4]{};
+                uint8_t tsh[4]{};
                 memcpy(tsh, tsheader, 4);
                 setPID(tsh, pid);
                 // set continuity_counter and adaption field control value
-                BYTE c = continuity_value_adaptation[(*cc) % 16];
+                uint8_t c = continuity_value_adaptation[(*cc) % 16];
                 (*cc)++;
                 tsh[3] = c;
                 // write the header
@@ -493,7 +493,7 @@ namespace lcss
                     setPID(tsh, pid);
 
                     // set continuity_counter
-                    BYTE c = continuity_value[*cc % 16];
+                    uint8_t c = continuity_value[*cc % 16];
                     (*cc)++;
                     tsh[3] = c;
 

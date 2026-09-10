@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
             break;
         }
 
-        BYTE memblock[N]{};
+        uint8_t memblock[N]{};
         MP2TFileDemux demux(ofileh264, ofileKlv, ofileAudio, ofileExi);
         try
         {

@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(modifytest
-  VERSION 1.0.1
+  VERSION 1.2.2
   DESCRIPTION "MPEG-2 TS set and get test"
   LANGUAGES CXX
 )

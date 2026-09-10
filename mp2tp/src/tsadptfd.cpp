@@ -4,14 +4,14 @@
 #include <string.h>
 
 // Adaptation Headers
-const BYTE AF_DISCONTINUITY_MASK	= 0x80;
-const BYTE AF_RANDOM_ACCESS_MASK	= 0x40;
-const BYTE AF_ELEM_STREAM_PRI_MASK	= 0x20;
-const BYTE AF_PCR_MASK				= 0x10;
-const BYTE AF_OPCR_MASK				= 0x08;
-const BYTE AF_SPLICING_PT_MASK		= 0x04;
-const BYTE AF_TRANSPORT_PRIV_MASK	= 0x02;
-const BYTE AF_AF_EXT_MASK			= 0x01;
+const uint8_t AF_DISCONTINUITY_MASK		= 0x80;
+const uint8_t AF_RANDOM_ACCESS_MASK		= 0x40;
+const uint8_t AF_ELEM_STREAM_PRI_MASK	= 0x20;
+const uint8_t AF_PCR_MASK				= 0x10;
+const uint8_t AF_OPCR_MASK				= 0x08;
+const uint8_t AF_SPLICING_PT_MASK		= 0x04;
+const uint8_t AF_TRANSPORT_PRIV_MASK	= 0x02;
+const uint8_t AF_AF_EXT_MASK			= 0x01;
 
 lcss::AdaptationField::AdaptationField()
 	:_data(nullptr)
@@ -20,7 +20,7 @@ lcss::AdaptationField::AdaptationField()
 }
 
 
-lcss::AdaptationField::AdaptationField(const BYTE* data)
+lcss::AdaptationField::AdaptationField(const uint8_t* data)
 	:_data(data+4) // start after the TS header
 {
 
@@ -78,7 +78,7 @@ bool lcss::AdaptationField::adaptation_field_extension_flag() const
 	return _data[1] & AF_AF_EXT_MASK ? true : false;
 }
 
-bool lcss::AdaptationField::getPCR(BYTE* pcr) const
+bool lcss::AdaptationField::getPCR(uint8_t* pcr) const
 {
 	if(PCR_flag())
 	{
@@ -89,7 +89,7 @@ bool lcss::AdaptationField::getPCR(BYTE* pcr) const
 	return false;
 }
 
-void lcss::AdaptationField::parse(const BYTE* data)
+void lcss::AdaptationField::parse(const uint8_t* data)
 {
 	_data = data + 4;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tstype.h"
+#include <cstdint>
 #include <memory>
 
 namespace lcss
@@ -22,16 +22,16 @@ namespace lcss
 		PESPacket(PESPacket&&) noexcept;
 		PESPacket& operator=(PESPacket&&) noexcept;
 
-		UINT16 parse(const BYTE* stream);
+		uint16_t parse(const uint8_t* stream);
 
 		// PES packet fields
-		BYTE stream_id() const;
-		UINT16 packet_length() const;
-		BYTE flags1() const;
-		BYTE flags2() const;
-		BYTE header_data_length() const;
-		const BYTE* PTS() const; 
-		const BYTE* DTS() const; 
+		uint8_t stream_id() const;
+		uint16_t packet_length() const;
+		uint8_t flags1() const;
+		uint8_t flags2() const;
+		uint8_t header_data_length() const;
+		const uint8_t* PTS() const; 
+		const uint8_t* DTS() const; 
 
 		// Methods
 		bool hasPacketStartCodePrefix() const;
@@ -40,16 +40,16 @@ namespace lcss
 		double ptsInSeconds() const;
 		double dtsInSeconds() const;
 
-		UINT64 pts() const;
-		UINT64 dts() const;
+		uint64_t pts() const;
+		uint64_t dts() const;
 
-		void setPTS(BYTE* pts);
-		void setDTS(BYTE* dts);
+		void setPTS(uint8_t* pts);
+		void setDTS(uint8_t* dts);
 
-		void setPTS(UINT64 pts);
-		void setDTS(UINT64 dts);
+		void setPTS(uint64_t pts);
+		void setDTS(uint64_t dts);
 
-		void serialize(BYTE* stream);
+		void serialize(uint8_t* stream);
 
 	private:
 		class Impl;

@@ -24,8 +24,8 @@ namespace lcss
 			Stream() {}
 			~Stream() {}
 
-			UINT16 transport_stream_id_{ 0 };
-			UINT16 original_network_id_{ 0 };
+			uint16_t transport_stream_id_{ 0 };
+			uint16_t original_network_id_{ 0 };
 			NetworkInformationTable::DescriptorArray descriptors_;
 		};
 	private:
@@ -41,17 +41,17 @@ namespace lcss
 		NetworkInformationTable& operator=(NetworkInformationTable&&) noexcept;
 
 		// Fields
-		BYTE	pointer_field()					const;
-		BYTE	table_id()						const;
-		UINT16	network_id()					const;
-		BYTE	version_number()				const;
-		bool	current_next_indicator()		const;
-		BYTE	section_number()				const;
-		BYTE	last_section_number()			const;
-		UINT32	CRC_32()						const;
+		uint8_t		pointer_field()					const;
+		uint8_t		table_id()						const;
+		uint16_t	network_id()					const;
+		uint8_t		version_number()				const;
+		bool		current_next_indicator()		const;
+		uint8_t		section_number()				const;
+		uint8_t		last_section_number()			const;
+		uint32_t	CRC_32()						const;
 
 		// Methods
-		bool parse(const BYTE* table);
+		bool parse(const uint8_t* table);
 
 		template<typename BackInsertIter>
 		void network_descriptors(BackInsertIter backit) const;

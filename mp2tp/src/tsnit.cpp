@@ -12,8 +12,8 @@
 
 using namespace std;
 
-const UINT16 NIT_SECTION_LEN = 0x03FF;
-const BYTE NIT_VERSION_NO = 0x3E;
+const uint16_t NIT_SECTION_LEN = 0x03FF;
+const uint8_t NIT_VERSION_NO = 0x3E;
 
 namespace lcss
 {
@@ -32,8 +32,8 @@ namespace lcss
 		~Impl() {}
 
 	public:
-		std::vector<BYTE> nit_;
-		UINT32 CRC_32_{};
+		std::vector<uint8_t> nit_;
+		uint32_t CRC_32_{};
 		NetworkInformationTable::DescriptorArray network_descriptors_;
 		NetworkInformationTable::StreamArray streams_;
 	};
@@ -78,15 +78,15 @@ namespace lcss
 		return *this;
 	}
 
-	bool NetworkInformationTable::parse(const BYTE* table)
+	bool NetworkInformationTable::parse(const uint8_t* table)
 	{
 		if (table == nullptr)
 			return false;
 
 		_pimpl->nit_.push_back(table[0]);
-		UINT16 offset = _pimpl->nit_[0] == 0 ? 1 : _pimpl->nit_[0]; // pointer_field
-		UINT16 cur = offset;
-		UINT16 value = 0;
+		uint16_t offset = _pimpl->nit_[0] == 0 ? 1 : _pimpl->nit_[0]; // pointer_field
+		uint16_t cur = offset;
+		uint16_t value = 0;
 
 		// stuffing bytes
 		for (auto i = 1; i < _pimpl->nit_[0]; i++)
@@ -98,11 +98,11 @@ namespace lcss
 		_pimpl->nit_.push_back(table[cur++]); // table_id
 
 		memcpy(&value, table + cur, 2);
-		UINT16 section_length = ntohs(value) & NIT_SECTION_LEN;
+		uint16_t section_length = ntohs(value) & NIT_SECTION_LEN;
 		_pimpl->nit_.push_back(table[cur++]); //section_syntax_indicator, reserved_future_use, reserved, section_length
 		_pimpl->nit_.push_back(table[cur++]);
-		UINT16 crcPos = cur + section_length - 4;
-		UINT32 crc{};
+		uint16_t crcPos = cur + section_length - 4;
+		uint32_t crc{};
 		memcpy(&crc, table + crcPos, 4);
 		_pimpl->CRC_32_ = ntohl(crc);
 
@@ -116,21 +116,21 @@ namespace lcss
 		_pimpl->nit_.push_back(table[cur++]); //last_section_number
 
 		memcpy(&value, table + cur, 2);
-		UINT16 network_descriptors_length = ntohs(value) & NIT_SECTION_LEN;
+		uint16_t network_descriptors_length = ntohs(value) & NIT_SECTION_LEN;
 		_pimpl->nit_.push_back(table[cur++]); // reserved, network_descriptors_length
 		_pimpl->nit_.push_back(table[cur++]);
 
-		UINT16 end = network_descriptors_length + cur;
+		uint16_t end = network_descriptors_length + cur;
 
 		while (cur < end)
 		{
-			BYTE bValue{};
+			uint8_t bValue{};
 			memcpy(&bValue, table + cur, 1);
 			Descriptor desc(bValue);
 			cur++;
 
 			memcpy(&bValue, table + cur, 1);
-			UINT16 len = bValue;
+			uint16_t len = bValue;
 			cur++;
 
 			if (len > 0)
@@ -146,7 +146,7 @@ namespace lcss
 		}
 
 		memcpy(&value, table + cur, 2);
-		UINT16 transport_stream_loop_length = ntohs(value) & NIT_SECTION_LEN;
+		uint16_t transport_stream_loop_length = ntohs(value) & NIT_SECTION_LEN;
 		_pimpl->nit_.push_back(table[cur++]); // reserved_future_use, transport_stream_loop_length
 		_pimpl->nit_.push_back(table[cur++]);
 
@@ -164,20 +164,20 @@ namespace lcss
 			cur += 2;
 
 			memcpy(&value, table + cur, 2);
-			UINT16 transport_descriptors_length = ntohs(value) & NIT_SECTION_LEN;
+			uint16_t transport_descriptors_length = ntohs(value) & NIT_SECTION_LEN;
 			cur += 2;
 
-			UINT16 tsEnd = transport_descriptors_length + cur;
+			uint16_t tsEnd = transport_descriptors_length + cur;
 
 			while (cur < tsEnd)
 			{
-				BYTE bValue;
+				uint8_t bValue;
 				memcpy(&bValue, table + cur, 1);
 				Descriptor desc(bValue);
 				cur++;
 
 				memcpy(&bValue, table + cur, 1);
-				UINT16 len = bValue;
+				uint16_t len = bValue;
 				cur++;
 
 				if (len > 0)
@@ -194,60 +194,60 @@ namespace lcss
 		return true;
 	}
 
-	BYTE NetworkInformationTable::pointer_field() const
+	uint8_t NetworkInformationTable::pointer_field() const
 	{
 		return _pimpl->nit_[0];
 	}
 
-	BYTE NetworkInformationTable::table_id() const
+	uint8_t NetworkInformationTable::table_id() const
 	{
-		UINT16 cur = _pimpl->nit_[0] == 0 ? 1 : _pimpl->nit_[0];
+		uint16_t cur = _pimpl->nit_[0] == 0 ? 1 : _pimpl->nit_[0];
 		if (cur > _pimpl->nit_.size() - 1)
 			return 0xFF;
 		return _pimpl->nit_[cur];
 	}
 
-	UINT16 NetworkInformationTable::network_id() const
+	uint16_t NetworkInformationTable::network_id() const
 	{
-		UINT16 cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
+		uint16_t cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
 		cur += 4;
-		BYTE chVal[2]{};
-		UINT16 value;
+		uint8_t chVal[2]{};
+		uint16_t value;
 		chVal[0] = _pimpl->nit_[cur++];
 		chVal[1] = _pimpl->nit_[cur];
 		memcpy(&value, chVal, 2);;
 		return ntohs(value);
 	}
 
-	BYTE NetworkInformationTable::version_number() const
+	uint8_t NetworkInformationTable::version_number() const
 	{
-		UINT16 cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
+		uint16_t cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
 		cur += 6;
 		return (_pimpl->nit_[cur] & NIT_VERSION_NO) >> 1;
 	}
 
 	bool NetworkInformationTable::current_next_indicator() const
 	{
-		UINT16 cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
+		uint16_t cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
 		cur += 6;
 		return (_pimpl->nit_[cur] & 0x01) == 0x01 ? true : false;
 	}
 
-	BYTE NetworkInformationTable::section_number() const
+	uint8_t NetworkInformationTable::section_number() const
 	{
-		UINT16 cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
+		uint16_t cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
 		cur += 7;
 		return _pimpl->nit_[cur];
 	}
 
-	BYTE NetworkInformationTable::last_section_number() const
+	uint8_t NetworkInformationTable::last_section_number() const
 	{
-		UINT16 cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
+		uint16_t cur = _pimpl->nit_[0] == 0 ? 0 : _pimpl->nit_[0];
 		cur += 8;
 		return _pimpl->nit_[cur];
 	}
 
-	UINT32 NetworkInformationTable::CRC_32() const
+	uint32_t NetworkInformationTable::CRC_32() const
 	{
 		return _pimpl->CRC_32_;
 	}

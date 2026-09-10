@@ -3,6 +3,7 @@
 
 #include <iterator>
 #include <vector>
+#include <cstdint>
 
 #ifdef WIN32
 #include <WinSock2.h>
@@ -13,10 +14,10 @@
 
 using namespace std;
 
-const UINT16 PAT_SECTION_LEN = 0x0FFF;
-const BYTE PAT_VERSION_NO = 0x3E;
-const BYTE PAT_CUR_NEXT_INDICATOR = 0x01;
-const UINT16 PAT_ENTRY_PID = 0x1FFF;
+const uint16_t PAT_SECTION_LEN = 0x0FFF;
+const uint8_t PAT_VERSION_NO = 0x3E;
+const uint8_t PAT_CUR_NEXT_INDICATOR = 0x01;
+const uint16_t PAT_ENTRY_PID = 0x1FFF;
 
 extern uint32_t dvbpsi_crc32_table[256];
 
@@ -49,23 +50,23 @@ namespace lcss
 		void calcCRC(const lcss::ProgramAssociationTable& pat);
 
 	public:
-		BYTE pointer_field_{0};
-		BYTE table_id_{0};
-		UINT16 section_length_{13};
-		UINT16 transport_stream_id_{1};
-		BYTE reserved_ : 2;
-		BYTE version_number_ : 5;
-		BYTE current_next_indicator_ : 1;
-		BYTE section_number_{};
-		BYTE last_section_number_{};
-		UINT32 CRC_32_{};
+		uint8_t pointer_field_{0};
+		uint8_t table_id_{0};
+		uint16_t section_length_{13};
+		uint16_t transport_stream_id_{1};
+		uint8_t reserved_ : 2;
+		uint8_t version_number_ : 5;
+		uint8_t current_next_indicator_ : 1;
+		uint8_t section_number_{};
+		uint8_t last_section_number_{};
+		uint32_t CRC_32_{};
 		ProgramAssociationTable::MapType pid_to_program_;
 	};
 }
 
 void lcss::ProgramAssociationTable::Impl::calcCRC(const lcss::ProgramAssociationTable& pat)
 {
-	std::vector<BYTE> rawByteSeq;
+	std::vector<uint8_t> rawByteSeq;
 	pat.serialize(std::back_inserter(rawByteSeq));
 	CRC_32_ = 0xffffffff;
 
@@ -116,17 +117,17 @@ lcss::ProgramAssociationTable& lcss::ProgramAssociationTable::operator=(ProgramA
 }
 
 
-void lcss::ProgramAssociationTable::parse(const BYTE* table)
+void lcss::ProgramAssociationTable::parse(const uint8_t* table)
 {
 	_pimpl->pointer_field_ = table[0];
 
-	UINT32 offset = _pimpl->pointer_field_ == 0? 1 : _pimpl->pointer_field_;
-	UINT32 cur = offset;
+	uint32_t offset = _pimpl->pointer_field_ == 0? 1 : _pimpl->pointer_field_;
+	uint32_t cur = offset;
 
 	_pimpl->table_id_ = *(table+cur);
 	cur += 1;
 
-	UINT16 value{};
+	uint16_t value{};
 	memcpy(&value,table+cur,2);
 	_pimpl->section_length_ = (ntohs(value) & PAT_SECTION_LEN);
 	cur += 2;
@@ -145,12 +146,12 @@ void lcss::ProgramAssociationTable::parse(const BYTE* table)
 	_pimpl->last_section_number_ = *(table+cur);
 	cur++;
 
-	UINT32 last = cur + _pimpl->section_length_ - 9;
+	uint32_t last = cur + _pimpl->section_length_ - 9;
 	// Iterate over all the sections
 	while(cur < last)
 	{
-		UINT16 pid{};
-		UINT16 program{};
+		uint16_t pid{};
+		uint16_t program{};
 		memcpy(&program,table+cur,2);
 		cur += 2;
 		program = ntohs(program);
@@ -166,7 +167,7 @@ void lcss::ProgramAssociationTable::parse(const BYTE* table)
 	}
 
 	// Get CRC
-	UINT32 crc{};
+	uint32_t crc{};
 	memcpy(&crc,table+cur,4);
 	_pimpl->CRC_32_ = ntohl(crc);
 }
@@ -216,27 +217,27 @@ size_t lcss::ProgramAssociationTable::size() const
 	return _pimpl->pid_to_program_.size();
 }
 
-BYTE lcss::ProgramAssociationTable::pointer_field() const
+uint8_t lcss::ProgramAssociationTable::pointer_field() const
 {
 	return _pimpl->pointer_field_;
 }
 
-BYTE lcss::ProgramAssociationTable::table_id() const
+uint8_t lcss::ProgramAssociationTable::table_id() const
 {
 	return _pimpl->table_id_;
 }
 
-UINT16 lcss::ProgramAssociationTable::section_length() const
+uint16_t lcss::ProgramAssociationTable::section_length() const
 {
 	return _pimpl->section_length_;
 }
 
-UINT16 lcss::ProgramAssociationTable::transport_stream_id() const
+uint16_t lcss::ProgramAssociationTable::transport_stream_id() const
 {
 	return _pimpl->transport_stream_id_;
 }
 
-BYTE lcss::ProgramAssociationTable::version_number() const
+uint8_t lcss::ProgramAssociationTable::version_number() const
 {
 	return _pimpl->version_number_;
 }
@@ -246,17 +247,17 @@ bool lcss::ProgramAssociationTable::current_next_indicator() const
 	return _pimpl->current_next_indicator_;
 }
 
-BYTE lcss::ProgramAssociationTable::section_number() const
+uint8_t lcss::ProgramAssociationTable::section_number() const
 {
 	return _pimpl->section_number_;
 }
 
-BYTE lcss::ProgramAssociationTable::last_section_number() const
+uint8_t lcss::ProgramAssociationTable::last_section_number() const
 {
 	return _pimpl->last_section_number_;
 }
 
-UINT32 lcss::ProgramAssociationTable::CRC_32() const
+uint32_t lcss::ProgramAssociationTable::CRC_32() const
 {
 	return  _pimpl->CRC_32_;
 }
@@ -302,4 +303,4 @@ void lcss::ProgramAssociationTable::serialize(BackInsertIter backit) const
 	*backit++ = (_pimpl->CRC_32_) & 0xff;
 }
 
-template void lcss::ProgramAssociationTable::serialize<std::back_insert_iterator<std::vector<BYTE>>>(std::back_insert_iterator<std::vector<BYTE>>) const;
+template void lcss::ProgramAssociationTable::serialize<std::back_insert_iterator<std::vector<uint8_t>>>(std::back_insert_iterator<std::vector<uint8_t>>) const;
