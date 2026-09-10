@@ -36,7 +36,7 @@ lcss::TSParser::~TSParser()
 
 }
 
-bool lcss::TSParser::parse(const BYTE* stream, UINT32 len, bool strict)
+bool lcss::TSParser::parse(const uint8_t* stream, uint32_t len, bool strict)
 {
     uint32_t h = 0;
     uint32_t i = 0;
@@ -118,12 +118,12 @@ void lcss::TSParser::onPacket(lcss::TransportPacket& pckt)
 
 }
 
-UINT64 lcss::TSParser::packetCount() const
+uint64_t lcss::TSParser::packetCount() const
 {
     return _pimpl->_count;
 }
 
-void lcss::TSParser::setPacketSize(UINT32 sz)
+void lcss::TSParser::setPacketSize(uint32_t sz)
 {
     _pimpl->_packetSize = sz;
 }

@@ -12,23 +12,23 @@
 #endif
 
 // Transport Headers
-const BYTE TRANSPORT_ERROR_MASK = 0x80;
-const BYTE PAYLOAD_UNIT_START_MASK = 0x40;
-const BYTE TRANSPORT_PRI_MASK = 0x20;
+const uint8_t TRANSPORT_ERROR_MASK = 0x80;
+const uint8_t PAYLOAD_UNIT_START_MASK = 0x40;
+const uint8_t TRANSPORT_PRI_MASK = 0x20;
 
-const UINT16 TP_PID = 0x1FFF;
-const BYTE TP_SCRAMBLLING_CTRL = 0xC0;
-const BYTE TP_ADAPTATION_FD_CTRL = 0x30;
-const BYTE TP_CONTINUITY_COUNTER = 0x0F;
+const uint16_t TP_PID = 0x1FFF;
+const uint8_t TP_SCRAMBLLING_CTRL = 0xC0;
+const uint8_t TP_ADAPTATION_FD_CTRL = 0x30;
+const uint8_t TP_CONTINUITY_COUNTER = 0x0F;
 
 namespace
 {
-    BYTE continuity_value[] = {
+    uint8_t continuity_value[] = {
         0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
         0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
     };
 
-    BYTE continuity_value_adaptation[] = {
+    uint8_t continuity_value_adaptation[] = {
         0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
         0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F
     };
@@ -50,7 +50,7 @@ namespace lcss
         }
         ~Impl() {}
 
-        void insert(const BYTE* data, size_t len)
+        void insert(const uint8_t* data, size_t len)
         {
             assert(len == TransportPacket::TS_SIZE);
             clear();
@@ -63,7 +63,7 @@ namespace lcss
             _pos = 0;
         }
 
-        void push_back(BYTE d)
+        void push_back(uint8_t d)
         {
             if (_pos < TransportPacket::TS_SIZE)
             {
@@ -73,7 +73,7 @@ namespace lcss
 
     public:
         int _pos{ 0 };
-        std::array<BYTE, TransportPacket::TS_SIZE> _data{ };
+        std::array<uint8_t, TransportPacket::TS_SIZE> _data{ };
         lcss::AdaptationField _adptFd;
     };
 
@@ -95,13 +95,13 @@ lcss::TransportPacket::TransportPacket()
     _pimpl = std::make_unique<lcss::TransportPacket::Impl>();
 }
 
-lcss::TransportPacket::TransportPacket(const BYTE* data)
+lcss::TransportPacket::TransportPacket(const uint8_t* data)
 {
     _pimpl = std::make_unique<lcss::TransportPacket::Impl>();
     _pimpl->insert(data, TransportPacket::TS_SIZE);
 }
 
-lcss::TransportPacket::TransportPacket(const BYTE* data, size_t len)
+lcss::TransportPacket::TransportPacket(const uint8_t* data, size_t len)
 {
     _pimpl = std::make_unique<lcss::TransportPacket::Impl>();
     _pimpl->insert(data, TransportPacket::TS_SIZE);
@@ -161,7 +161,7 @@ uint16_t lcss::TransportPacket::PID() const
     char pid[2]{};
     pid[0] = _pimpl->_data[2];
     pid[1] = _pimpl->_data[1];
-    UINT16 npid;
+    uint16_t npid;
     memcpy(&npid, pid, 2);
 
     return npid & TP_PID;
@@ -256,13 +256,13 @@ const lcss::AdaptationField* lcss::TransportPacket::getAdaptationField() const
 /// @brief Get the payload data for this TransportPacket instance.
 /// @param buffer [in, out] The buffer to hold the payload data.
 /// @param len [in] The number of bytes that @p buffer can hold.
-void lcss::TransportPacket::getData(BYTE* buffer, int len) const
+void lcss::TransportPacket::getData(uint8_t* buffer, int len) const
 {
-    BYTE dataByte = data_byte();
+    uint8_t dataByte = data_byte();
     int start = TS_SIZE - dataByte;
     if (start > 0)
     {
-        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::array<uint8_t, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
         std::advance(first, start);
 
         int i = 0;
@@ -278,9 +278,9 @@ void lcss::TransportPacket::getData(BYTE* buffer, int len) const
 
 /// @brief Get the TransportPacket instance's payload data. 
 /// @return Return the address of the first byte to the payload data. 
-const BYTE* lcss::TransportPacket::getData() const
+const uint8_t* lcss::TransportPacket::getData() const
 {
-    BYTE dataByte = data_byte();
+    uint8_t dataByte = data_byte();
     int start = TS_SIZE - dataByte;
 
     if (start > 0)
@@ -291,14 +291,14 @@ const BYTE* lcss::TransportPacket::getData() const
     return nullptr;
 }
 
-int lcss::TransportPacket::getPayload(BYTE* data, int len) const
+int lcss::TransportPacket::getPayload(uint8_t* data, int len) const
 {
-    BYTE dataByte = data_byte();
+    uint8_t dataByte = data_byte();
     int start = TS_SIZE - dataByte;
     int bytesRead = 0;
     if (start > 0)
     {
-        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::array<uint8_t, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
         std::advance(first, start);
 
         for (auto it = first; it != _pimpl->_data.end(); ++it, bytesRead++)
@@ -312,13 +312,13 @@ int lcss::TransportPacket::getPayload(BYTE* data, int len) const
     return bytesRead;
 }
 
-void lcss::TransportPacket::setPayload(BYTE* data, int len)
+void lcss::TransportPacket::setPayload(uint8_t* data, int len)
 {
-    BYTE dataByte = data_byte();
+    uint8_t dataByte = data_byte();
     int start = TS_SIZE - dataByte;
     if (start > 0)
     {
-        std::array<BYTE, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
+        std::array<uint8_t, TransportPacket::TS_SIZE>::iterator first = _pimpl->_data.begin();
         std::advance(first, start);
 
         int i = 0;
@@ -344,7 +344,7 @@ size_t lcss::TransportPacket::length() const
 /// @brief Copy the TransportPacket instance into a buffer passed in by the client in @p data.
 /// @param data [in, out] The buffer that the TransportPacket instance will be copied into.
 /// @param len [in] The buffer size in bytes of @p data.
-void lcss::TransportPacket::serialize(BYTE* data, int len) const
+void lcss::TransportPacket::serialize(uint8_t* data, int len) const
 {
     int i = 0;
     for (auto it = _pimpl->_data.begin(); it != _pimpl->_data.end(); ++it, i++)
@@ -358,21 +358,21 @@ void lcss::TransportPacket::serialize(BYTE* data, int len) const
 
 /// @brief Copy raw byte sequence of data into the TransportPacket instance.
 /// @param buf [in] The buffer @p buf to be copied into the TransportPacket instance.
-void lcss::TransportPacket::parse(const BYTE* buf)
+void lcss::TransportPacket::parse(const uint8_t* buf)
 {
     _pimpl->insert(buf, TransportPacket::TS_SIZE);
 }
 
 /// @brief Insert one byte into the TransportPacket instance.
 /// @param b [in] The byte to be added the TransportPacket instance.
-void lcss::TransportPacket::push_back(BYTE b)
+void lcss::TransportPacket::push_back(uint8_t b)
 {
     _pimpl->push_back(b);
 }
 
 /// @brief Get the full TransportPacket instance's data.  Header + payload
 /// @return Returns the address of the first byte of the TransportPacket instance in memory.
-const BYTE* lcss::TransportPacket::data() const
+const uint8_t* lcss::TransportPacket::data() const
 {
     return _pimpl->_data.data();
 }

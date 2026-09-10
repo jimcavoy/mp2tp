@@ -17,7 +17,7 @@ using namespace std;
 
 namespace
 {
-	const BYTE PTS_DTS_MASK = 0xC0;
+	const uint8_t PTS_DTS_MASK = 0xC0;
 
 	// Function name   : getDescriptorText
 	// Description     : Returns a string associated with a tag number.
@@ -222,8 +222,8 @@ namespace
 	// Function name   : getStreamIdDescription
 	// Description     : ISO/IEC 13818-1 : 2013 (E) Table 2-22 Stream_id assignments, pg 36
 	// Return type     : void 
-	// Argument        : BYTE streamId
-	std::string getStreamIdDescription(BYTE streamId)
+	// Argument        : uint8_t streamId
+	std::string getStreamIdDescription(uint8_t streamId)
 	{
 		string strStreamId("ERROR UNKNOWN STREAM ID");
 
@@ -284,7 +284,7 @@ namespace
 		size_t cur = 0;
 
 		char buf[BUFSIZ]{};
-		BYTE val[BUFSIZ]{};
+		uint8_t val[BUFSIZ]{};
 		desc.value(val);
 
 		string indent;
@@ -309,7 +309,7 @@ namespace
 			}
 			else
 			{
-				BYTE c = val[cur++];
+				uint8_t c = val[cur++];
 				(isprint(c) != 0) ? info << (char)c : info << "(0x" << hex << setfill('0') << setw(2) << (int)c << ")";
 			}
 		}
@@ -325,12 +325,12 @@ namespace
 	{
 		char text[BUFSIZ]{};
 		size_t cur = 0;
-		BYTE metadata_format = 0;
-		BYTE MPEG_carriage_flag = 0;
+		uint8_t metadata_format = 0;
+		uint8_t MPEG_carriage_flag = 0;
 		string indent("\t\t\t\t");
 		std::stringstream tag;
 
-		BYTE val[BUFSIZ]{};
+		uint8_t val[BUFSIZ]{};
 		desc.value(val);
 
 		ostrm << "\t\t\t" << getDescriptorText(desc.tag()) << "() {" << endl;
@@ -401,12 +401,12 @@ namespace
 			}
 			else if ((cur == 5 && metadata_format != 0xFF) || cur == 8)
 			{
-				BYTE flag = val[cur++];
+				uint8_t flag = val[cur++];
 				char name[BUFSIZ]{};
 				sprintf(name, "%#4.2x", flag);
 				ostrm << indent << "metadata_locator_record_flag: " << (flag & 0x80 ? "true" : "false") << endl;
 
-				BYTE mask = 0x60;
+				uint8_t mask = 0x60;
 				MPEG_carriage_flag = flag & mask;
 				std::stringstream tag;
 				// Table 2-85 - MPEG_carrier_flags
@@ -476,15 +476,15 @@ namespace
 	void printMetadataDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		size_t cur = 0;
-		BYTE metadata_format = 0;
-		BYTE MPEG_carriage_flag = 0;
+		uint8_t metadata_format = 0;
+		uint8_t MPEG_carriage_flag = 0;
 		stringstream tag;
 		string indent;
 		for (int i = 0; i < depth; i++)
 		{
 			indent += "\t";
 		}
-		BYTE val[BUFSIZ]{};
+		uint8_t val[BUFSIZ]{};
 		desc.value(val);
 		char text[BUFSIZ]{};
 
@@ -567,16 +567,16 @@ namespace
 			{
 				tag = std::stringstream();
 				char name[BUFSIZ]{};
-				BYTE flag = val[cur++];
+				uint8_t flag = val[cur++];
 				sprintf(name, "%#4.2x", flag);
-				BYTE mask = 0xE0;
-				BYTE decoder_config_flags = flag & mask;
+				uint8_t mask = 0xE0;
+				uint8_t decoder_config_flags = flag & mask;
 
 				if (decoder_config_flags == 0x00)
 				{
 					tag << "No decoder configuration is needed. 000" << endl;
 					ostrm << indent << "decoder_config_flags: " << tag.str();
-					BYTE DSM_CC_flag = flag & 0x10;
+					uint8_t DSM_CC_flag = flag & 0x10;
 					ostrm << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
 					ostrm << indent << "reserved: " << "1111" << endl;
 				}
@@ -584,11 +584,11 @@ namespace
 				{
 					tag << "The decoder configuration is carried in this descriptor in the decoder_config_byte field. 001";
 					ostrm << indent << "decoder_config_flags" << tag.str() << endl;
-					BYTE DSM_CC_flag = flag & 0x10;
+					uint8_t DSM_CC_flag = flag & 0x10;
 					ostrm << indent << "DSM-CC_flag: " << (DSM_CC_flag ? "true" : "false") << endl;
 					ostrm << indent << "reserved: " << "1111" << endl;
 
-					BYTE decoder_config_length = val[cur++];
+					uint8_t decoder_config_length = val[cur++];
 					ostrm << indent << "decoder_config_length: " << (unsigned int)decoder_config_length << endl;
 					std::stringstream str;
 					for (int i = 0; i < decoder_config_length; i++)
@@ -627,7 +627,7 @@ namespace
 	void printMetadataSTDDescriptor(std::ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
 		std::stringstream tag;
-		BYTE val[BUFSIZ]{};
+		uint8_t val[BUFSIZ]{};
 		desc.value(val);
 		string text;
 		string indent;
@@ -642,15 +642,15 @@ namespace
 		ostrm << indent << "length: " << (unsigned int)desc.length() << endl;
 
 		size_t cur = 0;
-		BYTE mask = 0xC0;
+		uint8_t mask = 0xC0;
 
 		while (cur < desc.length())
 		{
 			if (cur == 0) // metadata_input_leak_rate
 			{
-				BYTE a = val[cur++] ^ mask;
+				uint8_t a = val[cur++] ^ mask;
 				signed int n;
-				BYTE v[4]{};
+				uint8_t v[4]{};
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
@@ -658,9 +658,9 @@ namespace
 			}
 			else if (cur == 3) // metadata_buffer_size
 			{
-				BYTE a = val[cur++] ^ mask;
+				uint8_t a = val[cur++] ^ mask;
 				signed int n;
-				BYTE v[4]{};
+				uint8_t v[4]{};
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
@@ -668,9 +668,9 @@ namespace
 			}
 			else if (cur == 6) // metadata_output_leak_rate
 			{
-				BYTE a = val[cur++] ^ mask;
+				uint8_t a = val[cur++] ^ mask;
 				signed int n;
-				BYTE v[4]{};
+				uint8_t v[4]{};
 				v[0] = 0; v[1] = a; v[2] = val[cur++]; v[3] = val[cur++];
 				memcpy(&n, v, 4);
 				n = ntohl(n);
@@ -681,7 +681,7 @@ namespace
 
 	void printDescriptorValue(ostream& ostrm, const lcss::Descriptor& desc, int depth)
 	{
-		BYTE val[BUFSIZ]{};
+		uint8_t val[BUFSIZ]{};
 		desc.value(val);
 		std::stringstream str;
 		std::stringstream tag;
@@ -801,10 +801,10 @@ std::string mp2tpser::TsWriter::printPCR(std::ostream& ostrm, const lcss::Adapta
 		unsigned char pcr[6]{};
 		if (adf.getPCR(pcr))
 		{
-			UINT64 pcr_base = ((UINT64)pcr[0] << (33 - 8)) |
-				((UINT64)pcr[1] << (33 - 16)) |
-				((UINT64)pcr[2] << (33 - 24)) |
-				((UINT64)pcr[3] << (33 - 32));
+			uint64_t pcr_base = ((uint64_t)pcr[0] << (33 - 8)) |
+				((uint64_t)pcr[1] << (33 - 16)) |
+				((uint64_t)pcr[2] << (33 - 24)) |
+				((uint64_t)pcr[3] << (33 - 32));
 
 			unsigned short pcr_ext = pcr[4] & 0x01 << 9;
 			pcr_ext = pcr_ext | pcr[5];
@@ -914,7 +914,7 @@ void mp2tpser::TsWriter::printPMT(std::ostream& ostrm, const lcss::ProgramMapTab
 void mp2tpser::TsWriter::printPES(std::ostream& ostrm, const lcss::PESPacket& pes)
 {
 	string text = getStreamIdDescription(pes.stream_id());
-	UINT16 pts_dts_flag = (pes.flags2() & PTS_DTS_MASK);
+	uint16_t pts_dts_flag = (pes.flags2() & PTS_DTS_MASK);
 	std::stringstream val;
 	std::stringstream ptsflag;
 	string indent("\t\t\t");

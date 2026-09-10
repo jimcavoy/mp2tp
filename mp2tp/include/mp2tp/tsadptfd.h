@@ -1,7 +1,7 @@
 #ifndef TSADPTFD_H
 #define TSADPTFD_H
 
-#include "tstype.h"
+#include <cstdint>
 
 namespace lcss
 {
@@ -12,10 +12,10 @@ class AdaptationField
 {
 public:
 	AdaptationField();
-	AdaptationField(const BYTE* data);
+	AdaptationField(const uint8_t* data);
 	~AdaptationField();
 
-	unsigned short length() const;
+	uint16_t length() const;
 	bool discontinuity_indicator() const;
 	bool random_access_indicator() const;
 	bool elementary_stream_priority_indicator() const;
@@ -25,11 +25,11 @@ public:
 	bool transport_private_data_flag() const;
 	bool adaptation_field_extension_flag() const;
 
-	bool getPCR(BYTE* pcr) const;
-	void parse(const BYTE* data);
+	bool getPCR(uint8_t* pcr) const;
+	void parse(const uint8_t* data);
 
 private:
-	const BYTE* _data;
+	const uint8_t* _data;
 };
 
 

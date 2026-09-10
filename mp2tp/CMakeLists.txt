@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.21)
 
 project(mp2tp
-  VERSION 1.2.1
+  VERSION 1.2.2
   DESCRIPTION "MPEG-2 TS parser library"
   LANGUAGES CXX
 )
@@ -27,7 +27,6 @@ target_sources(mp2tp
     include/mp2tp/tspes.h
     include/mp2tp/tspmt.h
     include/mp2tp/tsprsr.h
-    include/mp2tp/tstype.h
     src/AccessUnit.cpp
     src/targetver.h
     src/tsadptfd.cpp

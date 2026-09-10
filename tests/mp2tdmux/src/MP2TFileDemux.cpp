@@ -35,7 +35,7 @@ MP2TFileDemux::~MP2TFileDemux()
 void MP2TFileDemux::onPacket(lcss::TransportPacket& pckt)
 {
 	// Get the TS packet payload minus header
-	const BYTE* data = pckt.getData();
+	const uint8_t* data = pckt.getData();
 
 	if (pckt.payloadUnitStart())
 	{
@@ -54,7 +54,7 @@ void MP2TFileDemux::onPacket(lcss::TransportPacket& pckt)
 		else
 		{
 			lcss::PESPacket pes;
-			UINT16 bytesParsed = pes.parse(data);
+			uint16_t bytesParsed = pes.parse(data);
 			if (bytesParsed > 0)
 			{
 				switch (packetType(pckt.PID()))
@@ -81,7 +81,7 @@ void MP2TFileDemux::onPacket(lcss::TransportPacket& pckt)
 						if (pes.stream_id() == 0xFC)
 						{
 							lcss::MetadataAUWrapper wrapper;
-							wrapper.parse((BYTE*)curKlvSample_->data(), curKlvSample_->length());
+							wrapper.parse((uint8_t*)curKlvSample_->data(), curKlvSample_->length());
 							lcss::MetadataAUWrapper::const_iterator it;
 							for (it = wrapper.begin(); it != wrapper.end(); ++it)
 							{
@@ -93,7 +93,7 @@ void MP2TFileDemux::onPacket(lcss::TransportPacket& pckt)
 							ofileKLV_.write(curKlvSample_->data(), curKlvSample_->length());
 					}
 
-					UINT64 pts = 0;
+					uint64_t pts = 0;
 					if (curVideoSample_.get() != nullptr)
 						pts = pes.pts() == 0 ? curVideoSample_->pts_ : pes.pts();
 
@@ -180,14 +180,14 @@ void MP2TFileDemux::initTypeMap()
 				// registration_descriptor
 				if (desc.tag() == 0x05)
 				{
-					desc.value((BYTE*)value);
+					desc.value((uint8_t*)value);
 					strncpy(format_identifier, value, 4);
 					break;
 				}
 				// metadata_descriptor
 				else if (desc.tag() == 0x26)
 				{
-					desc.value((BYTE*)value);
+					desc.value((uint8_t*)value);
 					strncpy(format_identifier, value + 3, 4);
 					break;
 				}
@@ -211,7 +211,7 @@ void MP2TFileDemux::initTypeMap()
 				// registration_descriptor
 				if (desc.tag() == 0x05)
 				{
-					desc.value((BYTE*)value);
+					desc.value((uint8_t*)value);
 					break;
 				}
 			}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tstype.h"
 #include <map>
 #include <memory>
+#include <cstdint>
 
 namespace lcss
 {
@@ -32,7 +32,7 @@ public:
 	/// Ref: ISO/IEC 13818-1 : 2013(E) Table 2-30 page 47.
 	/// </summary>
 	/// <param name="table">Raw byte sequence of a program_association_section.</param>
-	void parse( const BYTE* table );
+	void parse( const uint8_t* table );
 
 	/// <summary>
 	/// Add a program with the associated PID for the Program Map Table
@@ -67,15 +67,15 @@ public:
 	void serialize(BackInsertIter backit) const;
 
 public:
-	BYTE	pointer_field()				const;
-	BYTE	table_id()					const;
-	UINT16	section_length()			const;
-	UINT16	transport_stream_id()		const;
-	BYTE	version_number()			const;
-	bool	current_next_indicator()	const;
-	BYTE	section_number()			const;
-	BYTE	last_section_number()		const;
-	UINT32	CRC_32()					const;
+	uint8_t		pointer_field()				const;
+	uint8_t		table_id()					const;
+	uint16_t	section_length()			const;
+	uint16_t	transport_stream_id()		const;
+	uint8_t		version_number()			const;
+	bool		current_next_indicator()	const;
+	uint8_t		section_number()			const;
+	uint8_t		last_section_number()		const;
+	uint32_t	CRC_32()					const;
 
 private:
 	class Impl; ///< ProgramAssociationTable implementation class

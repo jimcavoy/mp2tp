@@ -1,7 +1,7 @@
 #ifndef TSPACKER_H
 #define TSPACKER_H
 
-#include "tstype.h"
+
 #include "tspckt.h"
 #include "AccessUnit.h"
 

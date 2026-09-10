@@ -8,34 +8,33 @@
 #endif
 
 #include <bitset>
-#include <cstdint>
 
 /////////////////////////////////////////////////////////////////////////////
 namespace
 {
-    const BYTE PTS_DTS_MASK = 0xC0;
+    const uint8_t PTS_DTS_MASK = 0xC0;
 
-    void reverse(u_char arr[], int n)
+    void reverse(uint8_t arr[], int n)
     {
         for (int low = 0, high = n - 1; low < high; low++, high--) {
             std::swap(arr[low], arr[high]);
         }
     }
 
-    void encodeTimestamp(BYTE* outTs, uint64_t ts)
+    void encodeTimestamp(uint8_t* outTs, uint64_t ts)
     {
-        u_char buf[8]{};
+        uint8_t buf[8]{};
         memcpy(buf, &ts, 8);
 
-        u_short PTS3{ 0 };
+        uint16_t PTS3{ 0 };
         memcpy(&PTS3, buf, 2);
         std::bitset<16> bsPTS3(PTS3);
 
-        u_short PTS2{ 0 };
+        uint16_t PTS2{ 0 };
         memcpy(&PTS2, buf + 2, 2);
         std::bitset<16> bsPTS2(PTS2);
 
-        u_char PTS1 = buf[4];
+        uint8_t PTS1 = buf[4];
         std::bitset<8> bsPTS1(PTS1);
 
         std::bitset<64> bsPTS;
@@ -83,10 +82,10 @@ namespace lcss
     public:
         Impl() {};
 
-        UINT16 parsePTS(const BYTE* stream)
+        uint16_t parsePTS(const uint8_t* stream)
         {
-            UINT16 cur = 0;
-            UINT16 value = (flags2_ & PTS_DTS_MASK);
+            uint16_t cur = 0;
+            uint16_t value = (flags2_ & PTS_DTS_MASK);
             if (value > 0)
             {
                 if (value == 0xC0)
@@ -107,14 +106,14 @@ namespace lcss
         }
 
     public:
-        BYTE packet_start_code_prefix_[3]{};
-        BYTE stream_id_{};
-        UINT16 PES_packet_length_{};
-        BYTE flags1_{};
-        BYTE flags2_{};
-        BYTE PES_header_data_length_{};
-        BYTE PTS_[5]{};
-        BYTE DTS_[5]{};
+        uint8_t packet_start_code_prefix_[3]{};
+        uint8_t stream_id_{};
+        uint16_t PES_packet_length_{};
+        uint8_t flags1_{};
+        uint8_t flags2_{};
+        uint8_t PES_header_data_length_{};
+        uint8_t PTS_[5]{};
+        uint8_t DTS_[5]{};
     };
 }
 
@@ -165,9 +164,9 @@ lcss::PESPacket& lcss::PESPacket::operator=(PESPacket&& rhs) noexcept
 /// The stream is retrieved from a TransportPacket payload data where the 
 /// TransportPacket::payloadUnitStart is true.
 /// @return The number of bytes read when parsing the PES packet.
-UINT16 lcss::PESPacket::parse(const BYTE* stream)
+uint16_t lcss::PESPacket::parse(const uint8_t* stream)
 {
-    UINT16 cur = 0;
+    uint16_t cur = 0;
     if (_pimpl->stream_id_ == 0)
     {
         memcpy(_pimpl->packet_start_code_prefix_, stream, 3);
@@ -179,7 +178,7 @@ UINT16 lcss::PESPacket::parse(const BYTE* stream)
         memcpy(&(_pimpl->stream_id_), stream + cur, 1);
         cur++;
 
-        UINT16 iValue{};
+        uint16_t iValue{};
         memcpy(&iValue, stream + cur, 2);
         _pimpl->PES_packet_length_ = ntohs(iValue);
         cur += 2;
@@ -204,7 +203,7 @@ UINT16 lcss::PESPacket::parse(const BYTE* stream)
             cur++;
             int curPlusHeaderLen = cur + _pimpl->PES_header_data_length_;
 
-            UINT16 ptsflag = (_pimpl->flags2_ & PTS_DTS_MASK);
+            uint16_t ptsflag = (_pimpl->flags2_ & PTS_DTS_MASK);
             if (ptsflag > 0)
             {
                 cur += _pimpl->parsePTS(stream + cur);
@@ -242,7 +241,7 @@ double lcss::PESPacket::ptsInSeconds() const
 {
     double t{ 0.0 };
 
-    UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
+    uint16_t value = (_pimpl->flags2_ & PTS_DTS_MASK);
     if (value == 0xC0 || value == 0x80)
     {
         t = pts() / 90000.0;
@@ -258,7 +257,7 @@ double lcss::PESPacket::dtsInSeconds() const
 {
     double t{ 0.0 };
 
-    UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
+    uint16_t value = (_pimpl->flags2_ & PTS_DTS_MASK);
     if (value == 0xC0)
     {
         t = dts() / 90000.0;
@@ -270,18 +269,18 @@ double lcss::PESPacket::dtsInSeconds() const
 /// Presentation Time Stamp (PTS) in units of 90 kHz.
 /// </summary>
 /// <returns></returns>
-UINT64 lcss::PESPacket::pts() const
+uint64_t lcss::PESPacket::pts() const
 {
-    UINT64 PTS = 0;
+    uint64_t PTS = 0;
 
-    UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
+    uint16_t value = (_pimpl->flags2_ & PTS_DTS_MASK);
     if (value == 0xC0 || value == 0x80)
     {
-        BYTE PTS1 = (_pimpl->PTS_[0] & 0x0e);
-        UINT16 PTS2{};
+        uint8_t PTS1 = (_pimpl->PTS_[0] & 0x0e);
+        uint16_t PTS2{};
         memcpy(&PTS2, _pimpl->PTS_ + 1, 2);
         PTS2 = ntohs(PTS2);
-        UINT16 PTS3{};
+        uint16_t PTS3{};
         memcpy(&PTS3, _pimpl->PTS_ + 3, 2);
         PTS3 = ntohs(PTS3);
 
@@ -294,7 +293,7 @@ UINT64 lcss::PESPacket::pts() const
     return PTS;
 }
 
-const BYTE* lcss::PESPacket::PTS() const
+const uint8_t* lcss::PESPacket::PTS() const
 {
     return _pimpl->PTS_;
 }
@@ -303,18 +302,18 @@ const BYTE* lcss::PESPacket::PTS() const
 /// Decoding Time Stamp (DTS) in units of 90 kHz.
 /// </summary>
 /// <returns></returns>
-UINT64 lcss::PESPacket::dts() const
+uint64_t lcss::PESPacket::dts() const
 {
-    UINT64 DTS = 0;
+    uint64_t DTS = 0;
 
-    UINT16 value = (_pimpl->flags2_ & PTS_DTS_MASK);
+    uint16_t value = (_pimpl->flags2_ & PTS_DTS_MASK);
     if (value == 0xC0)
     {
-        BYTE DTS1 = (_pimpl->DTS_[0] & 0x0e);
-        UINT16 DTS2{};
+        uint8_t DTS1 = (_pimpl->DTS_[0] & 0x0e);
+        uint16_t DTS2{};
         memcpy(&DTS2, _pimpl->DTS_ + 1, 2);
         DTS2 = ntohs(DTS2);
-        UINT16 DTS3{};
+        uint16_t DTS3{};
         memcpy(&DTS3, _pimpl->DTS_ + 3, 2);
         DTS3 = ntohs(DTS3);
 
@@ -327,35 +326,35 @@ UINT64 lcss::PESPacket::dts() const
     return DTS;
 }
 
-void lcss::PESPacket::setPTS(BYTE* pts)
+void lcss::PESPacket::setPTS(uint8_t* pts)
 {
     _pimpl->PES_header_data_length_ = 0x05;
     _pimpl->flags2_ = 0x80;
     memcpy(_pimpl->PTS_, pts, 5);
 }
 
-void lcss::PESPacket::setDTS(BYTE * dts)
+void lcss::PESPacket::setDTS(uint8_t * dts)
 {
     _pimpl->PES_header_data_length_ = 0x0A;
     _pimpl->flags2_ = 0xC0;
     memcpy(_pimpl->DTS_, dts, 5);
 }
 
-void lcss::PESPacket::setPTS(UINT64 pts)
+void lcss::PESPacket::setPTS(uint64_t pts)
 {
     _pimpl->PES_header_data_length_ = 0x05;
     _pimpl->flags2_ = 0x80;
     encodeTimestamp(_pimpl->PTS_, pts);
 }
 
-void lcss::PESPacket::setDTS(UINT64 dts)
+void lcss::PESPacket::setDTS(uint64_t dts)
 {
     _pimpl->PES_header_data_length_ = 0x0A;
     _pimpl->flags2_ = 0xC0;
     encodeTimestamp(_pimpl->DTS_, dts);
 }
 
-void lcss::PESPacket::serialize(BYTE* stream)
+void lcss::PESPacket::serialize(uint8_t* stream)
 {
     stream[0] = _pimpl->packet_start_code_prefix_[0];
     stream[1] = _pimpl->packet_start_code_prefix_[1];
@@ -396,14 +395,14 @@ void lcss::PESPacket::serialize(BYTE* stream)
     }
 }
 
-const BYTE* lcss::PESPacket::DTS() const
+const uint8_t* lcss::PESPacket::DTS() const
 {
     return _pimpl->DTS_;
 }
 
 /// @brief Get the elementary stream type.
 /// @return Returns the elementary stream type.
-BYTE lcss::PESPacket::stream_id() const
+uint8_t lcss::PESPacket::stream_id() const
 {
     return _pimpl->stream_id_;
 }
@@ -411,22 +410,22 @@ BYTE lcss::PESPacket::stream_id() const
 /// @brief Get the number of bytes in the PESPacket following the last byte of the field.
 /// @return The PESPacket size in bytes.  Zero is allowed for unbounded sequence but only for 
 /// video elementary streams.
-UINT16 lcss::PESPacket::packet_length() const
+uint16_t lcss::PESPacket::packet_length() const
 {
     return _pimpl->PES_packet_length_;
 }
 
-BYTE lcss::PESPacket::flags1() const
+uint8_t lcss::PESPacket::flags1() const
 {
     return _pimpl->flags1_;
 }
 
-BYTE lcss::PESPacket::flags2() const
+uint8_t lcss::PESPacket::flags2() const
 {
     return _pimpl->flags2_;
 }
 
-BYTE lcss::PESPacket::header_data_length() const
+uint8_t lcss::PESPacket::header_data_length() const
 {
     return _pimpl->PES_header_data_length_;
 }

@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 
         lcss::TransportPacket& pckt = *parser._oneKlvSet.begin();
         lcss::PESPacket pes;
-        const UINT16 bytesParsed = pes.parse(pckt.getData());
+        const uint16_t bytesParsed = pes.parse(pckt.getData());
         if (bytesParsed > 0)
         {
             cout << "Add one second to PTS" << endl;

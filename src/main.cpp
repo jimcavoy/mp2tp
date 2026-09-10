@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
     std::unique_ptr<mp2tpser::TsDecoder> decoder = createDecoder(ofile, oStream);
     decoder->setPacketSize(packetSize);
 
-    BYTE memblock[N];
+    uint8_t memblock[N];
     std::streamsize bytesRead = 0;
     bool strict = true;
 

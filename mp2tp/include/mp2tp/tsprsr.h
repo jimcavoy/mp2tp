@@ -1,9 +1,8 @@
 #ifndef TSPRSR_H
 #define TSPRSR_H
 
-#include "tstype.h"
-
 #include <memory>
+#include <cstdint>
 
 namespace lcss
 {
@@ -33,7 +32,7 @@ namespace lcss
         /// false.</param>
         /// <returns>Return true if the function is able to parse the input stream
         /// in buf;otherwise return false.</returns>
-        virtual bool parse(const BYTE* buf, UINT32 size, bool strict=false);
+        virtual bool parse(const uint8_t* buf, uint32_t size, bool strict=false);
 
         /// <summary>
         /// A callback function that returns the most recent Transport 
@@ -47,13 +46,13 @@ namespace lcss
         /// Call this function to query how many Transport Packet have been parsed.
         /// </summary>
         /// <returns>The number of Transport Packet that was parsed.</returns>
-        UINT64 packetCount() const;
+        uint64_t packetCount() const;
 
         /// <summary>
         /// Set the Transport Packet size.  The default is 188 bytes.
         /// </summary>
         /// <param name="sz">The size of a Transport Packet.</param>
-        void setPacketSize(UINT32 sz);
+        void setPacketSize(uint32_t sz);
 
     private:
         class TSParserImpl;

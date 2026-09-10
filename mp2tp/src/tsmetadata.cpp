@@ -50,7 +50,7 @@ MetadataAUCell& MetadataAUCell::operator=(MetadataAUCell&& rhs) noexcept
 	return *this;
 }
 
-size_t MetadataAUCell::parse(BYTE* sodb, size_t len)
+size_t MetadataAUCell::parse(uint8_t* sodb, size_t len)
 {
 	size_t nRet = 0;
 	short au_cell_data_len = 0;
@@ -94,26 +94,26 @@ short MetadataAUCell::sequence_number() const
 
 short MetadataAUCell::cell_fragmentation_indication() const
 {
-	BYTE flag = sodb_[2];
+	uint8_t flag = sodb_[2];
 	short cell_frag_ind = flag >> 6;
 	return cell_frag_ind;
 }
 
 bool MetadataAUCell::decoder_config_flag() const
 {
-	BYTE flag = sodb_[2];
+	uint8_t flag = sodb_[2];
 	bool ret = flag & 0x20 ? true : false;
 	return ret;
 }
 
 bool MetadataAUCell::random_access_indicator() const
 {
-	BYTE flag = sodb_[2];
+	uint8_t flag = sodb_[2];
 	bool ret = flag & 0x10 ? true : false;
 	return ret;
 }
 
-void MetadataAUCell::header(BYTE* head) const
+void MetadataAUCell::header(uint8_t* head) const
 {
 	for(int i = 0; i < 5; i++)
 		head[i] = sodb_[i];
@@ -160,7 +160,7 @@ MetadataAUWrapper& MetadataAUWrapper::operator=(MetadataAUWrapper&& rhs) noexcep
 	return *this;
 }
 
-size_t MetadataAUWrapper::parse(BYTE* sodb, size_t len)
+size_t MetadataAUWrapper::parse(uint8_t* sodb, size_t len)
 {
 	size_t pos = 0;
 

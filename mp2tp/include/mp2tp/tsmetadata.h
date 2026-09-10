@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tstype.h"
 #include <vector>
 #include <cstddef>
+#include <cstdint>
 
 namespace lcss
 {
@@ -14,7 +14,7 @@ namespace lcss
 class MetadataAUCell
 {
 private:
-	typedef std::vector<BYTE> sodb_type; // string of data bits collection type
+	typedef std::vector<uint8_t> sodb_type; // string of data bits collection type
 
 public:
 	MetadataAUCell();
@@ -28,7 +28,7 @@ public:
 
 	void swap(MetadataAUCell& src);
 
-	size_t parse(BYTE* sodb, size_t len);
+	size_t parse(uint8_t* sodb, size_t len);
 
 	void clear();
 
@@ -39,10 +39,10 @@ public:
 	short		cell_fragmentation_indication() const;
 	bool		decoder_config_flag()			const;
 	bool		random_access_indicator()		const;
-	void		header(BYTE* header)			const;
+	void		header(uint8_t* header)			const;
 
 	size_t		AU_cell_data_length()			const { return sodb_.size()-5; }
-	const BYTE* AU_cell_data_bytes()			const { return sodb_.data()+5; }
+	const uint8_t* AU_cell_data_bytes()			const { return sodb_.data()+5; }
 	
 
 private:
@@ -73,7 +73,7 @@ public:
 
 	// Return the number of metadata_AU_cells that instance of 
 	// this class contains, otherwise 0
-	size_t parse(BYTE* sodb, size_t len);
+	size_t parse(uint8_t* sodb, size_t len);
 
 	iterator begin() { return metadata_au_cells_.begin(); }
 	iterator end() { return metadata_au_cells_.end(); }
